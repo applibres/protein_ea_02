@@ -16,9 +16,11 @@ Phage Therapy Group
 #LIGAND_CHAIN = 'C'  # Specify the ligand chain (e.g., 'C')
 #PARTNERS = 'A_C' # Specify partners (e.g., 'A_C')
 START_PATTERN = "##### PAIRWISE SHORT-RANGE ENERGIES #####"
-#ROSETTA_BIN = "/usr/local/bin/"
-#CONFIG_PATH = "/home/scenarios/"
-#INTERF_EN = "interface_energy.cxx11threadserialization.linuxgccrelease -s"
+
+###Params rosetta-commons docker image
+ROSETTA_BIN = "/usr/local/bin/"
+CONFIG_PATH = "/home/scenarios/"
+INTERF_EN = "interface_energy.cxx11threadserialization.linuxgccrelease -s"
 
 ###Params Cedia Cluster###
 #ROSETTA_BIN = "/usr/local/bin/"
@@ -26,15 +28,12 @@ START_PATTERN = "##### PAIRWISE SHORT-RANGE ENERGIES #####"
 #INTERF_EN = "interface_energy.cxx11threadserialization.linuxgccrelease -s"
 
 
-ROSETTA_BIN = "/Users/rolando/Research/Bio/rosetta.binary.m1.release-371/main/source/bin/"
-CONFIG_PATH = "/Users/rolando/Research/Bio/bio-ea/scenarios/"
-INTERF_EN = "interface_energy.static.macosclangrelease -s"
 FACE1_FILE_NAME = "faceA.txt"
 FACE2_FILE_NAME = "faceC.txt"
 MSA_MATRIX = "MSA_matrix.tsv"
 
 ###Params Cedia Cluster###
-#INTERF_AN = "InterfaceAnalyzer.cxx11threadserialization.linuxgccrelease -s"
+INTERF_AN = "InterfaceAnalyzer.cxx11threadserialization.linuxgccrelease -s"
 
 INTERF_AN = "InterfaceAnalyzer.static.macosclangrelease -s"
 SCORE_INDEXES = [4,7,5,23] #score positions for dG_separated, dSASA_int, dG_separated/dSASAx100, hbonds_int
@@ -44,4 +43,3 @@ FLAGS = "-compute_packstat true -tracer_data_print false -pack_input true " \
         "-pose_metrics::interface_cutoff 8.0 -use_input_sc " \
         "-out:file:score_only "
 
-#OUTPUT_PATH = "/Users/rolando/Research/Bio/output/"

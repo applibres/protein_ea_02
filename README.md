@@ -60,7 +60,7 @@ prot_GA.py: Evolutionary python algorithm
 
 To run the evolutionary algorithm, you can go inside of the directory were is located the project code and you can call to shell script file as is shown in the next line: 
 
-#./protmut_run.sh test04 sea pdbfile=protein01.pdb,partners=A_C,ligand_chain=C gen=4,popsize=8,obj=1,mutp=1 > ../output/logtest.txt
+## ./protmut_run.sh test04 sea pdbfile=protein01.pdb,partners=A_C,ligand_chain=C gen=4,popsize=8,obj=1,mutp=1 > ../output/logtest.txt
 
 
 At following the parameters description: 

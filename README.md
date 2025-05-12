@@ -18,7 +18,22 @@ You need to install the software listed below:
 
 3) Install the next python libraries: numpy, random, os, shutil 
 
- 
+4) Change the respective parameters values inside file prot_interface/prot_settingsI.py. The following parameters need to set according to your local repository and  rosetta-commons instalation:
+
+ROSETTA_BIN = Main directory path wher is rosetta-commons binary files. ("/rosetta.binary.m1.release-371/main/source/bin/"
+CONFIG_PATH = Main directory where are located the scenarios to test ("/scenarios/")
+INTERF_EN = Name of interface_energy binary file ("interface_energy.static.macosclangrelease -s")
+FACE1_FILE_NAME = Face A name file ("faceA.txt")
+FACE2_FILE_NAME = Face C name file ("faceC.txt")
+MSA_MATRIX = Name of MSA Matrix ("MSA_matrix.tsv") 
+INTERF_AN = Name of InterfaceAnalyzer binary file ("InterfaceAnalyzer.static.macosclangrelease -s")
+SCORE_INDEXES = [4,7,5,23] #score positions for dG_separated, dSASA_int, dG_separated/dSASAx100, hbonds_int
+FLAGS = "-compute_packstat true -tracer_data_print false -pack_input true " \
+        "-pack_separated true -add_regular_scores_to_scorefile true " \
+        "-atomic_burial_cutoff 0.01 -sasa_calculator_probe_radius 1.4 " \
+        "-pose_metrics::interface_cutoff 8.0 -use_input_sc " \
+        "-out:file:score_only "
+
 
 ## Basic Use
 You can download the project’s content as a zip file. Uncompressed it in the corresponding location that you decide to copy the project’s content. The directory contains the next structure: 

@@ -113,7 +113,7 @@ class prot_problem:
         #aminoacid list
         aa = []
         for aa_pos in self.aa_pos_list:
-            aa.append(sequence[aa_pos])
+            aa.append(sequence[aa_pos-1])
 
         #print(aa)    
         # Convert letters to numbers
@@ -150,7 +150,7 @@ class prot_problem:
         #aminoacid list
         aa = []
         for aa_pos in self.aa_pos_list:
-            aa.append(sequence[aa_pos])
+            aa.append(sequence[aa_pos-1])
 
         #print(aa)    
         # Convert letters to numbers

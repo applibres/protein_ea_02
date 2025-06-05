@@ -19,7 +19,7 @@ START_PATTERN = "##### PAIRWISE SHORT-RANGE ENERGIES #####"
 
 ###Params rosetta-commons docker image
 ROSETTA_BIN = "/usr/local/bin/"
-CONFIG_PATH = "/home/scenarios/"
+CONFIG_PATH = "/app/scenarios/"
 INTERF_EN = "interface_energy.cxx11threadserialization.linuxgccrelease -s"
 
 ###Params Cedia Cluster###

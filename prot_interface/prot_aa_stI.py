@@ -134,7 +134,7 @@ class prot_aa_extract:
 		# get the name of pdb_file_name
 		#output_file_name = re.search(pattern, pdb_file_name).group() + ".txt"
 		#output_file_name = "output04.txt"
-		#output_path = "/Users/rolando/Research/Bio/tests/"
+		#output_path = "PATH/Research/Bio/tests/"
 		output_file_name = pdb_file_name + ".txt"
 
 		# command = self.rosetta_bin + self.interf_en + \
@@ -174,7 +174,7 @@ class prot_aa_extract:
 		# # get the name of pdb_file_name
 		# output_file_name = re.search(pattern, pdb_file_name).group() + ".txt"
 		# #output_file_name = "output04.txt"
-		# #output_path = "/Users/rolando/Research/Bio/tests/"
+		# #output_path = "PATH/tests/"
 
 
 		# command = self.rosetta_bin + self.interf_en + \

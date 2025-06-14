@@ -134,16 +134,16 @@ class prot_problem:
 
         #2 Map Positions
         aa_pos_dict=self.extract_mappings(energy_filepath)
-        logging.info(aa_pos_dict)
+        logging.debug(aa_pos_dict)
 
         # Extract absolute position values as a list
         self.aa_pos_list = list(aa_pos_dict.values())
-        logging.info(self.aa_pos_list)
+        logging.debug(self.aa_pos_list)
 
 
         # Create new dictionary where key = value from list, value = index position
         indexed_dict = {value: index for index, value in enumerate(self.aa_pos_list)}
-        logging.info(indexed_dict)
+        logging.debug(indexed_dict)
 
         # Generate the sequence and initialize fixed values based on it
         sequence = self.sequence(pdb_file_path)

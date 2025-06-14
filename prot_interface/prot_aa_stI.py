@@ -28,6 +28,15 @@ class prot_aa_extract:
 
 
 		# #Config parameters
+		# self.ligand_chain = 'C'  # Specify the ligand chain (e.g., 'C')
+		# self.start_pattern = "##### PAIRWISE SHORT-RANGE ENERGIES #####"
+		# self.rosetta_bin = "PATH/rosetta.binary.m1.release-371/main/source/bin/"
+		# self.config_path = "PATH/tests/"
+		# self.interf_en = "interface_energy.static.macosclangrelease -s"
+		# self.face1_file_name = "faceA.txt"
+		# self.face2_file_name = "faceC.txt"
+
+
 		self.ligand_chain = ligand_chain
 		self.start_pattern = sets.START_PATTERN
 		self.rosetta_bin = sets.ROSETTA_BIN

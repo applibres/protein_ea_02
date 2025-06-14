@@ -18,6 +18,12 @@ from pyrosetta.rosetta.protocols import *
 from pyrosetta.rosetta.core.select import *
 from pyrosetta.rosetta.core.scoring import * 
 from pyrosetta.rosetta.protocols.docking import *
+from prot_interface.logging_config import setup_logging
+import logging
+
+# Initialize logging before anything else
+setup_logging()
+logger = logging.getLogger(__name__)
 
 
 class prot_mut_py_rosetta:
@@ -35,8 +41,7 @@ class prot_mut_py_rosetta:
         pose: STRING pdb file path and name
         partners: STRING protein main chain components (ex:"A_B") 
         """
-        #pyrosetta Initialization
-        #pyrosetta.init()
+        
         self.pose=pyrosetta.io.pose_from_pdb(pose)
         self.partners=partners
 
@@ -66,17 +71,14 @@ class prot_mut_py_rosetta:
         # Select Mutate Position
         mut_posi = pyrosetta.rosetta.core.select.residue_selector.ResidueIndexSelector()
         mut_posi.set_index(posi)
-        #print(pyrosetta.rosetta.core.select.get_residues_from_subset(mut_posi.apply(pose)))
 
         # Select Neighbor Position
         nbr_selector = pyrosetta.rosetta.core.select.residue_selector.NeighborhoodResidueSelector()
         nbr_selector.set_focus_selector(mut_posi)
         nbr_selector.set_include_focus_in_subset(True)
-        #print(pyrosetta.rosetta.core.select.get_residues_from_subset(nbr_selector.apply(pose)))
 
         # Select No Design Area
         not_design = pyrosetta.rosetta.core.select.residue_selector.NotResidueSelector(mut_posi)
-        #print(pyrosetta.rosetta.core.select.get_residues_from_subset(not_design.apply(pose)))
 
         # The task factory accepts all the task operations
         tf = pyrosetta.rosetta.core.pack.task.TaskFactory()
@@ -105,7 +107,6 @@ class prot_mut_py_rosetta:
         packer.task_factory(tf)
 
         #Perform The Move
-        #if not os.getenv("DEBUG"):
         packer.apply(pose)
 
     
@@ -115,16 +116,6 @@ class prot_mut_py_rosetta:
     separate (unbind) the antigen and antibody and then score the unbound state total energy. 
     The binding energy is given by bound energy - unbound energy. 
     """      
-          
-    # def unbind(self):
-    #     #STEP_SIZE = 100
-    #     STEP_SIZE = 100
-    #     JUMP = 1 ##for two components A_B
-    #     docking.setup_foldtree(self.pose, self.partners, pyrosetta.Vector1([-1,-1,-1]))
-    #     trans_mover = rigid.RigidBodyTransMover(self.pose,JUMP)
-    #     trans_mover.step_size(STEP_SIZE)
-    #     trans_mover.apply(self.pose)
-
 
     def unbind(self, pose):
         #STEP_SIZE = 100
@@ -152,8 +143,6 @@ class prot_mut_py_rosetta:
 
     def mutate(self, posi, amino,gendir,filename):
         #main function for mutation
-        #CSV_PREFIX = 'notec'
-        #PDB_PREFIX = 'notep'
 
         CSV_PREFIX = filename
         PDB_PREFIX = filename
@@ -165,15 +154,12 @@ class prot_mut_py_rosetta:
 
         #Initiate energy function
         scorefxn = pyrosetta.rosetta.protocols.loops.get_fa_scorefxn()
-        #self.pose=testPose
         self.unbind(testPose)
         native_ub = scorefxn(testPose)
         testPose.assign(self.pose)
 
         #Variables initiation
         content = ''
-        #name = CSV_PREFIX + str(posi)+str(amino) + '.csv'
-        #pdbname = PDB_PREFIX + str(posi)+str(amino) + '.pdb'
         name = CSV_PREFIX  + '.csv'
         pdbname = PDB_PREFIX + '.pdb'
 
@@ -204,10 +190,6 @@ class prot_mut_py_rosetta:
             bwt = binding/wt_energy   
 
 
-        #content=(content+str(self.pose.pdb_info().pose2pdb(posi))+','+str(amino)+','
-        #          +str(native_ub)+','+str(bound)+','+str(unbound)+','+str(binding)+','
-        #          +str(wt_energy)+','+str(wt)+','+str(binding/wt_energy)+'\n')
-
         content=(content+str(self.pose.pdb_info().pose2pdb(posi))+','+str(amino)+','
                   +str(native_ub)+','+str(bound)+','+str(unbound)+','+str(binding)+','
                   +str(wt_energy)+','+str(wt)+','+str(bwt)+'\n')
@@ -227,8 +209,6 @@ class prot_mut_py_rosetta:
 
     def multi_mutate(self, mutate_res, gendir, filename):
         #main function for mutation
-        #CSV_PREFIX = 'notec'
-        #PDB_PREFIX = 'notep'
 
         CSV_PREFIX = filename
         PDB_PREFIX = filename
@@ -240,21 +220,16 @@ class prot_mut_py_rosetta:
 
         #Initiate energy function
         scorefxn = pyrosetta.rosetta.protocols.loops.get_fa_scorefxn()
-        #self.pose=testPose
         self.unbind(testPose)
         native_ub = scorefxn(testPose)
         testPose.assign(self.pose)
 
         #Variables initiation
         content = ''
-        #name = CSV_PREFIX + str(posi)+str(amino) + '.csv'
-        #pdbname = PDB_PREFIX + str(posi)+str(amino) + '.pdb'
         name = CSV_PREFIX  + '.csv'
         pdbname = PDB_PREFIX + '.pdb'
 
-
-        #mut_res=res_mut_list(mutate_res)
-        print("Mutate Residues: ", mutate_res)
+        logging.info("Mutate Residues: %s", mutate_res)
 
         f = open(gendir+"/"+name,'w+')
         
@@ -263,7 +238,6 @@ class prot_mut_py_rosetta:
             posi = res[0]
             amino= res[1]
 
-            #wt = wildtype(str(pose.aa(posi)))
             #Mutate
             self.pack(testPose,posi, amino, scorefxn)
         
@@ -285,132 +259,9 @@ class prot_mut_py_rosetta:
         f.write(content)
         f.close()
 
-        #testPose.dump_pdb(gendir+"/"+pdbname)
         # Assign original pose
         testPose.assign(self.pose)
 
 
     def sequence(self):
         return self.pose.sequence() 
-
-
-    # # Integrate functions for mutate and output    
-    # def mutate(self, posi, amino,gendir,idx):
-    #     #main function for mutation
-    #     #CSV_PREFIX = 'notec'
-    #     #PDB_PREFIX = 'notep'
-
-    #     CSV_PREFIX = 'ind'+ str(idx)+"_fit"
-    #     PDB_PREFIX = 'ind'+ str(idx)+"_p"
-
-
-    #     #Initiate test pose
-    #     testPose = pyrosetta.rosetta.core.pose.Pose()
-    #     testPose.assign(self.pose)
-
-    #     #Initiate energy function
-    #     scorefxn = pyrosetta.rosetta.protocols.loops.get_fa_scorefxn()
-    #     self.pose=testPose
-    #     self.unbind()
-    #     native_ub = scorefxn(testPose)
-    #     testPose.assign(self.pose)
-
-    #     #Variables initiation
-    #     content = ''
-    #     name = CSV_PREFIX + str(posi)+str(amino) + '.csv'
-    #     pdbname = PDB_PREFIX + str(posi)+str(amino) + '.pdb'
-    #     wt = self.wildtype(str(self.pose.aa(posi)))
-
-    #     self.pack(posi, amino, scorefxn)
-    #     testPose.dump_pdb(gendir+"/"+pdbname)
-    #     bound = scorefxn(testPose)
-    #     self.unbind()
-    #     unbound = scorefxn(testPose)
-    #     binding = unbound - bound
-    #     testPose.assign(self.pose)
-
-    #     if (wt == amino):
-    #         wt_energy = binding
-    #     else:
-    #         self.pack(posi, wt, scorefxn)
-    #         wtbound = scorefxn(testPose)
-    #         self.unbind()
-    #         wtunbound = scorefxn(testPose)
-    #         wt_energy = wtunbound - wtbound
-    #         testPose.assign(self.pose)
-
-    #     content=(content+str(self.pose.pdb_info().pose2pdb(posi))+','+str(amino)+','
-    #               +str(native_ub)+','+str(bound)+','+str(unbound)+','+str(binding)+','
-    #               +str(wt_energy)+','+str(wt)+','+str(binding/wt_energy)+'\n')
-
-    #     f = open(gendir+"/"+name,'w+')
-    #     f.write(content)
-    #     f.close()
-
-    # Integrate functions for mutate and output    
-    # def mutate(self, posi, amino,gendir,filename):
-    #     #main function for mutation
-    #     #CSV_PREFIX = 'notec'
-    #     #PDB_PREFIX = 'notep'
-
-    #     CSV_PREFIX = filename
-    #     PDB_PREFIX = filename
-
-
-    #     #Initiate test pose
-    #     testPose = pyrosetta.rosetta.core.pose.Pose()
-    #     testPose.assign(self.pose)
-
-    #     #Initiate energy function
-    #     scorefxn = pyrosetta.rosetta.protocols.loops.get_fa_scorefxn()
-    #     self.pose=testPose
-    #     self.unbind()
-    #     native_ub = scorefxn(testPose)
-    #     testPose.assign(self.pose)
-
-    #     #Variables initiation
-    #     content = ''
-    #     #name = CSV_PREFIX + str(posi)+str(amino) + '.csv'
-    #     #pdbname = PDB_PREFIX + str(posi)+str(amino) + '.pdb'
-    #     name = CSV_PREFIX  + '.csv'
-    #     pdbname = PDB_PREFIX + '.pdb'
-
-
-    #     wt = self.wildtype(str(self.pose.aa(posi)))
-
-    #     self.pack(posi, amino, scorefxn)
-    #     testPose.dump_pdb(gendir+"/"+pdbname)
-    #     bound = scorefxn(testPose)
-    #     self.unbind()
-    #     unbound = scorefxn(testPose)
-    #     binding = unbound - bound
-    #     testPose.assign(self.pose)
-
-    #     if (wt == amino):
-    #         wt_energy = binding
-    #     else:
-    #         self.pack(posi, wt, scorefxn)
-    #         wtbound = scorefxn(testPose)
-    #         self.unbind()
-    #         wtunbound = scorefxn(testPose)
-    #         wt_energy = wtunbound - wtbound
-    #         testPose.assign(self.pose)
-
-    #     if (wt_energy == 0.0):
-    #         bwt = 0.0
-    #     else:
-    #         bwt = binding/wt_energy   
-
-
-    #     #content=(content+str(self.pose.pdb_info().pose2pdb(posi))+','+str(amino)+','
-    #     #          +str(native_ub)+','+str(bound)+','+str(unbound)+','+str(binding)+','
-    #     #          +str(wt_energy)+','+str(wt)+','+str(binding/wt_energy)+'\n')
-
-    #     content=(content+str(self.pose.pdb_info().pose2pdb(posi))+','+str(amino)+','
-    #               +str(native_ub)+','+str(bound)+','+str(unbound)+','+str(binding)+','
-    #               +str(wt_energy)+','+str(wt)+','+str(bwt)+'\n')
-
-
-    #     f = open(gendir+"/"+name,'w+')
-    #     f.write(content)
-    #     f.close()

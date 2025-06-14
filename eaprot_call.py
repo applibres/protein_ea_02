@@ -13,19 +13,23 @@ Phage Therapy Group
 import sys
 import timeit
 import prot_interface.prot_parserI as parser
-#import sga_mut_protein as sga
-#import sga_mut_protein02 as sga
 import prot_GA as sga
+from prot_interface.logging_config import setup_logging
+import logging
+
+# Initialize logging before anything else
+setup_logging()
+logger = logging.getLogger(__name__)
 
 # Main function to run the genetic algorithm
 def main():
 
     # command line arguments
     if len(sys.argv) != 5:
-        print('usage: ', sys.argv[0], '<scenario> <sea/moea> <sim params> <algo params>')
+        logging.critical('usage: ', sys.argv[0], '<scenario> <sea/moea> <sim params> <algo params>')
         sys.exit(-1)
 
-    print("Init Main")
+    logging.info("Init Main")
     
     SCENARIO       = sys.argv[1] # Scenario Name
     # Given the scenario, set the pdb file and mutation limits
@@ -33,23 +37,16 @@ def main():
     ALGO_NAME      = sys.argv[2] # Single Objective (sea) / Multi Objective (moea)   
     SIM_PARAM_STR  = sys.argv[3]
     ALGO_PARAM_STR = sys.argv[4]
-    #print("SIM_PARAM_STR ",SIM_PARAM_STR)
-    #print("ALGO_PARAM_STR ",ALGO_PARAM_STR)
 
     ALGO_PARAMS    = parser.parse_params(ALGO_PARAM_STR)
     SIM_PARAMS     = parser.parse_params(SIM_PARAM_STR)
 
-    print("SCENARIO:",SCENARIO)
-    print("ALGO_NAME:",ALGO_NAME)
-    print("ALGO_PARAMS:",ALGO_PARAMS)
-    print("SIM_PARAMS:",SIM_PARAMS)
+    logging.info("SCENARIO: %s",SCENARIO)
+    logging.info("ALGO_NAME: %s",ALGO_NAME)
+    logging.info("ALGO_PARAMS: %s",ALGO_PARAMS)
+    logging.info("SIM_PARAMS: %s",SIM_PARAMS)
     
     output="../output"
-
-    #mutation limits
-    #limit_inf=1
-    #limit_sup=420 
-    #elite_size=2
 	
     tic=timeit.default_timer()
 
@@ -61,7 +58,7 @@ def main():
 
     toc=timeit.default_timer()
 
-    print("Execution Time=",toc-tic)
+    logging.info("Execution Time = %.2f seconds", toc - tic)
 
 
 if __name__ == "__main__":

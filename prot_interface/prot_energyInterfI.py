@@ -11,7 +11,12 @@ Phage Therapy Group
 from . import prot_settingsI as sets
 import subprocess
 import re
+from prot_interface.logging_config import setup_logging
+import logging
 
+# Initialize logging before anything else
+setup_logging()
+logger = logging.getLogger(__name__)
 
 
 ''' Class for get the interface energy between protein chains'''
@@ -26,29 +31,13 @@ class prot_energyInterf:
 		self.score_indexes = sets.SCORE_INDEXES
 		self.flags = sets.FLAGS
 		self.scenario = scenario
-		#self.output_path = sets.OUTPUT_PATH
 
 	def getEnergyInterf(self, pdb_file_name):
 
 		#Build the command
-		#pattern = '[\w-]+?(?=\.)'
 
 		# get the name of pdb_file_name
-		#output_file_name = re.search(pattern, pdb_file_name).group() + ".sc"
 		output_file_name = pdb_file_name + ".sc"
-
-		# printing the match
-		#print(a.group())
-
-		# command = self.rosetta_bin + self.interf_an + \
-		# 	" " + self.config_path + pdb_file_name + \
-		# 	" " + self.flags + \
-		# 	" " + self.output_path + output_file_name
-
-		# command = self.rosetta_bin + self.interf_an + \
-		# 	" " + self.config_path + pdb_file_name + \
-		# 	" " + self.flags + \
-		# 	" " + output_file_name
 		
 		command = self.rosetta_bin + self.interf_an + \
 			" " + pdb_file_name + \
@@ -60,11 +49,10 @@ class prot_energyInterf:
 			return_code = subprocess.call(command, shell=True)
 
 		except subprocess.CalledProcessError as e:
-			print("Unexpected error trying to run command: ", command, "return_code: ", return_code )
-			print(e.output)
+			logging.error(f"Unexpected error trying to run command: {command}, {return_code}: return_code")
+			logging.error(e.output)
 
 		# open the output file 
-		#file = open(self.output_path + output_file_name) 
 		file = open(output_file_name) 
 
 		# read the content of the file opened 
@@ -74,13 +62,6 @@ class prot_energyInterf:
 		scores = content[2]
 
 		#We use a regular expression to find all numeric fields in line
-
-		#[-+]?: Matches an optional sign (either - or +).
-		#\d*: Matches zero or more digits before the decimal point (to allow for numbers like .5).
-		#\.: Matches the decimal point.
-		#\d+: Matches one or more digits after the decimal point.
-		#|: Acts as an OR operator to allow for matching integers as well.
-		#[-+]?\d+: Matches positive or negative integers.
 
 		result = re.findall(r'[-+]?\d*\.\d+|[-+]?\d+', scores)
 		

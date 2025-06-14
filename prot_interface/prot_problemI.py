@@ -27,6 +27,12 @@ import prot_interface.prot_mutI as p_mut
 import prot_interface.prot_pyrosettaI as ppyrst
 import prot_interface.prot_aa_stI as prot_aa
 import prot_interface.prot_settingsI as sets
+from prot_interface.logging_config import setup_logging
+import logging
+
+# Initialize logging before anything else
+setup_logging()
+logger = logging.getLogger(__name__)
 
 class prot_problem:
     """ Protein Design Problem - Class to mutate and evaluate protein chain 
@@ -65,8 +71,6 @@ class prot_problem:
         self.aa_pos_list = []
 
         #Output Path
-        #self.output_path = sets.OUTPUT_PATH
-        #pyrosetta.init()
 
     def extract_mappings(self, energy_filepath):
         """
@@ -98,7 +102,6 @@ class prot_problem:
     def absolute_AA_positions(AA_map_positions):
         # Extract values as a list
         values_list = list(AA_map_positions.values())
-        #print(values_list)
 
         # Create new dictionary where key = value from list, value = index position
         indexed_dict = {value: index for index, value in enumerate(values_list)}
@@ -115,7 +118,6 @@ class prot_problem:
         for aa_pos in self.aa_pos_list:
             aa.append(sequence[aa_pos-1])
 
-        #print(aa)    
         # Convert letters to numbers
         ind = [ord(x) - 64 for x in aa]  
         return ind, aa           
@@ -128,21 +130,20 @@ class prot_problem:
         pdb_file_path = self.config_path + pdbfile
         energy_filepath = self.list_aa.energy_interact_file(pdb_file_path)
 
-        print("energy_file =", energy_filepath)
-        #print("AA Stb:", aas)
+        logging.info("energy_file = %s", energy_filepath)
 
         #2 Map Positions
         aa_pos_dict=self.extract_mappings(energy_filepath)
-        print(aa_pos_dict)
+        logging.info(aa_pos_dict)
 
         # Extract absolute position values as a list
         self.aa_pos_list = list(aa_pos_dict.values())
-        print(self.aa_pos_list)
+        logging.info(self.aa_pos_list)
 
 
         # Create new dictionary where key = value from list, value = index position
         indexed_dict = {value: index for index, value in enumerate(self.aa_pos_list)}
-        print(indexed_dict)
+        logging.info(indexed_dict)
 
         # Generate the sequence and initialize fixed values based on it
         sequence = self.sequence(pdb_file_path)
@@ -152,7 +153,6 @@ class prot_problem:
         for aa_pos in self.aa_pos_list:
             aa.append(sequence[aa_pos-1])
 
-        #print(aa)    
         # Convert letters to numbers
         ind0 = [ord(x) - 64 for x in aa]  
         #ind0 = [0,0]
@@ -224,8 +224,6 @@ class prot_problem:
         population=[]
 
         for result_f in pool.starmap(self.mutate, args):
-            #return the fitness solution
-            #print(f"Individual Mutated : {result_f}")
             population.append(result_f)
         
         return population 
@@ -237,11 +235,6 @@ class prot_problem:
         self.mut.mutate(self.scenario, self.ligand_chain, pdb_file, output_file, mut_rate)
         indiv, aa = self.get_individual_seq(output_file)
         return indiv
-
-
-    ##Mutation Operator for Representation###
-    ##def mutateIndiv(self,individual,mut_rate):
-    ##    for i in range(0,len(individual)):
 
 
 

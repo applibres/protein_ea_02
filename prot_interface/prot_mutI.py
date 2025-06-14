@@ -14,12 +14,9 @@ Phage Therapy Group
 import pyrosetta
 from pyrosetta.rosetta.core.pack.task import *
 from pyrosetta.toolbox import *
-#import pyrosetta.toolbox.mutants.mutate_residue
 
 # Implemented Libs
-#from . import prot_aa_stI as prot_aa
 import prot_interface.prot_aa_stI as prot_aa
-#import prot_energyInterf as prot_en_intf
 
 ## Python Libs
 import re
@@ -29,14 +26,18 @@ import pandas as pd
 import numpy as np
 
 import prot_interface.prot_settingsI as sets
+from prot_interface.logging_config import setup_logging
+import logging
+
+# Initialize logging before anything else
+setup_logging()
+logger = logging.getLogger(__name__)
 
 class prot_mut:
 
     def __init__(self,scenario):
         
     	#Config Files
-        #self.config_path = "/Users/rolando/Research/Bio/tests/"
-        #self.matrix_file_name = "MSA_matrix.tsv"
 
         self.scenario = scenario
         self.config_path = sets.CONFIG_PATH + self.scenario + "/"
@@ -62,7 +63,6 @@ class prot_mut:
         row = self.msa_df.loc[amino_acid]
 
         return [[col, float(row[col])] for col in self.msa_df.columns if row[col] >= threshold]
-        #return self.msa_df.loc[amino_acid]
 
 
     def wildtype(self,aatype):
@@ -83,9 +83,6 @@ class prot_mut:
     def mutate(self, scenario, ligand_chain ,pdb_file, output_file, mut_rate):
 
 		#Instantiate Objects
-		#protEn = prot_en_intf.prot_energyInterf()
-        #scores = protEn.getEnergyInterf(pdb_file)
-
 
 		## Step 1: Choose Position to Mutate ####
 		# Get list of stable and unstable aa
@@ -116,8 +113,7 @@ class prot_mut:
             else:    
                 num_of_mut = np.random.randint(min_mut,int(max_mut))
 
-            #num_of_mut = 2
-            print("Number of Mutations =", num_of_mut)
+            logging.info("Number of Mutations =%s", num_of_mut)
 
 
             mut_locations = []
@@ -127,23 +123,23 @@ class prot_mut:
                 elif (len(aas)>0):
                     aa2mut = random.choice(aas)
                 
-                print("AA to Mutate: ", aa2mut)
+                logging.info("AA to Mutate: %s", aa2mut)
 
                 #Get AA
                 aa = aa2mut[0][0:3]
-                print("Amino to replace:", aa,"-", self.wildtype(aa))
+                logging.info("Amino to replace: %s %s %s", aa,"-", self.wildtype(aa))
 
                 #Get position to mutate
                 aa_pos = re.findall(r'\d+', aa2mut[0])
-                print("In Position: ", aa_pos[1])
+                logging.info("In Position: %s", aa_pos[1])
 
                 ## Step 2: Choose replace residue from MSA ###
                 aa_prob = self.get_probabilities(self.wildtype(aa), 0.2)  # Get probabilities for Alanine
-                print("List of Substitute Aminoacids:")
-                print(aa_prob)
+                logging.info("List of Substitute Aminoacids:")
+                logging.info(aa_prob)
 
                 aa_mut = random.choice(aa_prob)
-                print("Decision: ", aa2mut," --> ",aa_mut)
+                logging.info("Decision: %s %s %s", aa2mut," --> ",aa_mut)
                 mut_locations.append([aa_pos[1],aa_mut[0]])
 
                 #Step 3: mutate 

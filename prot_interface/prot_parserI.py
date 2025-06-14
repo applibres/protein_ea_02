@@ -9,6 +9,13 @@ Created on 22-11-2024
 """
 
 from optparse import OptionParser
+import numpy as np
+from prot_interface.logging_config import setup_logging
+import logging
+
+# Initialize logging before anything else
+setup_logging()
+logger = logging.getLogger(__name__)
 
 
 def parse_value(string):

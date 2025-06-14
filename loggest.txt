@@ -1,0 +1,547 @@
+2025-06-06 13:05:41,442 - INFO - root - SCENARIO: test04
+2025-06-06 13:05:41,442 - INFO - root - ALGO_NAME: sea
+2025-06-06 13:05:41,443 - INFO - root - ALGO_PARAMS: {'gen': 2, 'popsize': 4, 'obj': 1, 'mutp': 1}
+2025-06-06 13:05:41,443 - INFO - root - SIM_PARAMS: {'pdbfile': 'protein01.pdb', 'partners': 'A_C', 'ligand_chain': 'C'}
+2025-06-06 13:05:41,445 - INFO - pyrosetta.rosetta - Found rosetta database at: /usr/local/lib/python3.8/dist-packages/pyrosetta/database; using it....
+2025-06-06 13:05:41,445 - INFO - pyrosetta.rosetta - ┌──────────────────────────────────────────────────────────────────────────────┐
+│                                 PyRosetta-4                                  │
+│              Created in JHU by Sergey Lyskov and PyRosetta Team              │
+│              (C) Copyright Rosetta Commons Member Institutions               │
+│                                                                              │
+│ NOTE: USE OF PyRosetta FOR COMMERCIAL PURPOSES REQUIRE PURCHASE OF A LICENSE │
+│         See LICENSE.PyRosetta.md or email license@uw.edu for details         │
+└──────────────────────────────────────────────────────────────────────────────┘
+PyRosetta-4 2024 [Rosetta devel 2024.38+HEAD.200d5f9a7d8cdd7afdd078f156da6b5a7d97543f 2024-09-11T17:31:36] retrieved from: git@github.com:RosettaCommons/rosetta.git
+2025-06-06 13:05:41,461 - INFO - pyrosetta.rosetta - Found rosetta database at: /usr/local/lib/python3.8/dist-packages/pyrosetta/database; using it....
+2025-06-06 13:05:41,461 - INFO - pyrosetta.rosetta - ┌──────────────────────────────────────────────────────────────────────────────┐
+│                                 PyRosetta-4                                  │
+│              Created in JHU by Sergey Lyskov and PyRosetta Team              │
+│              (C) Copyright Rosetta Commons Member Institutions               │
+│                                                                              │
+│ NOTE: USE OF PyRosetta FOR COMMERCIAL PURPOSES REQUIRE PURCHASE OF A LICENSE │
+│         See LICENSE.PyRosetta.md or email license@uw.edu for details         │
+└──────────────────────────────────────────────────────────────────────────────┘
+PyRosetta-4 2024 [Rosetta devel 2024.38+HEAD.200d5f9a7d8cdd7afdd078f156da6b5a7d97543f 2024-09-11T17:31:36] retrieved from: git@github.com:RosettaCommons/rosetta.git
+2025-06-06 13:05:41,470 - INFO - root - ###Algorithm Parameters###
+2025-06-06 13:05:41,470 - INFO - root - popsize = 4
+2025-06-06 13:05:41,470 - INFO - root - ngenerations = 2
+2025-06-06 13:05:41,471 - INFO - root - nobj = 1
+2025-06-06 13:05:41,471 - INFO - root - mut prob = 1
+2025-06-06 13:05:48,188 - INFO - root - energy_file = /app/scenarios/test04/protein01.pdb.txt
+2025-06-06 13:05:48,206 - INFO - root - {19: 173, 20: 174, 21: 175, 22: 176, 23: 177, 24: 178, 25: 179, 26: 180, 27: 181, 28: 182, 29: 183, 30: 184, 31: 185, 33: 187, 46: 200, 50: 204, 52: 206, 53: 207, 56: 210, 64: 218, 66: 220, 69: 223, 70: 224, 71: 225, 72: 226, 74: 228, 76: 230, 78: 232, 80: 234, 81: 235, 82: 236, 83: 237, 84: 238, 85: 239, 86: 240, 87: 241, 88: 242, 89: 243}
+2025-06-06 13:05:48,206 - INFO - root - [173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 187, 200, 204, 206, 207, 210, 218, 220, 223, 224, 225, 226, 228, 230, 232, 234, 235, 236, 237, 238, 239, 240, 241, 242, 243]
+2025-06-06 13:05:48,206 - INFO - root - {173: 0, 174: 1, 175: 2, 176: 3, 177: 4, 178: 5, 179: 6, 180: 7, 181: 8, 182: 9, 183: 10, 184: 11, 185: 12, 187: 13, 200: 14, 204: 15, 206: 16, 207: 17, 210: 18, 218: 19, 220: 20, 223: 21, 224: 22, 225: 23, 226: 24, 228: 25, 230: 26, 232: 27, 234: 28, 235: 29, 236: 30, 237: 31, 238: 32, 239: 33, 240: 34, 241: 35, 242: 36, 243: 37}
+2025-06-06 13:05:50,380 - INFO - root - Fitness Indv0: (4.011,)
+2025-06-06 13:05:57,268 - INFO - pyrosetta.rosetta - Found rosetta database at: /usr/local/lib/python3.8/dist-packages/pyrosetta/database; using it....
+2025-06-06 13:05:57,268 - INFO - pyrosetta.rosetta - Found rosetta database at: /usr/local/lib/python3.8/dist-packages/pyrosetta/database; using it....
+2025-06-06 13:05:57,269 - INFO - pyrosetta.rosetta - ┌──────────────────────────────────────────────────────────────────────────────┐
+│                                 PyRosetta-4                                  │
+│              Created in JHU by Sergey Lyskov and PyRosetta Team              │
+│              (C) Copyright Rosetta Commons Member Institutions               │
+│                                                                              │
+│ NOTE: USE OF PyRosetta FOR COMMERCIAL PURPOSES REQUIRE PURCHASE OF A LICENSE │
+│         See LICENSE.PyRosetta.md or email license@uw.edu for details         │
+└──────────────────────────────────────────────────────────────────────────────┘
+PyRosetta-4 2024 [Rosetta devel 2024.38+HEAD.200d5f9a7d8cdd7afdd078f156da6b5a7d97543f 2024-09-11T17:31:36] retrieved from: git@github.com:RosettaCommons/rosetta.git
+2025-06-06 13:05:57,269 - INFO - pyrosetta.rosetta - ┌──────────────────────────────────────────────────────────────────────────────┐
+│                                 PyRosetta-4                                  │
+│              Created in JHU by Sergey Lyskov and PyRosetta Team              │
+│              (C) Copyright Rosetta Commons Member Institutions               │
+│                                                                              │
+│ NOTE: USE OF PyRosetta FOR COMMERCIAL PURPOSES REQUIRE PURCHASE OF A LICENSE │
+│         See LICENSE.PyRosetta.md or email license@uw.edu for details         │
+└──────────────────────────────────────────────────────────────────────────────┘
+PyRosetta-4 2024 [Rosetta devel 2024.38+HEAD.200d5f9a7d8cdd7afdd078f156da6b5a7d97543f 2024-09-11T17:31:36] retrieved from: git@github.com:RosettaCommons/rosetta.git
+2025-06-06 13:05:57,273 - INFO - pyrosetta.rosetta - Found rosetta database at: /usr/local/lib/python3.8/dist-packages/pyrosetta/database; using it....
+2025-06-06 13:05:57,274 - INFO - pyrosetta.rosetta - ┌──────────────────────────────────────────────────────────────────────────────┐
+│                                 PyRosetta-4                                  │
+│              Created in JHU by Sergey Lyskov and PyRosetta Team              │
+│              (C) Copyright Rosetta Commons Member Institutions               │
+│                                                                              │
+│ NOTE: USE OF PyRosetta FOR COMMERCIAL PURPOSES REQUIRE PURCHASE OF A LICENSE │
+│         See LICENSE.PyRosetta.md or email license@uw.edu for details         │
+└──────────────────────────────────────────────────────────────────────────────┘
+PyRosetta-4 2024 [Rosetta devel 2024.38+HEAD.200d5f9a7d8cdd7afdd078f156da6b5a7d97543f 2024-09-11T17:31:36] retrieved from: git@github.com:RosettaCommons/rosetta.git
+2025-06-06 13:05:57,486 - INFO - root - Number of Mutations =3
+2025-06-06 13:05:57,487 - INFO - root - AA to Mutate: ['ASN56_C(210)', 0.8022404864299999, 4, 1]
+2025-06-06 13:05:57,487 - INFO - root - Amino to replace: ASN - N
+2025-06-06 13:05:57,487 - INFO - root - Number of Mutations =3
+2025-06-06 13:05:57,487 - INFO - root - AA to Mutate: ['ASN23_C(177)', 1.3636655776900002, 2, 5]
+2025-06-06 13:05:57,487 - INFO - root - Amino to replace: ASN - N
+2025-06-06 13:05:57,491 - INFO - root - List of Substitute Aminoacids:
+2025-06-06 13:05:57,490 - INFO - root - Number of Mutations =3
+2025-06-06 13:05:57,491 - INFO - root - [['A', 0.22], ['D', 1.48], ['G', 0.3], ['H', 0.48], ['K', 0.78], ['S', 1.79], ['T', 0.71]]
+2025-06-06 13:05:57,491 - INFO - root - Decision: ['ASN56_C(210)', 0.8022404864299999, 4, 1]  -->  ['T', 0.71]
+2025-06-06 13:05:57,491 - INFO - root - AA to Mutate: ['PHE82_C(236)', 9.612577815709999, 4, 8]
+2025-06-06 13:05:57,491 - INFO - root - List of Substitute Aminoacids:
+2025-06-06 13:05:57,491 - INFO - root - Amino to replace: PHE - F
+2025-06-06 13:05:57,491 - INFO - root - [['A', 0.22], ['D', 1.48], ['G', 0.3], ['H', 0.48], ['K', 0.78], ['S', 1.79], ['T', 0.71]]
+2025-06-06 13:05:57,491 - INFO - root - Decision: ['ASN23_C(177)', 1.3636655776900002, 2, 5]  -->  ['S', 1.79]
+2025-06-06 13:05:57,495 - INFO - root - List of Substitute Aminoacids:
+2025-06-06 13:05:57,495 - INFO - root - [['I', 0.21], ['L', 1.18], ['S', 0.33], ['Y', 0.92], ['V', 0.2]]
+2025-06-06 13:05:57,495 - INFO - root - Decision: ['PHE82_C(236)', 9.612577815709999, 4, 8]  -->  ['Y', 0.92]
+2025-06-06 13:05:58,741 - INFO - root - AA to Mutate: ['GLY87_C(241)', 0.7822349122999999, 5, 3]
+2025-06-06 13:05:58,741 - INFO - root - Amino to replace: GLY - G
+2025-06-06 13:05:58,742 - INFO - root - List of Substitute Aminoacids:
+2025-06-06 13:05:58,742 - INFO - root - [['A', 0.69], ['R', 0.36], ['D', 0.34], ['E', 0.36], ['S', 0.66]]
+2025-06-06 13:05:58,742 - INFO - root - Decision: ['GLY87_C(241)', 0.7822349122999999, 5, 3]  -->  ['S', 0.66]
+2025-06-06 13:05:58,748 - INFO - root - AA to Mutate: ['ARG64_C(218)', 0.08286990000000002, 4, 2]
+2025-06-06 13:05:58,748 - INFO - root - Amino to replace: ARG - R
+2025-06-06 13:05:58,749 - INFO - root - List of Substitute Aminoacids:
+2025-06-06 13:05:58,749 - INFO - root - [['A', 0.21], ['Q', 0.64], ['G', 0.53], ['H', 0.38], ['K', 2.01], ['S', 0.35], ['T', 0.2]]
+2025-06-06 13:05:58,749 - INFO - root - Decision: ['ARG64_C(218)', 0.08286990000000002, 4, 2]  -->  ['Q', 0.64]
+2025-06-06 13:05:58,751 - INFO - root - AA to Mutate: ['GLY85_C(239)', 5.6720604121777, 4, 7]
+2025-06-06 13:05:58,751 - INFO - root - Amino to replace: GLY - G
+2025-06-06 13:05:58,752 - INFO - root - List of Substitute Aminoacids:
+2025-06-06 13:05:58,752 - INFO - root - [['A', 0.69], ['R', 0.36], ['D', 0.34], ['E', 0.36], ['S', 0.66]]
+2025-06-06 13:05:58,752 - INFO - root - Decision: ['GLY85_C(239)', 5.6720604121777, 4, 7]  -->  ['E', 0.36]
+2025-06-06 13:05:58,772 - INFO - root - AA to Mutate: ['THR24_C(178)', 0.533656, 1, 0]
+2025-06-06 13:05:58,773 - INFO - root - Amino to replace: THR - T
+2025-06-06 13:05:58,774 - INFO - root - List of Substitute Aminoacids:
+2025-06-06 13:05:58,774 - INFO - root - [['A', 1.83], ['N', 0.52], ['I', 0.7], ['K', 0.3], ['M', 0.26], ['P', 0.31], ['S', 1.69], ['V', 0.39]]
+2025-06-06 13:05:58,774 - INFO - root - Decision: ['THR24_C(178)', 0.533656, 1, 0]  -->  ['N', 0.52]
+2025-06-06 13:05:58,778 - INFO - root - AA to Mutate: ['ASN56_C(210)', 0.8022404864299999, 4, 1]
+2025-06-06 13:05:58,778 - INFO - root - Amino to replace: ASN - N
+2025-06-06 13:05:58,779 - INFO - root - List of Substitute Aminoacids:
+2025-06-06 13:05:58,779 - INFO - root - [['A', 0.22], ['D', 1.48], ['G', 0.3], ['H', 0.48], ['K', 0.78], ['S', 1.79], ['T', 0.71]]
+2025-06-06 13:05:58,779 - INFO - root - Decision: ['ASN56_C(210)', 0.8022404864299999, 4, 1]  -->  ['D', 1.48]
+2025-06-06 13:05:58,781 - INFO - root - AA to Mutate: ['SER84_C(238)', 8.69636208, 9, 5]
+2025-06-06 13:05:58,782 - INFO - root - Amino to replace: SER - S
+2025-06-06 13:05:58,782 - INFO - root - List of Substitute Aminoacids:
+2025-06-06 13:05:58,782 - INFO - root - [['A', 1.55], ['R', 0.27], ['N', 1.12], ['C', 0.23], ['G', 0.73], ['L', 0.28], ['F', 0.2], ['P', 0.73], ['T', 1.45]]
+2025-06-06 13:05:58,783 - INFO - root - Decision: ['SER84_C(238)', 8.69636208, 9, 5]  -->  ['T', 1.45]
+2025-06-06 13:06:00,535 - INFO - root - stats: 
+2025-06-06 13:06:00,536 - INFO - root - -- Generation 1 --
+2025-06-06 13:06:00,536 - INFO - root - Elite Individuals [[7, 25, 19, 25, 14, 20, 19, 22, 19, 7, 7, 19, 25, 14, 13, 4, 25, 12, 14, 18, 20, 19, 25, 5, 3, 6, 14, 7, 19, 14, 25, 25, 20, 5, 22, 7, 16, 20]]
+2025-06-06 13:06:00,536 - INFO - root - Elite Indexes [3]
+2025-06-06 13:06:00,536 - INFO - root - Elite individual file ['../output/run15/g0/g0_03.pdb']
+2025-06-06 13:06:00,536 - INFO - root - e_ind=[7, 25, 19, 25, 14, 20, 19, 22, 19, 7, 7, 19, 25, 14, 13, 4, 25, 12, 14, 18, 20, 19, 25, 5, 3, 6, 14, 7, 19, 14, 25, 25, 20, 5, 22, 7, 16, 20] fitness:(3.427,)
+2025-06-06 13:06:00,536 - INFO - root - pdbfile: ../output/run15/g0/g0_00.pdb
+2025-06-06 13:06:00,536 - INFO - root - Individual-to-Mutate: [7, 25, 19, 25, 14, 20, 19, 22, 19, 7, 7, 19, 25, 14, 13, 4, 25, 12, 14, 18, 20, 19, 25, 5, 3, 6, 14, 7, 19, 14, 6, 25, 19, 7, 22, 7, 16, 20]
+2025-06-06 13:06:00,537 - INFO - root - pdbfile: ../output/run15/g0/g0_01.pdb
+2025-06-06 13:06:00,537 - INFO - root - Individual-to-Mutate: [7, 25, 19, 25, 14, 20, 19, 22, 19, 7, 7, 19, 25, 14, 13, 4, 25, 12, 4, 17, 20, 19, 25, 5, 3, 6, 14, 7, 19, 14, 6, 25, 19, 7, 22, 7, 16, 20]
+2025-06-06 13:06:00,537 - INFO - root - pdbfile: ../output/run15/g0/g0_02.pdb
+2025-06-06 13:06:00,537 - INFO - root - Individual-to-Mutate: [7, 25, 19, 25, 19, 14, 19, 22, 19, 7, 7, 19, 25, 14, 13, 4, 25, 12, 14, 18, 20, 19, 25, 5, 3, 6, 14, 7, 19, 14, 6, 25, 19, 7, 22, 19, 16, 20]
+2025-06-06 13:06:00,537 - INFO - root - pdbfile: ../output/run15/g0/g0_03.pdb
+2025-06-06 13:06:00,537 - INFO - root - Individual-to-Mutate: [7, 25, 19, 25, 14, 20, 19, 22, 19, 7, 7, 19, 25, 14, 13, 4, 25, 12, 14, 18, 20, 19, 25, 5, 3, 6, 14, 7, 19, 14, 25, 25, 20, 5, 22, 7, 16, 20]
+2025-06-06 13:06:00,537 - INFO - root - Population_pdb_files: ['../output/run15/g0/g0_00.pdb', '../output/run15/g0/g0_01.pdb', '../output/run15/g0/g0_02.pdb', '../output/run15/g0/g0_03.pdb', '../output/run15/tmp/temp_g1_00.pdb', '../output/run15/tmp/temp_g1_01.pdb', '../output/run15/tmp/temp_g1_02.pdb', '../output/run15/tmp/temp_g1_03.pdb']
+2025-06-06 13:06:00,537 - INFO - root - Before mutation in parallel
+2025-06-06 13:06:00,537 - INFO - root - Argument: [('../output/run15/g0/g0_00.pdb', '../output/run15/tmp/temp_g1_00.pdb', 0.3), ('../output/run15/g0/g0_01.pdb', '../output/run15/tmp/temp_g1_01.pdb', 0.3), ('../output/run15/g0/g0_02.pdb', '../output/run15/tmp/temp_g1_02.pdb', 0.3), ('../output/run15/g0/g0_03.pdb', '../output/run15/tmp/temp_g1_03.pdb', 0.3)]
+2025-06-06 13:06:07,445 - INFO - pyrosetta.rosetta - Found rosetta database at: /usr/local/lib/python3.8/dist-packages/pyrosetta/database; using it....
+2025-06-06 13:06:07,445 - INFO - pyrosetta.rosetta - Found rosetta database at: /usr/local/lib/python3.8/dist-packages/pyrosetta/database; using it....
+2025-06-06 13:06:07,446 - INFO - pyrosetta.rosetta - ┌──────────────────────────────────────────────────────────────────────────────┐
+│                                 PyRosetta-4                                  │
+│              Created in JHU by Sergey Lyskov and PyRosetta Team              │
+│              (C) Copyright Rosetta Commons Member Institutions               │
+│                                                                              │
+│ NOTE: USE OF PyRosetta FOR COMMERCIAL PURPOSES REQUIRE PURCHASE OF A LICENSE │
+│         See LICENSE.PyRosetta.md or email license@uw.edu for details         │
+└──────────────────────────────────────────────────────────────────────────────┘
+PyRosetta-4 2024 [Rosetta devel 2024.38+HEAD.200d5f9a7d8cdd7afdd078f156da6b5a7d97543f 2024-09-11T17:31:36] retrieved from: git@github.com:RosettaCommons/rosetta.git
+2025-06-06 13:06:07,446 - INFO - pyrosetta.rosetta - ┌──────────────────────────────────────────────────────────────────────────────┐
+│                                 PyRosetta-4                                  │
+│              Created in JHU by Sergey Lyskov and PyRosetta Team              │
+│              (C) Copyright Rosetta Commons Member Institutions               │
+│                                                                              │
+│ NOTE: USE OF PyRosetta FOR COMMERCIAL PURPOSES REQUIRE PURCHASE OF A LICENSE │
+│         See LICENSE.PyRosetta.md or email license@uw.edu for details         │
+└──────────────────────────────────────────────────────────────────────────────┘
+PyRosetta-4 2024 [Rosetta devel 2024.38+HEAD.200d5f9a7d8cdd7afdd078f156da6b5a7d97543f 2024-09-11T17:31:36] retrieved from: git@github.com:RosettaCommons/rosetta.git
+2025-06-06 13:06:07,446 - INFO - pyrosetta.rosetta - Found rosetta database at: /usr/local/lib/python3.8/dist-packages/pyrosetta/database; using it....
+2025-06-06 13:06:07,447 - INFO - pyrosetta.rosetta - ┌──────────────────────────────────────────────────────────────────────────────┐
+│                                 PyRosetta-4                                  │
+│              Created in JHU by Sergey Lyskov and PyRosetta Team              │
+│              (C) Copyright Rosetta Commons Member Institutions               │
+│                                                                              │
+│ NOTE: USE OF PyRosetta FOR COMMERCIAL PURPOSES REQUIRE PURCHASE OF A LICENSE │
+│         See LICENSE.PyRosetta.md or email license@uw.edu for details         │
+└──────────────────────────────────────────────────────────────────────────────┘
+PyRosetta-4 2024 [Rosetta devel 2024.38+HEAD.200d5f9a7d8cdd7afdd078f156da6b5a7d97543f 2024-09-11T17:31:36] retrieved from: git@github.com:RosettaCommons/rosetta.git
+2025-06-06 13:06:07,452 - INFO - pyrosetta.rosetta - Found rosetta database at: /usr/local/lib/python3.8/dist-packages/pyrosetta/database; using it....
+2025-06-06 13:06:07,453 - INFO - pyrosetta.rosetta - ┌──────────────────────────────────────────────────────────────────────────────┐
+│                                 PyRosetta-4                                  │
+│              Created in JHU by Sergey Lyskov and PyRosetta Team              │
+│              (C) Copyright Rosetta Commons Member Institutions               │
+│                                                                              │
+│ NOTE: USE OF PyRosetta FOR COMMERCIAL PURPOSES REQUIRE PURCHASE OF A LICENSE │
+│         See LICENSE.PyRosetta.md or email license@uw.edu for details         │
+└──────────────────────────────────────────────────────────────────────────────┘
+PyRosetta-4 2024 [Rosetta devel 2024.38+HEAD.200d5f9a7d8cdd7afdd078f156da6b5a7d97543f 2024-09-11T17:31:36] retrieved from: git@github.com:RosettaCommons/rosetta.git
+2025-06-06 13:06:07,667 - INFO - root - Number of Mutations =3
+2025-06-06 13:06:07,667 - INFO - root - AA to Mutate: ['VAL86_C(240)', 1.9080047243519997, 3, 7]
+2025-06-06 13:06:07,668 - INFO - root - Amino to replace: VAL - V
+2025-06-06 13:06:07,669 - INFO - root - Number of Mutations =3
+2025-06-06 13:06:07,669 - INFO - root - Number of Mutations =3
+2025-06-06 13:06:07,669 - INFO - root - AA to Mutate: ['SER80_C(234)', 5.033621700999999, 4, 4]
+2025-06-06 13:06:07,669 - INFO - root - AA to Mutate: ['GLU71_C(225)', 12.728586152999998, 5, 3]
+2025-06-06 13:06:07,670 - INFO - root - Amino to replace: SER - S
+2025-06-06 13:06:07,670 - INFO - root - Amino to replace: GLU - E
+2025-06-06 13:06:07,671 - INFO - root - List of Substitute Aminoacids:
+2025-06-06 13:06:07,672 - INFO - root - [['A', 1.16], ['I', 2.6], ['L', 0.83], ['M', 0.37], ['T', 0.35]]
+2025-06-06 13:06:07,672 - INFO - root - Decision: ['VAL86_C(240)', 1.9080047243519997, 3, 7]  -->  ['M', 0.37]
+2025-06-06 13:06:07,673 - INFO - root - List of Substitute Aminoacids:
+2025-06-06 13:06:07,673 - INFO - root - [['A', 0.43], ['D', 2.07], ['Q', 0.73], ['G', 0.43], ['K', 0.53]]
+2025-06-06 13:06:07,673 - INFO - root - Decision: ['GLU71_C(225)', 12.728586152999998, 5, 3]  -->  ['Q', 0.73]
+2025-06-06 13:06:07,673 - INFO - root - List of Substitute Aminoacids:
+2025-06-06 13:06:07,674 - INFO - root - [['A', 1.55], ['R', 0.27], ['N', 1.12], ['C', 0.23], ['G', 0.73], ['L', 0.28], ['F', 0.2], ['P', 0.73], ['T', 1.45]]
+2025-06-06 13:06:07,674 - INFO - root - Decision: ['SER80_C(234)', 5.033621700999999, 4, 4]  -->  ['F', 0.2]
+2025-06-06 13:06:07,682 - INFO - root - Number of Mutations =3
+2025-06-06 13:06:07,683 - INFO - root - AA to Mutate: ['PHE82_C(236)', 9.612577815709999, 4, 8]
+2025-06-06 13:06:07,683 - INFO - root - Amino to replace: PHE - F
+2025-06-06 13:06:07,687 - INFO - root - List of Substitute Aminoacids:
+2025-06-06 13:06:07,687 - INFO - root - [['I', 0.21], ['L', 1.18], ['S', 0.33], ['Y', 0.92], ['V', 0.2]]
+2025-06-06 13:06:07,687 - INFO - root - Decision: ['PHE82_C(236)', 9.612577815709999, 4, 8]  -->  ['V', 0.2]
+2025-06-06 13:06:08,957 - INFO - root - AA to Mutate: ['GLY29_C(183)', 4.332941399999999, 3, 2]
+2025-06-06 13:06:08,957 - INFO - root - Amino to replace: GLY - G
+2025-06-06 13:06:08,958 - INFO - root - List of Substitute Aminoacids:
+2025-06-06 13:06:08,958 - INFO - root - [['A', 0.69], ['R', 0.36], ['D', 0.34], ['E', 0.36], ['S', 0.66]]
+2025-06-06 13:06:08,958 - INFO - root - Decision: ['GLY29_C(183)', 4.332941399999999, 3, 2]  -->  ['R', 0.36]
+2025-06-06 13:06:08,968 - INFO - root - AA to Mutate: ['GLY85_C(239)', 5.6720604121777, 4, 7]
+2025-06-06 13:06:08,968 - INFO - root - Amino to replace: GLY - G
+2025-06-06 13:06:08,969 - INFO - root - List of Substitute Aminoacids:
+2025-06-06 13:06:08,969 - INFO - root - [['A', 0.69], ['R', 0.36], ['D', 0.34], ['E', 0.36], ['S', 0.66]]
+2025-06-06 13:06:08,969 - INFO - root - Decision: ['GLY85_C(239)', 5.6720604121777, 4, 7]  -->  ['E', 0.36]
+2025-06-06 13:06:08,970 - INFO - root - AA to Mutate: ['TYR31_C(185)', 7.664578050999999, 5, 4]
+2025-06-06 13:06:08,970 - INFO - root - Amino to replace: TYR - Y
+2025-06-06 13:06:08,971 - INFO - root - List of Substitute Aminoacids:
+2025-06-06 13:06:08,971 - INFO - root - [['C', 0.22], ['H', 0.7], ['F', 1.15], ['S', 0.22]]
+2025-06-06 13:06:08,971 - INFO - root - Decision: ['TYR31_C(185)', 7.664578050999999, 5, 4]  -->  ['F', 1.15]
+2025-06-06 13:06:08,980 - INFO - root - AA to Mutate: ['ASN23_C(177)', 1.3636655776900002, 2, 5]
+2025-06-06 13:06:08,980 - INFO - root - Amino to replace: ASN - N
+2025-06-06 13:06:08,981 - INFO - root - List of Substitute Aminoacids:
+2025-06-06 13:06:08,981 - INFO - root - [['A', 0.22], ['D', 1.48], ['G', 0.3], ['H', 0.48], ['K', 0.78], ['S', 1.79], ['T', 0.71]]
+2025-06-06 13:06:08,981 - INFO - root - Decision: ['ASN23_C(177)', 1.3636655776900002, 2, 5]  -->  ['K', 0.78]
+2025-06-06 13:06:08,991 - INFO - root - AA to Mutate: ['GLU85_C(239)', 126.5769977121777, 4, 7]
+2025-06-06 13:06:08,992 - INFO - root - Amino to replace: GLU - E
+2025-06-06 13:06:08,993 - INFO - root - List of Substitute Aminoacids:
+2025-06-06 13:06:08,993 - INFO - root - [['A', 0.43], ['D', 2.07], ['Q', 0.73], ['G', 0.43], ['K', 0.53]]
+2025-06-06 13:06:08,993 - INFO - root - Decision: ['GLU85_C(239)', 126.5769977121777, 4, 7]  -->  ['K', 0.53]
+2025-06-06 13:06:09,000 - INFO - root - AA to Mutate: ['VAL86_C(240)', 1.9080047243519997, 3, 7]
+2025-06-06 13:06:09,001 - INFO - root - AA to Mutate: ['ASN24_C(178)', 0.525007, 1, 0]
+2025-06-06 13:06:09,001 - INFO - root - Amino to replace: VAL - V
+2025-06-06 13:06:09,001 - INFO - root - Amino to replace: ASN - N
+2025-06-06 13:06:09,002 - INFO - root - List of Substitute Aminoacids:
+2025-06-06 13:06:09,002 - INFO - root - List of Substitute Aminoacids:
+2025-06-06 13:06:09,002 - INFO - root - [['A', 1.16], ['I', 2.6], ['L', 0.83], ['M', 0.37], ['T', 0.35]]
+2025-06-06 13:06:09,002 - INFO - root - [['A', 0.22], ['D', 1.48], ['G', 0.3], ['H', 0.48], ['K', 0.78], ['S', 1.79], ['T', 0.71]]
+2025-06-06 13:06:09,002 - INFO - root - Decision: ['VAL86_C(240)', 1.9080047243519997, 3, 7]  -->  ['L', 0.83]
+2025-06-06 13:06:09,002 - INFO - root - Decision: ['ASN24_C(178)', 0.525007, 1, 0]  -->  ['K', 0.78]
+2025-06-06 13:06:09,017 - INFO - root - AA to Mutate: ['ASN23_C(177)', 1.3636655776900002, 2, 5]
+2025-06-06 13:06:09,017 - INFO - root - Amino to replace: ASN - N
+2025-06-06 13:06:09,018 - INFO - root - List of Substitute Aminoacids:
+2025-06-06 13:06:09,018 - INFO - root - [['A', 0.22], ['D', 1.48], ['G', 0.3], ['H', 0.48], ['K', 0.78], ['S', 1.79], ['T', 0.71]]
+2025-06-06 13:06:09,018 - INFO - root - Decision: ['ASN23_C(177)', 1.3636655776900002, 2, 5]  -->  ['D', 1.48]
+2025-06-06 13:06:10,799 - INFO - root - Population before offspring
+2025-06-06 13:06:10,800 - INFO - root - Pop from Generation 1 = [[7, 25, 19, 25, 4, 20, 19, 22, 19, 7, 7, 19, 25, 14, 13, 4, 25, 12, 14, 18, 20, 19, 25, 5, 3, 6, 14, 7, 19, 14, 22, 25, 19, 7, 22, 7, 16, 20], [7, 25, 19, 25, 14, 20, 19, 22, 19, 7, 7, 19, 6, 14, 13, 4, 25, 12, 4, 17, 20, 19, 25, 17, 3, 6, 14, 7, 19, 14, 6, 25, 19, 7, 12, 7, 16, 20], [7, 25, 19, 25, 19, 11, 19, 22, 19, 7, 7, 19, 25, 14, 13, 4, 25, 12, 14, 18, 20, 19, 25, 5, 3, 6, 14, 7, 6, 14, 6, 25, 19, 5, 22, 19, 16, 20], [7, 25, 19, 25, 14, 20, 19, 22, 19, 7, 18, 19, 25, 14, 13, 4, 25, 12, 14, 18, 20, 19, 25, 5, 3, 6, 14, 7, 19, 14, 25, 25, 20, 11, 13, 7, 16, 20]]
+2025-06-06 13:06:10,800 - INFO - root - Fitness Pop = [[245.337, 2408.306, 10.187, 6.0], [1345.321, 2415.798, 55.688, 5.0], [658.543, 2437.029, 27.022, 6.0], [879.119, 2505.22, 35.092, 3.0]]
+2025-06-06 13:06:10,800 - INFO - root - Population output pdb files: ['../output/run15/g0/g0_00.pdb', '../output/run15/g0/g0_01.pdb', '../output/run15/g0/g0_02.pdb', '../output/run15/g0/g0_03.pdb', '../output/run15/tmp/temp_g1_00.pdb', '../output/run15/tmp/temp_g1_01.pdb', '../output/run15/tmp/temp_g1_02.pdb', '../output/run15/tmp/temp_g1_03.pdb']
+2025-06-06 13:06:10,800 - INFO - root - Pop = [[7, 25, 19, 25, 14, 20, 19, 22, 19, 7, 7, 19, 25, 14, 13, 4, 25, 12, 14, 18, 20, 19, 25, 5, 3, 6, 14, 7, 19, 14, 6, 25, 19, 7, 22, 7, 16, 20], [7, 25, 19, 25, 14, 20, 19, 22, 19, 7, 7, 19, 25, 14, 13, 4, 25, 12, 4, 17, 20, 19, 25, 5, 3, 6, 14, 7, 19, 14, 6, 25, 19, 7, 22, 7, 16, 20], [7, 25, 19, 25, 19, 14, 19, 22, 19, 7, 7, 19, 25, 14, 13, 4, 25, 12, 14, 18, 20, 19, 25, 5, 3, 6, 14, 7, 19, 14, 6, 25, 19, 7, 22, 19, 16, 20], [7, 25, 19, 25, 14, 20, 19, 22, 19, 7, 7, 19, 25, 14, 13, 4, 25, 12, 14, 18, 20, 19, 25, 5, 3, 6, 14, 7, 19, 14, 25, 25, 20, 5, 22, 7, 16, 20], [7, 25, 19, 25, 4, 20, 19, 22, 19, 7, 7, 19, 25, 14, 13, 4, 25, 12, 14, 18, 20, 19, 25, 5, 3, 6, 14, 7, 19, 14, 22, 25, 19, 7, 22, 7, 16, 20], [7, 25, 19, 25, 14, 20, 19, 22, 19, 7, 7, 19, 6, 14, 13, 4, 25, 12, 4, 17, 20, 19, 25, 17, 3, 6, 14, 7, 19, 14, 6, 25, 19, 7, 12, 7, 16, 20], [7, 25, 19, 25, 19, 11, 19, 22, 19, 7, 7, 19, 25, 14, 13, 4, 25, 12, 14, 18, 20, 19, 25, 5, 3, 6, 14, 7, 6, 14, 6, 25, 19, 5, 22, 19, 16, 20], [7, 25, 19, 25, 14, 20, 19, 22, 19, 7, 18, 19, 25, 14, 13, 4, 25, 12, 14, 18, 20, 19, 25, 5, 3, 6, 14, 7, 19, 14, 25, 25, 20, 11, 13, 7, 16, 20]] size: 8
+2025-06-06 13:06:10,800 - INFO - root - Selected individuals from pop: [3, 0, 4]
+2025-06-06 13:06:10,800 - INFO - root - New Population with elite and offspring 
+2025-06-06 13:06:10,800 - INFO - root - Pop = [[7, 25, 19, 25, 14, 20, 19, 22, 19, 7, 7, 19, 25, 14, 13, 4, 25, 12, 14, 18, 20, 19, 25, 5, 3, 6, 14, 7, 19, 14, 25, 25, 20, 5, 22, 7, 16, 20], [7, 25, 19, 25, 14, 20, 19, 22, 19, 7, 7, 19, 25, 14, 13, 4, 25, 12, 14, 18, 20, 19, 25, 5, 3, 6, 14, 7, 19, 14, 25, 25, 20, 5, 22, 7, 16, 20], [7, 25, 19, 25, 14, 20, 19, 22, 19, 7, 7, 19, 25, 14, 13, 4, 25, 12, 14, 18, 20, 19, 25, 5, 3, 6, 14, 7, 19, 14, 6, 25, 19, 7, 22, 7, 16, 20], [7, 25, 19, 25, 4, 20, 19, 22, 19, 7, 7, 19, 25, 14, 13, 4, 25, 12, 14, 18, 20, 19, 25, 5, 3, 6, 14, 7, 19, 14, 22, 25, 19, 7, 22, 7, 16, 20]] size: 4
+2025-06-06 13:06:10,800 - INFO - root - Fitness : [3.427, 3.427, 4.011, 10.187]
+2025-06-06 13:06:10,801 - INFO - root - Elite pdb files
+2025-06-06 13:06:10,801 - INFO - root - ../output/run15/g0/g0_03.pdb ---> ../output/run15/g1/g1_0.pdb
+2025-06-06 13:06:10,801 - INFO - root - Elite score files
+2025-06-06 13:06:10,801 - INFO - root - ../output/run15/g0/g0_03.pdb.sc ---> ../output/run15/g1/g1_0.pdb.sc
+2025-06-06 13:06:10,801 - INFO - root - generation pdb files
+2025-06-06 13:06:10,801 - INFO - root - ../output/run15/g0/g0_03.pdb ---> ../output/run15/g1/g1_1.pdb
+2025-06-06 13:06:10,802 - INFO - root - generation sc files
+2025-06-06 13:06:10,802 - INFO - root - ../output/run15/g0/g0_03.pdb.sc ---> ../output/run15/g1/g1_1.pdb.sc
+2025-06-06 13:06:10,814 - INFO - root - generation pdb files
+2025-06-06 13:06:10,814 - INFO - root - ../output/run15/g0/g0_00.pdb ---> ../output/run15/g1/g1_2.pdb
+2025-06-06 13:06:10,814 - INFO - root - generation sc files
+2025-06-06 13:06:10,814 - INFO - root - ../output/run15/g0/g0_00.pdb.sc ---> ../output/run15/g1/g1_2.pdb.sc
+2025-06-06 13:06:10,815 - INFO - root - generation pdb files
+2025-06-06 13:06:10,815 - INFO - root - ../output/run15/tmp/temp_g1_00.pdb ---> ../output/run15/g1/g1_3.pdb
+2025-06-06 13:06:10,816 - INFO - root - generation sc files
+2025-06-06 13:06:10,816 - INFO - root - ../output/run15/tmp/temp_g1_00.pdb.sc ---> ../output/run15/g1/g1_3.pdb.sc
+2025-06-06 13:06:10,816 - INFO - root - new_generation_output_pdbfiles=['../output/run15/g1/g1_0.pdb', '../output/run15/g1/g1_1.pdb', '../output/run15/g1/g1_2.pdb', '../output/run15/g1/g1_3.pdb']
+2025-06-06 13:06:10,816 - INFO - root - stats: 
+2025-06-06 13:06:10,816 - INFO - root - -- End of Evolution --
+2025-06-06 13:06:10,816 - INFO - root - -- Saving Evolution Statistics--
+2025-06-06 13:06:10,817 - INFO - root - Execution Time = 29.37 seconds
+2025-06-06 13:06:59,370 - INFO - root - SCENARIO: test04
+2025-06-06 13:06:59,370 - INFO - root - ALGO_NAME: sea
+2025-06-06 13:06:59,370 - INFO - root - ALGO_PARAMS: {'gen': 2, 'popsize': 4, 'obj': 1, 'mutp': 1}
+2025-06-06 13:06:59,370 - INFO - root - SIM_PARAMS: {'pdbfile': 'protein01.pdb', 'partners': 'A_C', 'ligand_chain': 'C'}
+2025-06-06 13:06:59,373 - INFO - pyrosetta.rosetta - Found rosetta database at: /usr/local/lib/python3.8/dist-packages/pyrosetta/database; using it....
+2025-06-06 13:06:59,373 - INFO - pyrosetta.rosetta - ┌──────────────────────────────────────────────────────────────────────────────┐
+│                                 PyRosetta-4                                  │
+│              Created in JHU by Sergey Lyskov and PyRosetta Team              │
+│              (C) Copyright Rosetta Commons Member Institutions               │
+│                                                                              │
+│ NOTE: USE OF PyRosetta FOR COMMERCIAL PURPOSES REQUIRE PURCHASE OF A LICENSE │
+│         See LICENSE.PyRosetta.md or email license@uw.edu for details         │
+└──────────────────────────────────────────────────────────────────────────────┘
+PyRosetta-4 2024 [Rosetta devel 2024.38+HEAD.200d5f9a7d8cdd7afdd078f156da6b5a7d97543f 2024-09-11T17:31:36] retrieved from: git@github.com:RosettaCommons/rosetta.git
+2025-06-06 13:06:59,388 - INFO - pyrosetta.rosetta - Found rosetta database at: /usr/local/lib/python3.8/dist-packages/pyrosetta/database; using it....
+2025-06-06 13:06:59,389 - INFO - pyrosetta.rosetta - ┌──────────────────────────────────────────────────────────────────────────────┐
+│                                 PyRosetta-4                                  │
+│              Created in JHU by Sergey Lyskov and PyRosetta Team              │
+│              (C) Copyright Rosetta Commons Member Institutions               │
+│                                                                              │
+│ NOTE: USE OF PyRosetta FOR COMMERCIAL PURPOSES REQUIRE PURCHASE OF A LICENSE │
+│         See LICENSE.PyRosetta.md or email license@uw.edu for details         │
+└──────────────────────────────────────────────────────────────────────────────┘
+PyRosetta-4 2024 [Rosetta devel 2024.38+HEAD.200d5f9a7d8cdd7afdd078f156da6b5a7d97543f 2024-09-11T17:31:36] retrieved from: git@github.com:RosettaCommons/rosetta.git
+2025-06-06 13:06:59,397 - INFO - root - ###Algorithm Parameters###
+2025-06-06 13:06:59,397 - INFO - root - popsize = 4
+2025-06-06 13:06:59,397 - INFO - root - ngenerations = 2
+2025-06-06 13:06:59,397 - INFO - root - nobj = 1
+2025-06-06 13:06:59,397 - INFO - root - mut prob = 1
+2025-06-06 13:07:06,114 - INFO - root - energy_file = /app/scenarios/test04/protein01.pdb.txt
+2025-06-06 13:07:06,123 - INFO - root - {19: 173, 20: 174, 21: 175, 22: 176, 23: 177, 24: 178, 25: 179, 26: 180, 27: 181, 28: 182, 29: 183, 30: 184, 31: 185, 33: 187, 46: 200, 50: 204, 52: 206, 53: 207, 56: 210, 64: 218, 66: 220, 69: 223, 70: 224, 71: 225, 72: 226, 74: 228, 76: 230, 78: 232, 80: 234, 81: 235, 82: 236, 83: 237, 84: 238, 85: 239, 86: 240, 87: 241, 88: 242, 89: 243}
+2025-06-06 13:07:06,123 - INFO - root - [173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 187, 200, 204, 206, 207, 210, 218, 220, 223, 224, 225, 226, 228, 230, 232, 234, 235, 236, 237, 238, 239, 240, 241, 242, 243]
+2025-06-06 13:07:06,123 - INFO - root - {173: 0, 174: 1, 175: 2, 176: 3, 177: 4, 178: 5, 179: 6, 180: 7, 181: 8, 182: 9, 183: 10, 184: 11, 185: 12, 187: 13, 200: 14, 204: 15, 206: 16, 207: 17, 210: 18, 218: 19, 220: 20, 223: 21, 224: 22, 225: 23, 226: 24, 228: 25, 230: 26, 232: 27, 234: 28, 235: 29, 236: 30, 237: 31, 238: 32, 239: 33, 240: 34, 241: 35, 242: 36, 243: 37}
+2025-06-06 13:07:08,315 - INFO - root - Fitness Indv0: (4.011,)
+2025-06-06 13:07:15,173 - INFO - pyrosetta.rosetta - Found rosetta database at: /usr/local/lib/python3.8/dist-packages/pyrosetta/database; using it....
+2025-06-06 13:07:15,174 - INFO - pyrosetta.rosetta - ┌──────────────────────────────────────────────────────────────────────────────┐
+│                                 PyRosetta-4                                  │
+│              Created in JHU by Sergey Lyskov and PyRosetta Team              │
+│              (C) Copyright Rosetta Commons Member Institutions               │
+│                                                                              │
+│ NOTE: USE OF PyRosetta FOR COMMERCIAL PURPOSES REQUIRE PURCHASE OF A LICENSE │
+│         See LICENSE.PyRosetta.md or email license@uw.edu for details         │
+└──────────────────────────────────────────────────────────────────────────────┘
+PyRosetta-4 2024 [Rosetta devel 2024.38+HEAD.200d5f9a7d8cdd7afdd078f156da6b5a7d97543f 2024-09-11T17:31:36] retrieved from: git@github.com:RosettaCommons/rosetta.git
+2025-06-06 13:07:15,191 - INFO - pyrosetta.rosetta - Found rosetta database at: /usr/local/lib/python3.8/dist-packages/pyrosetta/database; using it....
+2025-06-06 13:07:15,191 - INFO - pyrosetta.rosetta - ┌──────────────────────────────────────────────────────────────────────────────┐
+│                                 PyRosetta-4                                  │
+│              Created in JHU by Sergey Lyskov and PyRosetta Team              │
+│              (C) Copyright Rosetta Commons Member Institutions               │
+│                                                                              │
+│ NOTE: USE OF PyRosetta FOR COMMERCIAL PURPOSES REQUIRE PURCHASE OF A LICENSE │
+│         See LICENSE.PyRosetta.md or email license@uw.edu for details         │
+└──────────────────────────────────────────────────────────────────────────────┘
+PyRosetta-4 2024 [Rosetta devel 2024.38+HEAD.200d5f9a7d8cdd7afdd078f156da6b5a7d97543f 2024-09-11T17:31:36] retrieved from: git@github.com:RosettaCommons/rosetta.git
+2025-06-06 13:07:15,205 - INFO - pyrosetta.rosetta - Found rosetta database at: /usr/local/lib/python3.8/dist-packages/pyrosetta/database; using it....
+2025-06-06 13:07:15,205 - INFO - pyrosetta.rosetta - ┌──────────────────────────────────────────────────────────────────────────────┐
+│                                 PyRosetta-4                                  │
+│              Created in JHU by Sergey Lyskov and PyRosetta Team              │
+│              (C) Copyright Rosetta Commons Member Institutions               │
+│                                                                              │
+│ NOTE: USE OF PyRosetta FOR COMMERCIAL PURPOSES REQUIRE PURCHASE OF A LICENSE │
+│         See LICENSE.PyRosetta.md or email license@uw.edu for details         │
+└──────────────────────────────────────────────────────────────────────────────┘
+PyRosetta-4 2024 [Rosetta devel 2024.38+HEAD.200d5f9a7d8cdd7afdd078f156da6b5a7d97543f 2024-09-11T17:31:36] retrieved from: git@github.com:RosettaCommons/rosetta.git
+2025-06-06 13:07:15,397 - INFO - root - Number of Mutations =3
+2025-06-06 13:07:15,398 - INFO - root - AA to Mutate: ['ASP50_C(204)', 1.42020161, 3, 1]
+2025-06-06 13:07:15,398 - INFO - root - Amino to replace: ASP - D
+2025-06-06 13:07:15,398 - INFO - root - In Position: 204
+2025-06-06 13:07:15,399 - INFO - root - List of Substitute Aminoacids:
+2025-06-06 13:07:15,399 - INFO - root - [['A', 0.33], ['N', 1.22], ['E', 2.49], ['G', 0.49], ['S', 0.21]]
+2025-06-06 13:07:15,399 - INFO - root - Decision: ['ASP50_C(204)', 1.42020161, 3, 1]  -->  ['G', 0.49]
+2025-06-06 13:07:15,410 - INFO - root - Number of Mutations =3
+2025-06-06 13:07:15,411 - INFO - root - AA to Mutate: ['GLY87_C(241)', 0.7822349122999999, 5, 3]
+2025-06-06 13:07:15,411 - INFO - root - Amino to replace: GLY - G
+2025-06-06 13:07:15,411 - INFO - root - In Position: 241
+2025-06-06 13:07:15,412 - INFO - root - List of Substitute Aminoacids:
+2025-06-06 13:07:15,412 - INFO - root - [['A', 0.69], ['R', 0.36], ['D', 0.34], ['E', 0.36], ['S', 0.66]]
+2025-06-06 13:07:15,412 - INFO - root - Decision: ['GLY87_C(241)', 0.7822349122999999, 5, 3]  -->  ['S', 0.66]
+2025-06-06 13:07:15,430 - INFO - root - Number of Mutations =3
+2025-06-06 13:07:15,431 - INFO - root - AA to Mutate: ['ASN23_C(177)', 1.3636655776900002, 2, 5]
+2025-06-06 13:07:15,431 - INFO - root - Amino to replace: ASN - N
+2025-06-06 13:07:15,431 - INFO - root - In Position: 177
+2025-06-06 13:07:15,432 - INFO - root - List of Substitute Aminoacids:
+2025-06-06 13:07:15,432 - INFO - root - [['A', 0.22], ['D', 1.48], ['G', 0.3], ['H', 0.48], ['K', 0.78], ['S', 1.79], ['T', 0.71]]
+2025-06-06 13:07:15,432 - INFO - root - Decision: ['ASN23_C(177)', 1.3636655776900002, 2, 5]  -->  ['A', 0.22]
+2025-06-06 13:07:16,616 - INFO - root - AA to Mutate: ['ASN23_C(177)', 1.3636655776900002, 2, 5]
+2025-06-06 13:07:16,616 - INFO - root - Amino to replace: ASN - N
+2025-06-06 13:07:16,616 - INFO - root - In Position: 177
+2025-06-06 13:07:16,616 - INFO - root - List of Substitute Aminoacids:
+2025-06-06 13:07:16,617 - INFO - root - [['A', 0.22], ['D', 1.48], ['G', 0.3], ['H', 0.48], ['K', 0.78], ['S', 1.79], ['T', 0.71]]
+2025-06-06 13:07:16,617 - INFO - root - Decision: ['ASN23_C(177)', 1.3636655776900002, 2, 5]  -->  ['T', 0.71]
+2025-06-06 13:07:16,637 - INFO - root - AA to Mutate: ['ASN56_C(210)', 0.8022404864299999, 4, 1]
+2025-06-06 13:07:16,637 - INFO - root - Amino to replace: ASN - N
+2025-06-06 13:07:16,637 - INFO - root - In Position: 210
+2025-06-06 13:07:16,637 - INFO - root - List of Substitute Aminoacids:
+2025-06-06 13:07:16,637 - INFO - root - [['A', 0.22], ['D', 1.48], ['G', 0.3], ['H', 0.48], ['K', 0.78], ['S', 1.79], ['T', 0.71]]
+2025-06-06 13:07:16,637 - INFO - root - Decision: ['ASN56_C(210)', 0.8022404864299999, 4, 1]  -->  ['A', 0.22]
+2025-06-06 13:07:16,638 - INFO - root - AA to Mutate: ['ASN23_C(177)', 1.3636655776900002, 2, 5]
+2025-06-06 13:07:16,638 - INFO - root - Amino to replace: ASN - N
+2025-06-06 13:07:16,638 - INFO - root - In Position: 177
+2025-06-06 13:07:16,638 - INFO - root - List of Substitute Aminoacids:
+2025-06-06 13:07:16,638 - INFO - root - [['A', 0.22], ['D', 1.48], ['G', 0.3], ['H', 0.48], ['K', 0.78], ['S', 1.79], ['T', 0.71]]
+2025-06-06 13:07:16,638 - INFO - root - Decision: ['ASN23_C(177)', 1.3636655776900002, 2, 5]  -->  ['D', 1.48]
+2025-06-06 13:07:16,654 - INFO - root - AA to Mutate: ['VAL86_C(240)', 1.9080047243519997, 3, 7]
+2025-06-06 13:07:16,654 - INFO - root - Amino to replace: VAL - V
+2025-06-06 13:07:16,654 - INFO - root - In Position: 240
+2025-06-06 13:07:16,654 - INFO - root - List of Substitute Aminoacids:
+2025-06-06 13:07:16,654 - INFO - root - [['A', 1.16], ['I', 2.6], ['L', 0.83], ['M', 0.37], ['T', 0.35]]
+2025-06-06 13:07:16,654 - INFO - root - Decision: ['VAL86_C(240)', 1.9080047243519997, 3, 7]  -->  ['T', 0.35]
+2025-06-06 13:07:16,662 - INFO - root - AA to Mutate: ['ASP50_C(204)', 1.42020161, 3, 1]
+2025-06-06 13:07:16,662 - INFO - root - Amino to replace: ASP - D
+2025-06-06 13:07:16,662 - INFO - root - In Position: 204
+2025-06-06 13:07:16,662 - INFO - root - List of Substitute Aminoacids:
+2025-06-06 13:07:16,662 - INFO - root - [['A', 0.33], ['N', 1.22], ['E', 2.49], ['G', 0.49], ['S', 0.21]]
+2025-06-06 13:07:16,662 - INFO - root - Decision: ['ASP50_C(204)', 1.42020161, 3, 1]  -->  ['G', 0.49]
+2025-06-06 13:07:16,667 - INFO - root - AA to Mutate: ['TYR70_C(224)', 2.3562206954200002, 4, 1]
+2025-06-06 13:07:16,667 - INFO - root - Amino to replace: TYR - Y
+2025-06-06 13:07:16,667 - INFO - root - In Position: 224
+2025-06-06 13:07:16,667 - INFO - root - List of Substitute Aminoacids:
+2025-06-06 13:07:16,668 - INFO - root - [['C', 0.22], ['H', 0.7], ['F', 1.15], ['S', 0.22]]
+2025-06-06 13:07:16,668 - INFO - root - Decision: ['TYR70_C(224)', 2.3562206954200002, 4, 1]  -->  ['H', 0.7]
+2025-06-06 13:07:18,420 - INFO - root - stats: 
+2025-06-06 13:07:18,420 - INFO - root - -- Generation 1 --
+2025-06-06 13:07:18,420 - INFO - root - Elite Individuals [[7, 25, 19, 25, 4, 20, 19, 22, 19, 7, 7, 19, 25, 14, 13, 4, 25, 12, 14, 18, 20, 19, 8, 5, 3, 6, 14, 7, 19, 14, 6, 25, 19, 7, 22, 19, 16, 20]]
+2025-06-06 13:07:18,420 - INFO - root - Elite Indexes [3]
+2025-06-06 13:07:18,420 - INFO - root - Elite individual file ['../output/run15/g0/g0_03.pdb']
+2025-06-06 13:07:18,420 - INFO - root - e_ind=[7, 25, 19, 25, 4, 20, 19, 22, 19, 7, 7, 19, 25, 14, 13, 4, 25, 12, 14, 18, 20, 19, 8, 5, 3, 6, 14, 7, 19, 14, 6, 25, 19, 7, 22, 19, 16, 20] fitness:(3.427,)
+2025-06-06 13:07:18,420 - INFO - root - pdbfile: ../output/run15/g0/g0_00.pdb
+2025-06-06 13:07:18,420 - INFO - root - Individual-to-Mutate: [7, 25, 19, 25, 14, 20, 19, 22, 19, 7, 7, 19, 25, 14, 13, 4, 25, 12, 14, 18, 20, 19, 25, 5, 3, 6, 14, 7, 19, 14, 6, 25, 19, 7, 22, 7, 16, 20]
+2025-06-06 13:07:18,420 - INFO - root - pdbfile: ../output/run15/g0/g0_01.pdb
+2025-06-06 13:07:18,421 - INFO - root - Individual-to-Mutate: [7, 25, 19, 25, 1, 20, 19, 22, 19, 7, 7, 19, 25, 14, 13, 7, 25, 12, 1, 18, 20, 19, 25, 5, 3, 6, 14, 7, 19, 14, 6, 25, 19, 7, 22, 7, 16, 20]
+2025-06-06 13:07:18,421 - INFO - root - pdbfile: ../output/run15/g0/g0_02.pdb
+2025-06-06 13:07:18,421 - INFO - root - Individual-to-Mutate: [7, 25, 19, 25, 20, 20, 19, 22, 19, 7, 7, 19, 25, 14, 13, 7, 25, 12, 14, 18, 20, 19, 25, 5, 3, 6, 14, 7, 19, 14, 6, 25, 19, 7, 20, 7, 16, 20]
+2025-06-06 13:07:18,421 - INFO - root - pdbfile: ../output/run15/g0/g0_03.pdb
+2025-06-06 13:07:18,421 - INFO - root - Individual-to-Mutate: [7, 25, 19, 25, 4, 20, 19, 22, 19, 7, 7, 19, 25, 14, 13, 4, 25, 12, 14, 18, 20, 19, 8, 5, 3, 6, 14, 7, 19, 14, 6, 25, 19, 7, 22, 19, 16, 20]
+2025-06-06 13:07:18,421 - INFO - root - Population_pdb_files: ['../output/run15/g0/g0_00.pdb', '../output/run15/g0/g0_01.pdb', '../output/run15/g0/g0_02.pdb', '../output/run15/g0/g0_03.pdb', '../output/run15/tmp/temp_g1_00.pdb', '../output/run15/tmp/temp_g1_01.pdb', '../output/run15/tmp/temp_g1_02.pdb', '../output/run15/tmp/temp_g1_03.pdb']
+2025-06-06 13:07:18,421 - INFO - root - Before mutation in parallel
+2025-06-06 13:07:18,421 - INFO - root - Argument: [('../output/run15/g0/g0_00.pdb', '../output/run15/tmp/temp_g1_00.pdb', 0.3), ('../output/run15/g0/g0_01.pdb', '../output/run15/tmp/temp_g1_01.pdb', 0.3), ('../output/run15/g0/g0_02.pdb', '../output/run15/tmp/temp_g1_02.pdb', 0.3), ('../output/run15/g0/g0_03.pdb', '../output/run15/tmp/temp_g1_03.pdb', 0.3)]
+2025-06-06 13:07:25,304 - INFO - pyrosetta.rosetta - Found rosetta database at: /usr/local/lib/python3.8/dist-packages/pyrosetta/database; using it....
+2025-06-06 13:07:25,305 - INFO - pyrosetta.rosetta - ┌──────────────────────────────────────────────────────────────────────────────┐
+│                                 PyRosetta-4                                  │
+│              Created in JHU by Sergey Lyskov and PyRosetta Team              │
+│              (C) Copyright Rosetta Commons Member Institutions               │
+│                                                                              │
+│ NOTE: USE OF PyRosetta FOR COMMERCIAL PURPOSES REQUIRE PURCHASE OF A LICENSE │
+│         See LICENSE.PyRosetta.md or email license@uw.edu for details         │
+└──────────────────────────────────────────────────────────────────────────────┘
+PyRosetta-4 2024 [Rosetta devel 2024.38+HEAD.200d5f9a7d8cdd7afdd078f156da6b5a7d97543f 2024-09-11T17:31:36] retrieved from: git@github.com:RosettaCommons/rosetta.git
+2025-06-06 13:07:25,325 - INFO - pyrosetta.rosetta - Found rosetta database at: /usr/local/lib/python3.8/dist-packages/pyrosetta/database; using it....
+2025-06-06 13:07:25,325 - INFO - pyrosetta.rosetta - Found rosetta database at: /usr/local/lib/python3.8/dist-packages/pyrosetta/database; using it....
+2025-06-06 13:07:25,325 - INFO - pyrosetta.rosetta - Found rosetta database at: /usr/local/lib/python3.8/dist-packages/pyrosetta/database; using it....
+2025-06-06 13:07:25,326 - INFO - pyrosetta.rosetta - ┌──────────────────────────────────────────────────────────────────────────────┐
+│                                 PyRosetta-4                                  │
+│              Created in JHU by Sergey Lyskov and PyRosetta Team              │
+│              (C) Copyright Rosetta Commons Member Institutions               │
+│                                                                              │
+│ NOTE: USE OF PyRosetta FOR COMMERCIAL PURPOSES REQUIRE PURCHASE OF A LICENSE │
+│         See LICENSE.PyRosetta.md or email license@uw.edu for details         │
+└──────────────────────────────────────────────────────────────────────────────┘
+PyRosetta-4 2024 [Rosetta devel 2024.38+HEAD.200d5f9a7d8cdd7afdd078f156da6b5a7d97543f 2024-09-11T17:31:36] retrieved from: git@github.com:RosettaCommons/rosetta.git
+2025-06-06 13:07:25,326 - INFO - pyrosetta.rosetta - ┌──────────────────────────────────────────────────────────────────────────────┐
+│                                 PyRosetta-4                                  │
+│              Created in JHU by Sergey Lyskov and PyRosetta Team              │
+│              (C) Copyright Rosetta Commons Member Institutions               │
+│                                                                              │
+│ NOTE: USE OF PyRosetta FOR COMMERCIAL PURPOSES REQUIRE PURCHASE OF A LICENSE │
+│         See LICENSE.PyRosetta.md or email license@uw.edu for details         │
+└──────────────────────────────────────────────────────────────────────────────┘
+PyRosetta-4 2024 [Rosetta devel 2024.38+HEAD.200d5f9a7d8cdd7afdd078f156da6b5a7d97543f 2024-09-11T17:31:36] retrieved from: git@github.com:RosettaCommons/rosetta.git
+2025-06-06 13:07:25,326 - INFO - pyrosetta.rosetta - ┌──────────────────────────────────────────────────────────────────────────────┐
+│                                 PyRosetta-4                                  │
+│              Created in JHU by Sergey Lyskov and PyRosetta Team              │
+│              (C) Copyright Rosetta Commons Member Institutions               │
+│                                                                              │
+│ NOTE: USE OF PyRosetta FOR COMMERCIAL PURPOSES REQUIRE PURCHASE OF A LICENSE │
+│         See LICENSE.PyRosetta.md or email license@uw.edu for details         │
+└──────────────────────────────────────────────────────────────────────────────┘
+PyRosetta-4 2024 [Rosetta devel 2024.38+HEAD.200d5f9a7d8cdd7afdd078f156da6b5a7d97543f 2024-09-11T17:31:36] retrieved from: git@github.com:RosettaCommons/rosetta.git
+2025-06-06 13:07:25,524 - INFO - root - Number of Mutations =3
+2025-06-06 13:07:25,524 - INFO - root - AA to Mutate: ['GLY29_C(183)', 4.332941399999999, 3, 2]
+2025-06-06 13:07:25,525 - INFO - root - Amino to replace: GLY - G
+2025-06-06 13:07:25,525 - INFO - root - In Position: 183
+2025-06-06 13:07:25,526 - INFO - root - List of Substitute Aminoacids:
+2025-06-06 13:07:25,526 - INFO - root - [['A', 0.69], ['R', 0.36], ['D', 0.34], ['E', 0.36], ['S', 0.66]]
+2025-06-06 13:07:25,526 - INFO - root - Decision: ['GLY29_C(183)', 4.332941399999999, 3, 2]  -->  ['R', 0.36]
+2025-06-06 13:07:25,550 - INFO - root - Number of Mutations =3
+2025-06-06 13:07:25,551 - INFO - root - AA to Mutate: ['GLY85_C(239)', 5.6720604121777, 4, 7]
+2025-06-06 13:07:25,551 - INFO - root - Amino to replace: GLY - G
+2025-06-06 13:07:25,551 - INFO - root - In Position: 239
+2025-06-06 13:07:25,551 - INFO - root - Number of Mutations =3
+2025-06-06 13:07:25,552 - INFO - root - AA to Mutate: ['TYR31_C(185)', 7.664578050999999, 5, 4]
+2025-06-06 13:07:25,552 - INFO - root - Amino to replace: TYR - Y
+2025-06-06 13:07:25,552 - INFO - root - Number of Mutations =3
+2025-06-06 13:07:25,552 - INFO - root - AA to Mutate: ['ARG64_C(218)', 0.08286990000000002, 4, 2]
+2025-06-06 13:07:25,552 - INFO - root - List of Substitute Aminoacids:
+2025-06-06 13:07:25,552 - INFO - root - [['A', 0.69], ['R', 0.36], ['D', 0.34], ['E', 0.36], ['S', 0.66]]
+2025-06-06 13:07:25,552 - INFO - root - Amino to replace: ARG - R
+2025-06-06 13:07:25,552 - INFO - root - Decision: ['GLY85_C(239)', 5.6720604121777, 4, 7]  -->  ['E', 0.36]
+2025-06-06 13:07:25,552 - INFO - root - In Position: 185
+2025-06-06 13:07:25,553 - INFO - root - In Position: 218
+2025-06-06 13:07:25,553 - INFO - root - List of Substitute Aminoacids:
+2025-06-06 13:07:25,554 - INFO - root - [['C', 0.22], ['H', 0.7], ['F', 1.15], ['S', 0.22]]
+2025-06-06 13:07:25,554 - INFO - root - Decision: ['TYR31_C(185)', 7.664578050999999, 5, 4]  -->  ['S', 0.22]
+2025-06-06 13:07:25,554 - INFO - root - List of Substitute Aminoacids:
+2025-06-06 13:07:25,554 - INFO - root - [['A', 0.21], ['Q', 0.64], ['G', 0.53], ['H', 0.38], ['K', 2.01], ['S', 0.35], ['T', 0.2]]
+2025-06-06 13:07:25,554 - INFO - root - Decision: ['ARG64_C(218)', 0.08286990000000002, 4, 2]  -->  ['G', 0.53]
+2025-06-06 13:07:26,743 - INFO - root - AA to Mutate: ['TYR70_C(224)', 2.3562206954200002, 4, 1]
+2025-06-06 13:07:26,743 - INFO - root - Amino to replace: TYR - Y
+2025-06-06 13:07:26,744 - INFO - root - In Position: 224
+2025-06-06 13:07:26,744 - INFO - root - List of Substitute Aminoacids:
+2025-06-06 13:07:26,744 - INFO - root - [['C', 0.22], ['H', 0.7], ['F', 1.15], ['S', 0.22]]
+2025-06-06 13:07:26,744 - INFO - root - Decision: ['TYR70_C(224)', 2.3562206954200002, 4, 1]  -->  ['F', 1.15]
+2025-06-06 13:07:26,757 - INFO - root - AA to Mutate: ['ASP50_C(204)', 1.42020161, 3, 1]
+2025-06-06 13:07:26,757 - INFO - root - Amino to replace: ASP - D
+2025-06-06 13:07:26,757 - INFO - root - In Position: 204
+2025-06-06 13:07:26,758 - INFO - root - List of Substitute Aminoacids:
+2025-06-06 13:07:26,758 - INFO - root - [['A', 0.33], ['N', 1.22], ['E', 2.49], ['G', 0.49], ['S', 0.21]]
+2025-06-06 13:07:26,758 - INFO - root - Decision: ['ASP50_C(204)', 1.42020161, 3, 1]  -->  ['G', 0.49]
+2025-06-06 13:07:26,776 - INFO - root - AA to Mutate: ['ASN23_C(177)', 1.3636655776900002, 2, 5]
+2025-06-06 13:07:26,776 - INFO - root - Amino to replace: ASN - N
+2025-06-06 13:07:26,776 - INFO - root - In Position: 177
+2025-06-06 13:07:26,776 - INFO - root - List of Substitute Aminoacids:
+2025-06-06 13:07:26,776 - INFO - root - [['A', 0.22], ['D', 1.48], ['G', 0.3], ['H', 0.48], ['K', 0.78], ['S', 1.79], ['T', 0.71]]
+2025-06-06 13:07:26,776 - INFO - root - Decision: ['ASN23_C(177)', 1.3636655776900002, 2, 5]  -->  ['K', 0.78]
+2025-06-06 13:07:26,779 - INFO - root - AA to Mutate: ['SER84_C(238)', 8.69636208, 9, 5]
+2025-06-06 13:07:26,779 - INFO - root - Amino to replace: SER - S
+2025-06-06 13:07:26,779 - INFO - root - In Position: 238
+2025-06-06 13:07:26,780 - INFO - root - List of Substitute Aminoacids:
+2025-06-06 13:07:26,780 - INFO - root - [['A', 1.55], ['R', 0.27], ['N', 1.12], ['C', 0.23], ['G', 0.73], ['L', 0.28], ['F', 0.2], ['P', 0.73], ['T', 1.45]]
+2025-06-06 13:07:26,780 - INFO - root - Decision: ['SER84_C(238)', 8.69636208, 9, 5]  -->  ['F', 0.2]
+2025-06-06 13:07:26,782 - INFO - root - AA to Mutate: ['SER84_C(238)', 8.69636208, 9, 5]
+2025-06-06 13:07:26,782 - INFO - root - Amino to replace: SER - S
+2025-06-06 13:07:26,782 - INFO - root - In Position: 238
+2025-06-06 13:07:26,782 - INFO - root - List of Substitute Aminoacids:
+2025-06-06 13:07:26,782 - INFO - root - [['A', 1.55], ['R', 0.27], ['N', 1.12], ['C', 0.23], ['G', 0.73], ['L', 0.28], ['F', 0.2], ['P', 0.73], ['T', 1.45]]
+2025-06-06 13:07:26,782 - INFO - root - Decision: ['SER84_C(238)', 8.69636208, 9, 5]  -->  ['R', 0.27]
+2025-06-06 13:07:26,786 - INFO - root - AA to Mutate: ['HIS70_C(224)', 2.3672692754199995, 4, 1]
+2025-06-06 13:07:26,786 - INFO - root - Amino to replace: HIS - H
+2025-06-06 13:07:26,786 - INFO - root - In Position: 224
+2025-06-06 13:07:26,786 - INFO - root - List of Substitute Aminoacids:
+2025-06-06 13:07:26,786 - INFO - root - [['R', 0.85], ['N', 0.89], ['D', 0.27], ['Q', 1.21], ['L', 0.26], ['P', 0.3], ['S', 0.26], ['Y', 0.98]]
+2025-06-06 13:07:26,786 - INFO - root - Decision: ['HIS70_C(224)', 2.3672692754199995, 4, 1]  -->  ['Q', 1.21]
+2025-06-06 13:07:26,811 - INFO - root - AA to Mutate: ['GLY29_C(183)', 4.332941399999999, 3, 2]
+2025-06-06 13:07:26,811 - INFO - root - Amino to replace: GLY - G
+2025-06-06 13:07:26,812 - INFO - root - In Position: 183
+2025-06-06 13:07:26,812 - INFO - root - List of Substitute Aminoacids:
+2025-06-06 13:07:26,812 - INFO - root - [['A', 0.69], ['R', 0.36], ['D', 0.34], ['E', 0.36], ['S', 0.66]]
+2025-06-06 13:07:26,812 - INFO - root - Decision: ['GLY29_C(183)', 4.332941399999999, 3, 2]  -->  ['E', 0.36]
+2025-06-06 13:07:26,823 - INFO - root - AA to Mutate: ['THR24_C(178)', 0.533656, 1, 0]
+2025-06-06 13:07:26,823 - INFO - root - Amino to replace: THR - T
+2025-06-06 13:07:26,823 - INFO - root - In Position: 178
+2025-06-06 13:07:26,824 - INFO - root - List of Substitute Aminoacids:
+2025-06-06 13:07:26,824 - INFO - root - [['A', 1.83], ['N', 0.52], ['I', 0.7], ['K', 0.3], ['M', 0.26], ['P', 0.31], ['S', 1.69], ['V', 0.39]]
+2025-06-06 13:07:26,824 - INFO - root - Decision: ['THR24_C(178)', 0.533656, 1, 0]  -->  ['P', 0.31]
+2025-06-06 13:07:28,602 - INFO - root - Population before offspring
+2025-06-06 13:07:28,602 - INFO - root - Pop from Generation 1 = [[7, 25, 19, 25, 11, 20, 19, 22, 19, 7, 5, 19, 25, 14, 13, 4, 25, 12, 14, 18, 20, 19, 25, 5, 3, 6, 14, 7, 19, 14, 6, 25, 19, 5, 22, 7, 16, 20], [7, 25, 19, 25, 1, 20, 19, 22, 19, 7, 18, 19, 25, 14, 13, 7, 25, 12, 1, 18, 20, 19, 6, 5, 3, 6, 14, 7, 19, 14, 6, 25, 6, 7, 22, 7, 16, 20], [7, 25, 19, 25, 20, 16, 19, 22, 19, 7, 7, 19, 19, 14, 13, 7, 25, 12, 14, 18, 20, 19, 25, 5, 3, 6, 14, 7, 19, 14, 6, 25, 18, 7, 20, 7, 16, 20], [7, 25, 19, 25, 4, 20, 19, 22, 19, 7, 7, 19, 25, 14, 13, 7, 25, 12, 14, 7, 20, 19, 17, 5, 3, 6, 14, 7, 19, 14, 6, 25, 19, 7, 22, 19, 16, 20]]
+2025-06-06 13:07:28,602 - INFO - root - Fitness Pop = [[245.337, 2408.306, 10.187, 6.0], [1345.321, 2415.798, 55.688, 5.0], [658.543, 2437.029, 27.022, 6.0], [879.119, 2505.22, 35.092, 3.0]]
+2025-06-06 13:07:28,603 - INFO - root - Population output pdb files: ['../output/run15/g0/g0_00.pdb', '../output/run15/g0/g0_01.pdb', '../output/run15/g0/g0_02.pdb', '../output/run15/g0/g0_03.pdb', '../output/run15/tmp/temp_g1_00.pdb', '../output/run15/tmp/temp_g1_01.pdb', '../output/run15/tmp/temp_g1_02.pdb', '../output/run15/tmp/temp_g1_03.pdb']
+2025-06-06 13:07:28,603 - INFO - root - Pop = [[7, 25, 19, 25, 14, 20, 19, 22, 19, 7, 7, 19, 25, 14, 13, 4, 25, 12, 14, 18, 20, 19, 25, 5, 3, 6, 14, 7, 19, 14, 6, 25, 19, 7, 22, 7, 16, 20], [7, 25, 19, 25, 1, 20, 19, 22, 19, 7, 7, 19, 25, 14, 13, 7, 25, 12, 1, 18, 20, 19, 25, 5, 3, 6, 14, 7, 19, 14, 6, 25, 19, 7, 22, 7, 16, 20], [7, 25, 19, 25, 20, 20, 19, 22, 19, 7, 7, 19, 25, 14, 13, 7, 25, 12, 14, 18, 20, 19, 25, 5, 3, 6, 14, 7, 19, 14, 6, 25, 19, 7, 20, 7, 16, 20], [7, 25, 19, 25, 4, 20, 19, 22, 19, 7, 7, 19, 25, 14, 13, 4, 25, 12, 14, 18, 20, 19, 8, 5, 3, 6, 14, 7, 19, 14, 6, 25, 19, 7, 22, 19, 16, 20], [7, 25, 19, 25, 11, 20, 19, 22, 19, 7, 5, 19, 25, 14, 13, 4, 25, 12, 14, 18, 20, 19, 25, 5, 3, 6, 14, 7, 19, 14, 6, 25, 19, 5, 22, 7, 16, 20], [7, 25, 19, 25, 1, 20, 19, 22, 19, 7, 18, 19, 25, 14, 13, 7, 25, 12, 1, 18, 20, 19, 6, 5, 3, 6, 14, 7, 19, 14, 6, 25, 6, 7, 22, 7, 16, 20], [7, 25, 19, 25, 20, 16, 19, 22, 19, 7, 7, 19, 19, 14, 13, 7, 25, 12, 14, 18, 20, 19, 25, 5, 3, 6, 14, 7, 19, 14, 6, 25, 18, 7, 20, 7, 16, 20], [7, 25, 19, 25, 4, 20, 19, 22, 19, 7, 7, 19, 25, 14, 13, 7, 25, 12, 14, 7, 20, 19, 17, 5, 3, 6, 14, 7, 19, 14, 6, 25, 19, 7, 22, 19, 16, 20]] size: 8
+2025-06-06 13:07:28,603 - INFO - root - Selected individuals from pop: [3, 0, 4]
+2025-06-06 13:07:28,603 - INFO - root - New Population with elite and offspring 
+2025-06-06 13:07:28,603 - INFO - root - Pop = [[7, 25, 19, 25, 4, 20, 19, 22, 19, 7, 7, 19, 25, 14, 13, 4, 25, 12, 14, 18, 20, 19, 8, 5, 3, 6, 14, 7, 19, 14, 6, 25, 19, 7, 22, 19, 16, 20], [7, 25, 19, 25, 4, 20, 19, 22, 19, 7, 7, 19, 25, 14, 13, 4, 25, 12, 14, 18, 20, 19, 8, 5, 3, 6, 14, 7, 19, 14, 6, 25, 19, 7, 22, 19, 16, 20], [7, 25, 19, 25, 14, 20, 19, 22, 19, 7, 7, 19, 25, 14, 13, 4, 25, 12, 14, 18, 20, 19, 25, 5, 3, 6, 14, 7, 19, 14, 6, 25, 19, 7, 22, 7, 16, 20], [7, 25, 19, 25, 11, 20, 19, 22, 19, 7, 5, 19, 25, 14, 13, 4, 25, 12, 14, 18, 20, 19, 25, 5, 3, 6, 14, 7, 19, 14, 6, 25, 19, 5, 22, 7, 16, 20]] size: 4
+2025-06-06 13:07:28,603 - INFO - root - Fitness : [3.427, 3.427, 4.011, 10.187]
+2025-06-06 13:07:28,604 - INFO - root - Elite pdb files
+2025-06-06 13:07:28,604 - INFO - root - ../output/run15/g0/g0_03.pdb ---> ../output/run15/g1/g1_0.pdb
+2025-06-06 13:07:28,604 - INFO - root - Elite score files
+2025-06-06 13:07:28,604 - INFO - root - ../output/run15/g0/g0_03.pdb.sc ---> ../output/run15/g1/g1_0.pdb.sc
+2025-06-06 13:07:28,604 - INFO - root - generation pdb files
+2025-06-06 13:07:28,604 - INFO - root - ../output/run15/g0/g0_03.pdb ---> ../output/run15/g1/g1_1.pdb
+2025-06-06 13:07:28,604 - INFO - root - generation sc files
+2025-06-06 13:07:28,604 - INFO - root - ../output/run15/g0/g0_03.pdb.sc ---> ../output/run15/g1/g1_1.pdb.sc
+2025-06-06 13:07:28,605 - INFO - root - generation pdb files
+2025-06-06 13:07:28,605 - INFO - root - ../output/run15/g0/g0_00.pdb ---> ../output/run15/g1/g1_2.pdb
+2025-06-06 13:07:28,605 - INFO - root - generation sc files
+2025-06-06 13:07:28,605 - INFO - root - ../output/run15/g0/g0_00.pdb.sc ---> ../output/run15/g1/g1_2.pdb.sc
+2025-06-06 13:07:28,606 - INFO - root - generation pdb files
+2025-06-06 13:07:28,606 - INFO - root - ../output/run15/tmp/temp_g1_00.pdb ---> ../output/run15/g1/g1_3.pdb
+2025-06-06 13:07:28,606 - INFO - root - generation sc files
+2025-06-06 13:07:28,606 - INFO - root - ../output/run15/tmp/temp_g1_00.pdb.sc ---> ../output/run15/g1/g1_3.pdb.sc
+2025-06-06 13:07:28,606 - INFO - root - new_generation_output_pdbfiles=['../output/run15/g1/g1_0.pdb', '../output/run15/g1/g1_1.pdb', '../output/run15/g1/g1_2.pdb', '../output/run15/g1/g1_3.pdb']
+2025-06-06 13:07:28,606 - INFO - root - stats: 
+2025-06-06 13:07:28,606 - INFO - root - -- End of Evolution --
+2025-06-06 13:07:28,606 - INFO - root - -- Saving Evolution Statistics--
+2025-06-06 13:07:28,607 - INFO - root - Execution Time = 29.24 seconds

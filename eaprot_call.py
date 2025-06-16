@@ -25,8 +25,9 @@ logger = logging.getLogger(__name__)
 def main():
 
     # command line arguments
-    if len(sys.argv) != 5:
-        logging.critical('usage: ', sys.argv[0], '<scenario> <sea/moea> <sim params> <algo params>')
+    if len(sys.argv) != 7:
+        print(len(sys.argv))
+        logging.critical(f'usage: {sys.argv[0]} <scenario> <sea/moea> <sim params> <algo params> <restore> <checkpoint>')
         sys.exit(-1)
 
     logging.info("Init Main")
@@ -37,6 +38,11 @@ def main():
     ALGO_NAME      = sys.argv[2] # Single Objective (sea) / Multi Objective (moea)   
     SIM_PARAM_STR  = sys.argv[3]
     ALGO_PARAM_STR = sys.argv[4]
+    RESTORE_STR = str(sys.argv[5])
+    RESTORE        = True if RESTORE_STR == "True" else False
+    CHECKPOINT     = int(sys.argv[6]) if int(sys.argv[6]) > 0 else None
+
+    print(RESTORE, CHECKPOINT, "uwu")
 
     ALGO_PARAMS    = parser.parse_params(ALGO_PARAM_STR)
     SIM_PARAMS     = parser.parse_params(SIM_PARAM_STR)
@@ -54,7 +60,7 @@ def main():
     output=output+"/run"+str(randomseed)
 
     # Run the genetic algorithm
-    sga.deap_sga_protein(SCENARIO, ALGO_PARAMS, SIM_PARAMS, output, randomseed).run()
+    sga.deap_sga_protein(SCENARIO, ALGO_PARAMS, SIM_PARAMS, output, randomseed).run(checkpoint=CHECKPOINT, restore=RESTORE)
 
     toc=timeit.default_timer()
 

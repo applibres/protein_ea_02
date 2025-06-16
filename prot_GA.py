@@ -23,6 +23,7 @@ import numpy
 import random
 from prot_interface.logging_config import setup_logging
 import logging
+import pickle
 
 # Initialize logging before anything else
 setup_logging()
@@ -116,7 +117,7 @@ class deap_sga_protein:
          return aa_list   
 
     # Custom simple evolutionary algorithm
-    def run(self):
+    def run(self, checkpoint=None, restore=False):
         #Capture parameters
 
         #Algorithm Params
@@ -182,7 +183,6 @@ class deap_sga_protein:
         ## Set random seed ##
         random.seed(self.randomseed)
 
-
         ##Generation 0
 
         #Create individual0
@@ -213,13 +213,10 @@ class deap_sga_protein:
             elite_size = 1      
 
         #Create Mutated individuals 
-        
         mut_rate = 0.3
 
         # # ## Create Population 0 
         gen = 0
-
-
 
         offspring_output_pdbfiles=[]
         argument=[]
@@ -243,59 +240,79 @@ class deap_sga_protein:
 
         #Evaluate in parallel
         fitness = self.my_protein_problem.fitnessPop(offspring_output_pdbfiles)
+
+        if restore:
+            try:
+                # Load the checkpoint file
+                logging.debug("Loading from checkpoint")
+
+                # Load the checkpoint
+                with open("checkpoint.pkl", 'rb') as cp_file:
+                    cp = pickle.load(cp_file)
+                pop = cp['population']
+                ngen = cp['generation'] + 1
+                record = cp['record']
+                logbook = cp['logbook']
+                random.setstate(cp['rndstate'])
+                population_output_pdbfiles = cp['population_output_pdbfiles']
+            except (FileNotFoundError, EOFError):
+                logging.critical("Checkpoint file not found or corrupted.")
+                return 
+        else:
+            logging.info("Starting new run")
         
-        #Create Population 0
-        i=0
-        pop = []
-        ##Add original individual
-        pop.append(ind0)
-        for indiv in offspring_list:
-            ind = creator.Individual(indiv) 
-            ind.fitness.values = (fitness[i][FITNESS_INDEX],)  
-            logging.debug(f"Fitness: {ind.fitness.values}")
-            pop.append(ind)
-            i=i+1
-
-        ## Add original individual pdb file to begining of the output file list            
-        offspring_output_pdbfiles.insert(0,dst)
-
-        #initial population statistics
-        record = stats.compile(pop)
-        logging.info("stats: %s", record)
-        logbook.record(gen=0, **record)
-
- 
-        ###Save population to text file integer representation###
-        gendir = self.output + "/g" + str(gen) + "/"
-        with open(gendir+"/pop_g" + str(gen) + ".txt", "w") as output_file:
+            #Create Population 0
+            ngen = 1
             i=0
-            for ind in pop:
-                fit=ind.fitness.values 
-                output_file.write((str(ind)) + " " + str(fit) + " "+ str(offspring_output_pdbfiles[i])+'\n')   
-                i=i+1    
-        output_file.close() 
-
-
-        ###Save population to text file AA representation###
-        gendir = self.output + "/g" + str(gen) + "/"
-        with open(gendir+"/pop_g" + str(gen) + "_AA.txt", "w") as output_file:
-            #printpopulation and fitness
-            i=0 
-            ind_AA=[]   
-            for ind in pop:
-                fit=ind.fitness.values
-                ind_AA=self.convert_to_characters(ind)  
-                output_file.write((str(ind_AA)) + " " + str(fit) + " "+ str(offspring_output_pdbfiles[i])+'\n')   
-                i=i+1    
-        output_file.close() 
-
-        population_output_pdbfiles = offspring_output_pdbfiles.copy()
+            pop = []
+            ##Add original individual
+            pop.append(ind0)
+            for indiv in offspring_list:
+                ind = creator.Individual(indiv) 
+                ind.fitness.values = (fitness[i][FITNESS_INDEX],)  
+                logging.debug(f"Fitness: {ind.fitness.values}")
+                pop.append(ind)
+                i=i+1
+    
+            ## Add original individual pdb file to begining of the output file list            
+            offspring_output_pdbfiles.insert(0,dst)
+    
+            #initial population statistics
+            record = stats.compile(pop)
+            logging.info("stats: %s", record)
+            logbook.record(gen=0, **record)
+    
+     
+            ###Save population to text file integer representation###
+            gendir = self.output + "/g" + str(gen) + "/"
+            with open(gendir+"/pop_g" + str(gen) + ".txt", "w") as output_file:
+                i=0
+                for ind in pop:
+                    fit=ind.fitness.values 
+                    output_file.write((str(ind)) + " " + str(fit) + " "+ str(offspring_output_pdbfiles[i])+'\n')   
+                    i=i+1    
+            output_file.close() 
+    
+            ###Save population to text file AA representation###
+            gendir = self.output + "/g" + str(gen) + "/"
+            with open(gendir+"/pop_g" + str(gen) + "_AA.txt", "w") as output_file:
+                #printpopulation and fitness
+                i=0 
+                ind_AA=[]   
+                for ind in pop:
+                    fit=ind.fitness.values
+                    ind_AA=self.convert_to_characters(ind)  
+                    output_file.write((str(ind_AA)) + " " + str(fit) + " "+ str(offspring_output_pdbfiles[i])+'\n')   
+                    i=i+1    
+            output_file.close() 
+    
+            population_output_pdbfiles = offspring_output_pdbfiles.copy()
         
         # ############################ 
         # ## Main evolutionary loop ##
         # ############################
         
-        for gen in range(1,ngenerations):
+        for gen in range(ngen,ngenerations):
             logging.info(f"-- Generation {gen} --")
             # Sort the population by fitness and select the elite individuals
 
@@ -490,6 +507,21 @@ class deap_sga_protein:
             record = stats.compile(pop)
             logging.info("stats: ", record)
             logbook.record(gen=gen, **record)
+
+            # # Save the logbook to a file
+            if gen == checkpoint:
+                logging.debug(f"Checkpoint reached at generation {gen}, saving logbook.")
+                cp = dict(
+                    population=pop,
+                    generation=gen,
+                    record=record,
+                    logbook=logbook,
+                    rndstate=random.getstate(),
+                    population_output_pdbfiles=population_output_pdbfiles
+                )
+                with open("checkpoint.pkl", 'wb') as cp_file:
+                    pickle.dump(cp, cp_file)
+            
 
         logging.info("-- End of Evolution --")
 

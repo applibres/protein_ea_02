@@ -38,11 +38,9 @@ def main():
     ALGO_NAME      = sys.argv[2] # Single Objective (sea) / Multi Objective (moea)   
     SIM_PARAM_STR  = sys.argv[3]
     ALGO_PARAM_STR = sys.argv[4]
-    RESTORE_STR = str(sys.argv[5])
-    RESTORE        = True if RESTORE_STR == "True" else False
-    CHECKPOINT     = int(sys.argv[6]) if int(sys.argv[6]) > 0 else None
-
-    print(RESTORE, CHECKPOINT, "uwu")
+    CHECKPOINT_STR = str(sys.argv[5])
+    CHECKPOINT     = True if CHECKPOINT_STR == "True" else False
+    FREQ     = int(sys.argv[6])
 
     ALGO_PARAMS    = parser.parse_params(ALGO_PARAM_STR)
     SIM_PARAMS     = parser.parse_params(SIM_PARAM_STR)
@@ -60,7 +58,7 @@ def main():
     output=output+"/run"+str(randomseed)
 
     # Run the genetic algorithm
-    sga.deap_sga_protein(SCENARIO, ALGO_PARAMS, SIM_PARAMS, output, randomseed).run(checkpoint=CHECKPOINT, restore=RESTORE)
+    sga.deap_sga_protein(SCENARIO, ALGO_PARAMS, SIM_PARAMS, output, randomseed).run(checkpoint=CHECKPOINT, freq=FREQ)
 
     toc=timeit.default_timer()
 

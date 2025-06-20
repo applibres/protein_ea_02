@@ -117,7 +117,17 @@ class deap_sga_protein:
          return aa_list   
 
     # Custom simple evolutionary algorithm
-    def run(self, checkpoint=None, restore=False):
+    def run(self, checkpoint=False, freq=2):
+
+        """Run the simple genetic algorithm
+        Parameters
+        ----------
+        checkpoint: bool
+            If True, the algorithm will save the state of the algorithm in a checkpoint file
+        freq: int
+            Frequency to save the checkpoint file, default is 2 generations
+        """
+
         #Capture parameters
 
         #Algorithm Params
@@ -241,7 +251,7 @@ class deap_sga_protein:
         #Evaluate in parallel
         fitness = self.my_protein_problem.fitnessPop(offspring_output_pdbfiles)
 
-        if restore:
+        if checkpoint:
             try:
                 # Load the checkpoint file
                 logging.debug("Loading from checkpoint")
@@ -509,7 +519,7 @@ class deap_sga_protein:
             logbook.record(gen=gen, **record)
 
             # # Save the logbook to a file
-            if gen == checkpoint:
+            if gen % freq == 0 or gen == ngenerations - 1:
                 logging.debug(f"Checkpoint reached at generation {gen}, saving logbook.")
                 cp = dict(
                     population=pop,

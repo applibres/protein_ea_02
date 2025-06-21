@@ -105,8 +105,6 @@ class prot_mut:
                 max_mut = len(aans)*mut_rate
             elif (len(aas) > 0):
                 max_mut = len(aas)*mut_rate
-            #else:
-            #    max_mut = 0    
             
             if (max_mut <= 1):
                 num_of_mut = 1

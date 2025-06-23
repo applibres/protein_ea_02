@@ -5,11 +5,11 @@ core.init: Checking for fconfig files in pwd and ./rosetta/flags
 core.init: Rosetta version: 2024.38+HEAD.200d5f9a7d 200d5f9a7d8cdd7afdd078f156da6b5a7d97543f git@github.com:RosettaCommons/rosetta.git 2024-09-11T17:31:36
 core.init: Rosetta extras: [cxx11thread, serialization]
 core.init: command: /usr/local/bin/interface_energy.cxx11threadserialization.linuxgccrelease -s /app/scenarios/test04/protein01.pdb -face1 /app/scenarios/test04/faceA.txt -face2 /app/scenarios/test04/faceC.txt -score:hbond_bb_per_residue_energy
-basic.random.init_random_generator: 'RNG device' seed mode, using '/dev/urandom', seed=-1242238009 seed_offset=0 real_seed=-1242238009 thread_index=0
-basic.random.init_random_generator: RandomGenerator:init: Normal mode, seed=-1242238009 RG_type=mt19937
+basic.random.init_random_generator: 'RNG device' seed mode, using '/dev/urandom', seed=-1960703452 seed_offset=0 real_seed=-1960703452 thread_index=0
+basic.random.init_random_generator: RandomGenerator:init: Normal mode, seed=-1960703452 RG_type=mt19937
 core.init: found database environment variable ROSETTA3_DB: /usr/local/database
 core.chemical.GlobalResidueTypeSet: Finished initializing fa_standard residue type set.  Created 985 residue types
-core.chemical.GlobalResidueTypeSet: Total time to initialize 0.440694 seconds.
+core.chemical.GlobalResidueTypeSet: Total time to initialize 0.450366 seconds.
 core.import_pose.import_pose: File '/app/scenarios/test04/protein01.pdb' automatically determined to be of type PDB
 core.conformation.Conformation: Found disulfide between residues 124 153
 core.conformation.Conformation: Found disulfide between residues 197 226
@@ -41,7 +41,7 @@ core.pack.dunbrack.RotamerLibrary: shapovalov_lib_fixes_enable option is true.
 core.pack.dunbrack.RotamerLibrary: shapovalov_lib::shap_dun10_smooth_level of 1( aka lowest_smooth ) got activated.
 core.pack.dunbrack.RotamerLibrary: Binary rotamer library selected: /usr/local/database/rotamer/shapovalov/StpDwn_0-0-0/Dunbrack10.lib.bin
 core.pack.dunbrack.RotamerLibrary: Using Dunbrack library binary file '/usr/local/database/rotamer/shapovalov/StpDwn_0-0-0/Dunbrack10.lib.bin'.
-core.pack.dunbrack.RotamerLibrary: Dunbrack 2010 library took 0.161758 seconds to load from binary
+core.pack.dunbrack.RotamerLibrary: Dunbrack 2010 library took 0.152439 seconds to load from binary
 ##### PAIRWISE SHORT-RANGE ENERGIES #####
 TYR148_A(148) --- TYR31_C(185): -0.0121566
 TYR148_A(148) --- GLY29_C(183): 0

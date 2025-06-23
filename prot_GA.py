@@ -29,6 +29,15 @@ import pickle
 setup_logging()
 logger = logging.getLogger(__name__)
 
+class CustomIndividual(list):
+    counter = 0
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.id = f"{CustomIndividual.counter}"
+        CustomIndividual.counter += 1
+        self.father = None
+        self.fitness = creator.FitnessMin()
+
 class deap_sga_protein:
 
     def __init__(self, scenario, algoritm_params, sim_params, output, randomseed):
@@ -172,7 +181,7 @@ class deap_sga_protein:
 
         ##Declare FitnessMinimization and Individual
         creator.create("FitnessMin", base.Fitness, weights=(-1.0,))  # Minimization problem
-        creator.create("Individual", list, fitness=creator.FitnessMin)
+        creator.create("Individual", CustomIndividual)
 
         # Initialize toolbox
         toolbox = base.Toolbox() 
@@ -195,27 +204,15 @@ class deap_sga_protein:
 
         ##Generation 0
 
-        #Create individual0
-        logging.info(f"Creating Individual 0 from pdbfile: {self.pdbfile}")
-        indiv0, aa0 = self.my_protein_problem.create_individual0(self.pdbfile)
-        logging.info(f"Individual-Original : {aa0}")
-        ind0 = creator.Individual(indiv0)  # Instantiate the Individual with fixed values
-        
-        logging.info(f"ind0: {ind0}")
-        
         # # #Get the fitness value
         pdbfile_path = sets.CONFIG_PATH + self.scenario + "/" +self.pdbfile 
-        
+
         src = pdbfile_path
         dst = output_path + "g0_00.pdb"
+        
+
         #copy the original individual pdb file 
         shutil.copyfile(src, dst)
-
-        fitness = self.my_protein_problem.fitness(dst)
-        
-        # # # Set initial fitness value
-        ind0.fitness.values = (fitness[FITNESS_INDEX],)  
-        logging.info(f"Fitness Indv0: {ind0.fitness.values}")
 
         ##Number of elite individuals per generation
         elite_size = int(0.1 * popsize)
@@ -259,6 +256,7 @@ class deap_sga_protein:
                 # Load the checkpoint
                 with open("checkpoint.pkl", 'rb') as cp_file:
                     cp = pickle.load(cp_file)
+
                 pop = cp['population']
                 ngen = cp['generation'] + 1
                 record = cp['record']
@@ -266,10 +264,25 @@ class deap_sga_protein:
                 random.setstate(cp['rndstate'])
                 population_output_pdbfiles = cp['population_output_pdbfiles']
             except (FileNotFoundError, EOFError):
-                logging.critical("Checkpoint file not found or corrupted.")
+                logging.critical(f"Checkpoint file not found or corrupted.\n{FileNotFoundError}\n{EOFError}")
                 return 
         else:
             logging.info("Starting new run")
+
+            #Create individual0
+            logging.info(f"Creating Individual 0 from pdbfile: {self.pdbfile}")
+            indiv0, aa0 = self.my_protein_problem.create_individual0(self.pdbfile)
+            logging.info(f"Individual-Original : {aa0}")
+            ind0 = creator.Individual(indiv0)  # Instantiate the Individual with fixed values
+            ind0.father = "Original"
+            
+            logging.debug(f"ind0: {ind0}")
+    
+            fitness_indv0 = self.my_protein_problem.fitness(dst)
+            
+            # # # Set initial fitness value
+            ind0.fitness.values = (fitness_indv0[FITNESS_INDEX],)  
+            logging.debug(f"Fitness Indv0: {ind0.fitness.values}")
         
             #Create Population 0
             ngen = 1
@@ -279,6 +292,7 @@ class deap_sga_protein:
             pop.append(ind0)
             for indiv in offspring_list:
                 ind = creator.Individual(indiv) 
+                ind.father = '0'
                 ind.fitness.values = (fitness[i][FITNESS_INDEX],)  
                 logging.debug(f"Fitness: {ind.fitness.values}")
                 pop.append(ind)
@@ -381,7 +395,7 @@ class deap_sga_protein:
 
             logging.info(f"Population_pdb_files: {population_output_pdbfiles}")
             logging.info("Before mutation in parallel")
-            logging.info(f"Argument: {argument}")
+            logging.info(f"Argument-gen{gen}: {argument}")
              
             #Mutate in parallel
             offspring = []

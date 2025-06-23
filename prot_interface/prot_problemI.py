@@ -112,15 +112,28 @@ class prot_problem:
     def get_individual_seq(self, pdb_file):
         # Generate the sequence and initialize fixed values based on it
         sequence = self.sequence(pdb_file)
-        
-        #aminoacid list
+    
+        # Si no hay posiciones definidas (posible después de checkpoint), reconstruirlas
+        if not self.aa_pos_list:
+            logging.warning("aa_pos_list is empty. Recomputing from energy file...")
+            energy_filepath = self.list_aa.energy_interact_file(pdb_file)
+            aa_pos_dict = self.extract_mappings(energy_filepath)
+            self.aa_pos_list = list(aa_pos_dict.values())
+            logging.debug(f"Recomputed aa_pos_list: {self.aa_pos_list}")
+    
+        # Extraer aminoácidos en las posiciones definidas
         aa = []
         for aa_pos in self.aa_pos_list:
-            aa.append(sequence[aa_pos-1])
+            if aa_pos <= len(sequence):
+                aa.append(sequence[aa_pos - 1])
+            else:
+                logging.error(f"Invalid position {aa_pos} for sequence of length {len(sequence)}")
+                aa.append('X')  # placeholder in caso de error
+    
+        # Convertir letras a números
+        ind = [ord(x) - 64 for x in aa]
+        return ind, aa
 
-        # Convert letters to numbers
-        ind = [ord(x) - 64 for x in aa]  
-        return ind, aa           
 
 
 

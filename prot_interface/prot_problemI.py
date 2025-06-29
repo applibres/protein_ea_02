@@ -235,22 +235,20 @@ class prot_problem:
         #Create pool to run in parallel
         pool = Pool()
         population=[]
-        pop_ids = []
 
         for result_f in pool.starmap(self.mutate, args):
-            ind, id_pop = result_f
+            ind = result_f
             population.append(ind)
-            pop_ids.append(id_pop)
         
-        return population, pop_ids
+        return population
 
 
     ##Mutation Operator##
-    def mutate(self,pdb_file,output_file,mut_rate,id_pop):
+    def mutate(self,pdb_file,output_file,mut_rate):
         #Mutate
         self.mut.mutate(self.scenario, self.ligand_chain, pdb_file, output_file, mut_rate)
         indiv, aa = self.get_individual_seq(output_file)
-        return indiv, id_pop
+        return indiv
 
 
 

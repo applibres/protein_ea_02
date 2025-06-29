@@ -25,6 +25,7 @@ import random
 from prot_interface.logging_config import setup_logging
 import logging
 import pickle
+import uuid
 
 # Initialize logging before anything else
 setup_logging()
@@ -38,25 +39,30 @@ def save_population_to_csv(population, generation):
     with open(save_file, mode='a', newline='') as file:
         writer = csv.writer(file)
         if not file_exists:
-            writer.writerow(['generation', 'id', 'father', 'fitness', 'sequence'])
+            writer.writerow(['generation', 'id', 'father', 'pdb_file', 'fitness', 'sequence'])
 
         for ind in population:
-            writer.writerow([
-                generation,
-                ind.id,
-                ind.father,
-                ind.fitness.values[0] if ind.fitness.valid else None,
-                ''.join(map(str, ind))
-            ])
+            if(not ind.registered):
+                ind.registered = True
+                writer.writerow([
+                    generation,
+                    ind.id,
+                    ind.father,
+                    ind.pdb,
+                    ind.fitness.values[0] if ind.fitness.valid else None,
+                    ''.join(map(str, ind))
+                ])
 
 class CustomIndividual(list):
     counter = 0
     def __init__(self, *args):
         super().__init__(*args)
-        self.id = f"{CustomIndividual.counter}"
+        self.id = f'{CustomIndividual.counter}'
         CustomIndividual.counter += 1
         self.father = None
+        self.registered = False
         self.fitness = creator.FitnessMin()
+        self.pdb = None
 
 class deap_sga_protein:
 
@@ -277,6 +283,7 @@ class deap_sga_protein:
             logging.info(f"Individual-Original : {aa0}")
             ind0 = creator.Individual(indiv0)  # Instantiate the Individual with fixed values
             ind0.father = "Original"
+            ind0.pdb = self.pdbfile
             
             logging.debug(f"ind0: {ind0}")
     
@@ -295,7 +302,7 @@ class deap_sga_protein:
     
                 output_file_path = self.output + "/g" + str(gen) + "/" + "g"+ str(gen) +"_" + str(num_ind) + ".pdb"
                 offspring_output_pdbfiles.append(output_file_path)
-                argument.append((pdbfile_path,output_file_path,mut_rate,"Original"))
+                argument.append((pdbfile_path,output_file_path,mut_rate,"0"))
     
             logging.debug(f"Arguments:{argument}")
             
@@ -313,9 +320,10 @@ class deap_sga_protein:
             pop_ids = []  # To keep track of individual IDs
             ##Add original individual
             pop.append(ind0)
-            for indiv in offspring_list:
-                ind = creator.Individual(indiv) 
+            for indiv, pdb_file in zip(offspring_list, offspring_output_pdbfiles):
+                ind = creator.Individual(indiv)
                 ind.father = '0'
+                ind.pdb = pdb_file
                 ind.fitness.values = (fitness[i][FITNESS_INDEX],)  
                 logging.debug(f"Fitness: {ind.fitness.values}")
                 pop.append(ind)
@@ -440,7 +448,7 @@ class deap_sga_protein:
             
             ##Add individuals to population
             for indiv, id in zip(offspring, pop_ids):
-                ind = creator.Individual(indiv) 
+                ind = creator.Individual(indiv)
                 ind.father = id  # Set the father of the individual
                 ind.fitness.values = (fitness[i][FITNESS_INDEX],)  
                 #Add the new individuals to population
@@ -478,6 +486,7 @@ class deap_sga_protein:
                 src1 = elite_file               
                 ## 1-Change names
                 dst1 = self.output + "/g" + str(gen) + "/" + "g"+ str(gen) +"_" + str(i) + ".pdb"
+                elite_inds[i].pdb = dst1
 
                 ## 2-Copy to directory
                 shutil.copyfile(src1, dst1)
@@ -501,11 +510,13 @@ class deap_sga_protein:
 
             # Save the rest of pdb files from population    
             i=elite_size
+            i_ = 0
             for idx in selected_indices:
                 
                 ##pdb files
                 src1 = population_output_pdbfiles[idx]
                 dst1 = self.output + "/g" + str(gen) + "/" + "g"+ str(gen) +"_" + str(i) + ".pdb"
+                offspring[i_].pdb = dst1
                 #copy the original individual pdb file 
                 shutil.copyfile(src1, dst1)
 
@@ -523,6 +534,7 @@ class deap_sga_protein:
                 logging.info(f"{src2} ---> {dst2}")                                
 
                 i=i+1
+                i_=i_+1
 
 
             logging.info(f"new_generation_output_pdbfiles={new_generation_output_pdbfiles}")

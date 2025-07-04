@@ -42,16 +42,14 @@ def save_population_to_csv(population, generation):
             writer.writerow(['generation', 'id', 'father', 'pdb_file', 'fitness', 'sequence'])
 
         for ind in population:
-            if(not ind.registered):
-                ind.registered = True
-                writer.writerow([
-                    generation,
-                    ind.id,
-                    ind.father,
-                    ind.pdb,
-                    ind.fitness.values[0] if ind.fitness.valid else None,
-                    ''.join(map(str, ind))
-                ])
+            writer.writerow([
+                generation,
+                ind.id,
+                ind.father,
+                ind.pdb,
+                ind.fitness.values[0] if ind.fitness.valid else None,
+                ''.join(map(str, ind))
+            ])
 
 class CustomIndividual(list):
     counter = 0
@@ -60,7 +58,6 @@ class CustomIndividual(list):
         self.id = f'{CustomIndividual.counter}'
         CustomIndividual.counter += 1
         self.father = None
-        self.registered = False
         self.fitness = creator.FitnessMin()
         self.pdb = None
 
@@ -105,7 +102,7 @@ class deap_sga_protein:
 
 
 
-    def unique_offspring(self, population, selection_func, k):
+    def unique_offspring(self, population, selection_func, k, elite_idx):
         """
         Select k unique individuals using the given selection function, 
         returning both selected individuals and their original indices.
@@ -115,7 +112,7 @@ class deap_sga_protein:
         :param k: Number of individuals to select.
         :return: List of selected individuals (no duplicates), and their indices.
         """
-        selected = set()
+        selected = set(elite_idx)
         unique_inds = []
         indices = []
 
@@ -143,13 +140,6 @@ class deap_sga_protein:
                     selected.add(rand_idx)
 
         return unique_inds, indices
-
-    def convert_to_characters(self,individual):
-         aa_list=[]
-         for i in individual:
-            aa = chr(i+64)
-            aa_list.append(aa)
-         return aa_list   
 
     # Custom simple evolutionary algorithm
     def run(self, checkpoint=False, freq=2):
@@ -278,9 +268,9 @@ class deap_sga_protein:
     
             #Create individual0
             logging.info(f"Creating Individual 0 from pdbfile: {self.pdbfile}")
-            indiv0, aa0 = self.my_protein_problem.create_individual0(self.pdbfile)
+            aa0 = self.my_protein_problem.create_individual0(self.pdbfile)
             logging.info(f"Individual-Original : {aa0}")
-            ind0 = creator.Individual(indiv0)  # Instantiate the Individual with fixed values
+            ind0 = creator.Individual(aa0)  # Instantiate the Individual with fixed values
             ind0.father = "Original"
             ind0.pdb = self.pdbfile
             
@@ -351,12 +341,10 @@ class deap_sga_protein:
             gendir = self.output + "/g" + str(gen) + "/"
             with open(gendir+"/pop_g" + str(gen) + "_AA.txt", "w") as output_file:
                 #printpopulation and fitness
-                i=0 
-                ind_AA=[]   
+                i=0  
                 for ind in pop:
                     fit=ind.fitness.values
-                    ind_AA=self.convert_to_characters(ind)  
-                    output_file.write((str(ind_AA)) + " " + str(fit) + " "+ str(offspring_output_pdbfiles[i])+'\n')   
+                    output_file.write((str(ind)) + " " + str(fit) + " "+ str(offspring_output_pdbfiles[i])+'\n')   
                     i=i+1    
             output_file.close() 
     
@@ -383,8 +371,8 @@ class deap_sga_protein:
             ## Select the elite individuals ##
             ##################################
             elite_inds = tools.selBest(pop, elite_size)
-            elite_inds = [toolbox.clone(ind) for ind in elite_inds]  # Clone to avoid overwriting
             elite_indexes = [pop.index(ind) for ind in elite_inds] 
+            elite_inds = [toolbox.clone(ind) for ind in elite_inds]  # Clone to avoid overwriting
             logging.info(f"Elite Individuals {elite_inds}")
             logging.info(f"Elite Indexes {elite_indexes}")
             elite_pdb_files = [population_output_pdbfiles[i] for i in elite_indexes]
@@ -457,7 +445,7 @@ class deap_sga_protein:
             logging.info(f"Pop = {pop} size: {len(pop)}")
 
             ##Select the new individual from new pop 
-            offspring, selected_indices = self.unique_offspring(pop, toolbox.select, popsize-elite_size)
+            offspring, selected_indices = self.unique_offspring(pop, toolbox.select, popsize-elite_size, elite_indexes)
             offspring = list(map(toolbox.clone, offspring))
             logging.info(f"Selected individuals from pop: {selected_indices}" )
 
@@ -546,18 +534,15 @@ class deap_sga_protein:
                 for ind in pop:
                     fit=ind.fitness.values
                     output_file.write((str(ind)) + " " + str(fit) + " "+ str(self.output + "/g" + str(gen) + "/" + "g"+ str(gen) +"_" + str(i) + ".pdb")+'\n')   
-
                     i=i+1    
             output_file.close() 
 
             ###Save population to text file AA representation###
-            ind_AA=[]
             with open(gendir+"/pop_g" + str(gen) + "_AA.txt", "w") as output_file:
                 i=0    
                 for ind in pop:
                     fit=ind.fitness.values 
-                    ind_AA=self.convert_to_characters(ind)  
-                    output_file.write((str(ind_AA)) + " " + str(fit) + " "+ str(self.output + "/g" + str(gen) + "/" + "g"+ str(gen) +"_" + str(i) + ".pdb")+'\n')   
+                    output_file.write((str(ind)) + " " + str(fit) + " "+ str(self.output + "/g" + str(gen) + "/" + "g"+ str(gen) +"_" + str(i) + ".pdb")+'\n')   
                     i=i+1    
             output_file.close() 
 

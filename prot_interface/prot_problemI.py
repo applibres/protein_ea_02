@@ -129,10 +129,8 @@ class prot_problem:
             else:
                 logging.error(f"Invalid position {aa_pos} for sequence of length {len(sequence)}")
                 aa.append('X')  # placeholder in caso de error
-    
-        # Convertir letras a números
-        ind = [ord(x) - 64 for x in aa]
-        return ind, aa
+
+        return aa
 
 
 
@@ -166,10 +164,7 @@ class prot_problem:
         for aa_pos in self.aa_pos_list:
             aa.append(sequence[aa_pos-1])
 
-        # Convert letters to numbers
-        ind0 = [ord(x) - 64 for x in aa]  
-        #ind0 = [0,0]
-        return ind0, aa       
+        return aa       
         
 
     def fitness(self, pdb_file):
@@ -247,8 +242,8 @@ class prot_problem:
     def mutate(self,pdb_file,output_file,mut_rate):
         #Mutate
         self.mut.mutate(self.scenario, self.ligand_chain, pdb_file, output_file, mut_rate)
-        indiv, aa = self.get_individual_seq(output_file)
-        return indiv
+        aa = self.get_individual_seq(output_file)
+        return aa
 
 
 

@@ -298,6 +298,9 @@ class deap_sga_protein:
             #Mutate in parallel
             offspring_list = []
             offspring_list = self.my_protein_problem.mutate_population(argument)
+
+            #Fast relax
+            self.my_protein_problem.relax_population(offspring_output_pdbfiles)
     
             #Evaluate in parallel
             fitness = self.my_protein_problem.fitnessPop(offspring_output_pdbfiles)
@@ -419,6 +422,9 @@ class deap_sga_protein:
             #Mutate in parallel
             offspring = []
             offspring = self.my_protein_problem.mutate_population(argument)
+
+            #Fast relax
+            self.my_protein_problem.relax_population(offspring_output_pdbfiles)
 
             #Evaluate in parallel
             fitness = self.my_protein_problem.fitnessPop(offspring_output_pdbfiles)

@@ -106,7 +106,7 @@ class prot_mut:
             elif (len(aas) > 0):
                 max_mut = len(aas)*mut_rate
             
-            if (max_mut <= 1):
+            if (int(max_mut) <= 1):
                 num_of_mut = 1
             else:    
                 num_of_mut = np.random.randint(min_mut,int(max_mut))

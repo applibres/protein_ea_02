@@ -12,6 +12,11 @@ if [ $# -lt 6 ]; then
     exit
 fi
 
+# Create checkpoint.pkl if they do not exist
+if [ ! -f checkpoint.pkl ]; then
+    touch checkpoint.pkl
+fi
+
 SCENARIO=$1
 ALGO=$2
 SIMU_PARAMS=$3

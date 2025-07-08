@@ -18,16 +18,48 @@ import prot_interface.prot_problemI as problem
 import prot_interface.prot_settingsI as sets
 import pyrosetta
 import os
+import csv
 import shutil
 import numpy
 import random
 from prot_interface.logging_config import setup_logging
 import logging
 import pickle
+import uuid
 
 # Initialize logging before anything else
 setup_logging()
 logger = logging.getLogger(__name__)
+
+# Custom function to save the population to a CSV file
+def save_population_to_csv(population, generation):
+    save_file = 'individuals.csv'
+    file_exists = os.path.isfile(save_file)
+
+    with open(save_file, mode='a', newline='') as file:
+        writer = csv.writer(file)
+        if not file_exists:
+            writer.writerow(['generation', 'id', 'father', 'pdb_file', 'fitness', 'sequence'])
+
+        for ind in population:
+            writer.writerow([
+                generation,
+                ind.id,
+                ind.father,
+                ind.pdb,
+                ind.fitness.values[0] if ind.fitness.valid else None,
+                ''.join(map(str, ind))
+            ])
+
+class CustomIndividual(list):
+    counter = 0
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.id = f'{CustomIndividual.counter}'
+        CustomIndividual.counter += 1
+        self.father = None
+        self.fitness = creator.FitnessMin()
+        self.pdb = None
 
 class deap_sga_protein:
 
@@ -70,7 +102,7 @@ class deap_sga_protein:
 
 
 
-    def unique_offspring(self, population, selection_func, k):
+    def unique_offspring(self, population, selection_func, k, elite_idx):
         """
         Select k unique individuals using the given selection function, 
         returning both selected individuals and their original indices.
@@ -80,7 +112,7 @@ class deap_sga_protein:
         :param k: Number of individuals to select.
         :return: List of selected individuals (no duplicates), and their indices.
         """
-        selected = set()
+        selected = set(elite_idx)
         unique_inds = []
         indices = []
 
@@ -108,13 +140,6 @@ class deap_sga_protein:
                     selected.add(rand_idx)
 
         return unique_inds, indices
-
-    def convert_to_characters(self,individual):
-         aa_list=[]
-         for i in individual:
-            aa = chr(i+64)
-            aa_list.append(aa)
-         return aa_list   
 
     # Custom simple evolutionary algorithm
     def run(self, checkpoint=False, freq=2):
@@ -172,7 +197,7 @@ class deap_sga_protein:
 
         ##Declare FitnessMinimization and Individual
         creator.create("FitnessMin", base.Fitness, weights=(-1.0,))  # Minimization problem
-        creator.create("Individual", list, fitness=creator.FitnessMin)
+        creator.create("Individual", CustomIndividual)
 
         # Initialize toolbox
         toolbox = base.Toolbox() 
@@ -195,27 +220,15 @@ class deap_sga_protein:
 
         ##Generation 0
 
-        #Create individual0
-        logging.info(f"Creating Individual 0 from pdbfile: {self.pdbfile}")
-        indiv0, aa0 = self.my_protein_problem.create_individual0(self.pdbfile)
-        logging.info(f"Individual-Original : {aa0}")
-        ind0 = creator.Individual(indiv0)  # Instantiate the Individual with fixed values
-        
-        logging.info(f"ind0: {ind0}")
-        
         # # #Get the fitness value
         pdbfile_path = sets.CONFIG_PATH + self.scenario + "/" +self.pdbfile 
-        
+
         src = pdbfile_path
         dst = output_path + "g0_00.pdb"
+        
+
         #copy the original individual pdb file 
         shutil.copyfile(src, dst)
-
-        fitness = self.my_protein_problem.fitness(dst)
-        
-        # # # Set initial fitness value
-        ind0.fitness.values = (fitness[FITNESS_INDEX],)  
-        logging.info(f"Fitness Indv0: {ind0.fitness.values}")
 
         ##Number of elite individuals per generation
         elite_size = int(0.1 * popsize)
@@ -231,25 +244,6 @@ class deap_sga_protein:
         offspring_output_pdbfiles=[]
         argument=[]
 
-        ## Create parameters to run in parallel
-        for i in range(1,popsize):
-            if i < 10:
-                num_ind="0"+str(i)
-            else:
-                num_ind=i
-
-            output_file_path = self.output + "/g" + str(gen) + "/" + "g"+ str(gen) +"_" + str(num_ind) + ".pdb"
-            offspring_output_pdbfiles.append(output_file_path)
-            argument.append((pdbfile_path,output_file_path,mut_rate))
-
-        logging.debug(f"Arguments:{argument}")
-        
-        #Mutate in parallel
-        offspring_list = []
-        offspring_list = self.my_protein_problem.mutate_population(argument)
-
-        #Evaluate in parallel
-        fitness = self.my_protein_problem.fitnessPop(offspring_output_pdbfiles)
 
         if checkpoint:
             try:
@@ -259,6 +253,7 @@ class deap_sga_protein:
                 # Load the checkpoint
                 with open("checkpoint.pkl", 'rb') as cp_file:
                     cp = pickle.load(cp_file)
+
                 pop = cp['population']
                 ngen = cp['generation'] + 1
                 record = cp['record']
@@ -266,10 +261,49 @@ class deap_sga_protein:
                 random.setstate(cp['rndstate'])
                 population_output_pdbfiles = cp['population_output_pdbfiles']
             except (FileNotFoundError, EOFError):
-                logging.critical("Checkpoint file not found or corrupted.")
+                logging.critical(f"Checkpoint file not found or corrupted.\n{FileNotFoundError}\n{EOFError}")
                 return 
         else:
             logging.info("Starting new run")
+    
+            #Create individual0
+            logging.info(f"Creating Individual 0 from pdbfile: {self.pdbfile}")
+            aa0 = self.my_protein_problem.create_individual0(self.pdbfile)
+            logging.info(f"Individual-Original : {aa0}")
+            ind0 = creator.Individual(aa0)  # Instantiate the Individual with fixed values
+            ind0.father = "Original"
+            ind0.pdb = self.pdbfile
+            
+            logging.debug(f"ind0: {ind0}")
+    
+            fitness_indv0 = self.my_protein_problem.fitness(dst)
+            
+            # # # Set initial fitness value
+            ind0.fitness.values = (fitness_indv0[FITNESS_INDEX],)  
+            logging.debug(f"Fitness Indv0: {ind0.fitness.values}")
+
+            ## Create parameters to run in parallel
+            for i in range(1,popsize):
+                if i < 10:
+                    num_ind="0"+str(i)
+                else:
+                    num_ind=i
+    
+                output_file_path = self.output + "/g" + str(gen) + "/" + "g"+ str(gen) +"_" + str(num_ind) + ".pdb"
+                offspring_output_pdbfiles.append(output_file_path)
+                argument.append((pdbfile_path,output_file_path,mut_rate))
+    
+            logging.debug(f"Arguments:{argument}")
+            
+            #Mutate in parallel
+            offspring_list = []
+            offspring_list = self.my_protein_problem.mutate_population(argument)
+
+            #Fast relax
+            self.my_protein_problem.relax_population(offspring_output_pdbfiles)
+    
+            #Evaluate in parallel
+            fitness = self.my_protein_problem.fitnessPop(offspring_output_pdbfiles)
         
             #Create Population 0
             ngen = 1
@@ -277,8 +311,11 @@ class deap_sga_protein:
             pop = []
             ##Add original individual
             pop.append(ind0)
-            for indiv in offspring_list:
-                ind = creator.Individual(indiv) 
+            for indiv, pdb_file in zip(offspring_list, offspring_output_pdbfiles):
+                ind = creator.Individual(indiv)
+                ind.father = '0'
+                ind.pdb = pdb_file
+                ind.id = f'0-{ind.id}'
                 ind.fitness.values = (fitness[i][FITNESS_INDEX],)  
                 logging.debug(f"Fitness: {ind.fitness.values}")
                 pop.append(ind)
@@ -307,16 +344,15 @@ class deap_sga_protein:
             gendir = self.output + "/g" + str(gen) + "/"
             with open(gendir+"/pop_g" + str(gen) + "_AA.txt", "w") as output_file:
                 #printpopulation and fitness
-                i=0 
-                ind_AA=[]   
+                i=0  
                 for ind in pop:
                     fit=ind.fitness.values
-                    ind_AA=self.convert_to_characters(ind)  
-                    output_file.write((str(ind_AA)) + " " + str(fit) + " "+ str(offspring_output_pdbfiles[i])+'\n')   
+                    output_file.write((str(ind)) + " " + str(fit) + " "+ str(offspring_output_pdbfiles[i])+'\n')   
                     i=i+1    
             output_file.close() 
     
             population_output_pdbfiles = offspring_output_pdbfiles.copy()
+            save_population_to_csv(pop, gen)
         
         # ############################ 
         # ## Main evolutionary loop ##
@@ -338,8 +374,8 @@ class deap_sga_protein:
             ## Select the elite individuals ##
             ##################################
             elite_inds = tools.selBest(pop, elite_size)
-            elite_inds = [toolbox.clone(ind) for ind in elite_inds]  # Clone to avoid overwriting
             elite_indexes = [pop.index(ind) for ind in elite_inds] 
+            elite_inds = [toolbox.clone(ind) for ind in elite_inds]  # Clone to avoid overwriting
             logging.info(f"Elite Individuals {elite_inds}")
             logging.info(f"Elite Indexes {elite_indexes}")
             elite_pdb_files = [population_output_pdbfiles[i] for i in elite_indexes]
@@ -381,11 +417,14 @@ class deap_sga_protein:
 
             logging.info(f"Population_pdb_files: {population_output_pdbfiles}")
             logging.info("Before mutation in parallel")
-            logging.info(f"Argument: {argument}")
+            logging.info(f"Argument-gen{gen}: {argument}")
              
             #Mutate in parallel
             offspring = []
             offspring = self.my_protein_problem.mutate_population(argument)
+
+            #Fast relax
+            self.my_protein_problem.relax_population(offspring_output_pdbfiles)
 
             #Evaluate in parallel
             fitness = self.my_protein_problem.fitnessPop(offspring_output_pdbfiles)
@@ -398,10 +437,12 @@ class deap_sga_protein:
             #Assign the mutants to offspring and replace as new population
             #Create new population 
             i=0
-            
+            pop_copy = pop.copy()
             ##Add individuals to population
             for indiv in offspring:
-                ind = creator.Individual(indiv) 
+                ind = creator.Individual(indiv)
+                ind.father = pop_copy[i].id  # Set the father of the individual
+                ind.id = f'{gen}-{ind.id}'
                 ind.fitness.values = (fitness[i][FITNESS_INDEX],)  
                 #Add the new individuals to population
                 pop.append(ind)
@@ -410,7 +451,7 @@ class deap_sga_protein:
             logging.info(f"Pop = {pop} size: {len(pop)}")
 
             ##Select the new individual from new pop 
-            offspring, selected_indices = self.unique_offspring(pop, toolbox.select, popsize-elite_size)
+            offspring, selected_indices = self.unique_offspring(pop, toolbox.select, popsize-elite_size, elite_indexes)
             offspring = list(map(toolbox.clone, offspring))
             logging.info(f"Selected individuals from pop: {selected_indices}" )
 
@@ -426,6 +467,7 @@ class deap_sga_protein:
             # Gather all the fitnesses in one list and printthe stats
             fits = [ind.fitness.values[0] for ind in pop]
             logging.info(f"Fitness : {fits}")
+                
 
             
             new_generation_output_pdbfiles = [] 
@@ -438,6 +480,7 @@ class deap_sga_protein:
                 src1 = elite_file               
                 ## 1-Change names
                 dst1 = self.output + "/g" + str(gen) + "/" + "g"+ str(gen) +"_" + str(i) + ".pdb"
+                elite_inds[i].pdb = dst1
 
                 ## 2-Copy to directory
                 shutil.copyfile(src1, dst1)
@@ -461,11 +504,12 @@ class deap_sga_protein:
 
             # Save the rest of pdb files from population    
             i=elite_size
-            for idx in selected_indices:
+            for i_, idx in enumerate(selected_indices):
                 
                 ##pdb files
                 src1 = population_output_pdbfiles[idx]
                 dst1 = self.output + "/g" + str(gen) + "/" + "g"+ str(gen) +"_" + str(i) + ".pdb"
+                offspring[i_].pdb = dst1
                 #copy the original individual pdb file 
                 shutil.copyfile(src1, dst1)
 
@@ -496,18 +540,15 @@ class deap_sga_protein:
                 for ind in pop:
                     fit=ind.fitness.values
                     output_file.write((str(ind)) + " " + str(fit) + " "+ str(self.output + "/g" + str(gen) + "/" + "g"+ str(gen) +"_" + str(i) + ".pdb")+'\n')   
-
                     i=i+1    
             output_file.close() 
 
             ###Save population to text file AA representation###
-            ind_AA=[]
             with open(gendir+"/pop_g" + str(gen) + "_AA.txt", "w") as output_file:
                 i=0    
                 for ind in pop:
                     fit=ind.fitness.values 
-                    ind_AA=self.convert_to_characters(ind)  
-                    output_file.write((str(ind_AA)) + " " + str(fit) + " "+ str(self.output + "/g" + str(gen) + "/" + "g"+ str(gen) +"_" + str(i) + ".pdb")+'\n')   
+                    output_file.write((str(ind)) + " " + str(fit) + " "+ str(self.output + "/g" + str(gen) + "/" + "g"+ str(gen) +"_" + str(i) + ".pdb")+'\n')   
                     i=i+1    
             output_file.close() 
 
@@ -517,6 +558,8 @@ class deap_sga_protein:
             record = stats.compile(pop)
             logging.info("stats: ", record)
             logbook.record(gen=gen, **record)
+
+            save_population_to_csv(pop, gen)
 
             # # Save the logbook to a file
             if gen % freq == 0 or gen == ngenerations - 1:

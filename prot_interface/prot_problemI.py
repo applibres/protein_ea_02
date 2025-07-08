@@ -20,6 +20,7 @@ Multi-objective
 """
 import re
 import pyrosetta
+from pyrosetta.rosetta.protocols.relax import FastRelax
 from multiprocessing import Pool
 import prot_interface.prot_pyrosettaI as ppyrst
 import prot_interface.prot_energyInterfI as prot_en_intf
@@ -29,6 +30,7 @@ import prot_interface.prot_aa_stI as prot_aa
 import prot_interface.prot_settingsI as sets
 from prot_interface.logging_config import setup_logging
 import logging
+import os
 
 # Initialize logging before anything else
 setup_logging()
@@ -112,15 +114,26 @@ class prot_problem:
     def get_individual_seq(self, pdb_file):
         # Generate the sequence and initialize fixed values based on it
         sequence = self.sequence(pdb_file)
-        
-        #aminoacid list
+    
+        # Si no hay posiciones definidas (posible después de checkpoint), reconstruirlas
+        if not self.aa_pos_list:
+            logging.warning("aa_pos_list is empty. Recomputing from energy file...")
+            energy_filepath = self.list_aa.energy_interact_file(pdb_file)
+            aa_pos_dict = self.extract_mappings(energy_filepath)
+            self.aa_pos_list = list(aa_pos_dict.values())
+            logging.debug(f"Recomputed aa_pos_list: {self.aa_pos_list}")
+    
+        # Extraer aminoácidos en las posiciones definidas
         aa = []
         for aa_pos in self.aa_pos_list:
-            aa.append(sequence[aa_pos-1])
+            if aa_pos <= len(sequence):
+                aa.append(sequence[aa_pos - 1])
+            else:
+                logging.error(f"Invalid position {aa_pos} for sequence of length {len(sequence)}")
+                aa.append('X')  # placeholder in caso de error
 
-        # Convert letters to numbers
-        ind = [ord(x) - 64 for x in aa]  
-        return ind, aa           
+        return aa
+
 
 
 
@@ -153,10 +166,7 @@ class prot_problem:
         for aa_pos in self.aa_pos_list:
             aa.append(sequence[aa_pos-1])
 
-        # Convert letters to numbers
-        ind0 = [ord(x) - 64 for x in aa]  
-        #ind0 = [0,0]
-        return ind0, aa       
+        return aa       
         
 
     def fitness(self, pdb_file):
@@ -224,17 +234,18 @@ class prot_problem:
         population=[]
 
         for result_f in pool.starmap(self.mutate, args):
-            population.append(result_f)
+            ind = result_f
+            population.append(ind)
         
-        return population 
+        return population
 
 
     ##Mutation Operator##
     def mutate(self,pdb_file,output_file,mut_rate):
         #Mutate
         self.mut.mutate(self.scenario, self.ligand_chain, pdb_file, output_file, mut_rate)
-        indiv, aa = self.get_individual_seq(output_file)
-        return indiv
+        aa = self.get_individual_seq(output_file)
+        return aa
 
 
 
@@ -245,3 +256,18 @@ class prot_problem:
        seqTemp = ppyrst.prot_mut_py_rosetta(pdb_file,self.partners)
        #Get the sequence
        return seqTemp.sequence()
+    
+    def relax_population(self, pdb_files):
+        with Pool() as pool:
+            pool.map(self.relax, pdb_files)
+    
+    def relax(self, pdb_file):
+        logging.debug(f"Relaxing: {pdb_file}")
+        scorefxn = pyrosetta.get_fa_scorefxn()
+        relax = FastRelax()
+        relax.set_scorefxn(scorefxn)
+        relax.constrain_relax_to_start_coords(True)
+    
+        pose = pyrosetta.pose_from_pdb(pdb_file)
+        relax.apply(pose)
+        pose.dump_pdb(pdb_file)

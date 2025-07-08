@@ -25,7 +25,6 @@ import random
 from prot_interface.logging_config import setup_logging
 import logging
 import pickle
-import uuid
 
 # Initialize logging before anything else
 setup_logging()

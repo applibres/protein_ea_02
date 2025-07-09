@@ -8,13 +8,8 @@ CLI="eaprot_call.py"
 if [ $# -lt 6 ]; then
     echo "usage: ./protmut_run.sh <scenario> <algo> <sim_params> <algo_params> <checkpoint> <freq>"
     echo "for example:"
-    echo "$./protmut_run.sh test04 sea pdbfile=protein01.pdb,partners=A_C,ligand_chain=C gen=5,popsize=5,obj=1 mutp=1 False,2"
+    echo "$./protmut_run.sh test04 sea pdbfile=protein01.pdb,partners=A_C,ligand_chain=C gen=5,popsize=5,obj=1,mutp=1 False 2"
     exit
-fi
-
-# Create checkpoint.pkl if they do not exist
-if [ ! -f checkpoint.pkl ]; then
-    touch checkpoint.pkl
 fi
 
 SCENARIO=$1

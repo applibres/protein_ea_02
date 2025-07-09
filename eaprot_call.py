@@ -16,6 +16,7 @@ import prot_interface.prot_parserI as parser
 import prot_GA as sga
 from prot_interface.logging_config import setup_logging
 import logging
+import os
 
 # Initialize logging before anything else
 setup_logging()
@@ -56,6 +57,13 @@ def main():
 
     randomseed=15
     output=output+"/run"+str(randomseed)
+
+    # Create checkpoint.pkl if it isn't exist
+    checkpoint_path = f'{output}/checkpoint.pkl'
+    if not os.path.exists(checkpoint_path):
+        with open(checkpoint_path, 'wb') as f:
+            pass  
+    
 
     # Run the genetic algorithm
     sga.deap_sga_protein(SCENARIO, ALGO_PARAMS, SIM_PARAMS, output, randomseed).run(checkpoint=CHECKPOINT, freq=FREQ)

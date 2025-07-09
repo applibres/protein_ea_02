@@ -31,8 +31,8 @@ setup_logging()
 logger = logging.getLogger(__name__)
 
 # Custom function to save the population to a CSV file
-def save_population_to_csv(population, generation):
-    save_file = 'individuals.csv'
+def save_population_to_csv(population, generation, path):
+    save_file = f'{path}/individuals.csv'
     file_exists = os.path.isfile(save_file)
 
     with open(save_file, mode='a', newline='') as file:
@@ -250,7 +250,7 @@ class deap_sga_protein:
                 logging.debug("Loading from checkpoint")
 
                 # Load the checkpoint
-                with open("checkpoint.pkl", 'rb') as cp_file:
+                with open(f"{self.output}/checkpoint.pkl", 'rb') as cp_file:
                     cp = pickle.load(cp_file)
 
                 pop = cp['population']
@@ -351,7 +351,7 @@ class deap_sga_protein:
             output_file.close() 
     
             population_output_pdbfiles = offspring_output_pdbfiles.copy()
-            save_population_to_csv(pop, gen)
+            save_population_to_csv(pop, gen, self.output)
         
         # ############################ 
         # ## Main evolutionary loop ##
@@ -558,7 +558,7 @@ class deap_sga_protein:
             logging.info("stats: ", record)
             logbook.record(gen=gen, **record)
 
-            save_population_to_csv(pop, gen)
+            save_population_to_csv(pop, gen, self.output)
 
             # # Save the logbook to a file
             if gen % freq == 0 or gen == ngenerations - 1:
@@ -571,7 +571,7 @@ class deap_sga_protein:
                     rndstate=random.getstate(),
                     population_output_pdbfiles=population_output_pdbfiles
                 )
-                with open("checkpoint.pkl", 'wb') as cp_file:
+                with open(f"{self.output}/checkpoint.pkl", 'wb') as cp_file:
                     pickle.dump(cp, cp_file)
             
 

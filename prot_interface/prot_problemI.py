@@ -31,6 +31,7 @@ import prot_interface.prot_settingsI as sets
 from prot_interface.logging_config import setup_logging
 import logging
 import os
+import shutil
 
 # Initialize logging before anything else
 setup_logging()
@@ -266,8 +267,9 @@ class prot_problem:
         scorefxn = pyrosetta.get_fa_scorefxn()
         relax = FastRelax()
         relax.set_scorefxn(scorefxn)
-        relax.constrain_relax_to_start_coords(True)
+        relax.constrain_relax_to_start_coords(False)
     
         pose = pyrosetta.pose_from_pdb(pdb_file)
         relax.apply(pose)
-        pose.dump_pdb(pdb_file)
+        output_file = pdb_file.replace(".pdb", "_relaxed.pdb")
+        pose.dump_pdb(output_file)

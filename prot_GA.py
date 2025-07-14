@@ -23,6 +23,7 @@ import shutil
 import numpy
 import random
 from prot_interface.logging_config import setup_logging
+from graphTree import graphTree
 import logging
 import pickle
 
@@ -264,6 +265,9 @@ class deap_sga_protein:
                 return 
         else:
             logging.info("Starting new run")
+
+            #Delete old individuals.csv
+            os.remove(self.output + "/individuals.csv")
     
             #Create individual0
             logging.info(f"Creating Individual 0 from pdbfile: {self.pdbfile}")
@@ -300,6 +304,7 @@ class deap_sga_protein:
 
             #Fast relax
             self.my_protein_problem.relax_population(offspring_output_pdbfiles)
+            offspring_output_pdbfiles = list(map(lambda file: file.replace(".pdb", "_relaxed.pdb"), offspring_output_pdbfiles))
     
             #Evaluate in parallel
             fitness = self.my_protein_problem.fitnessPop(offspring_output_pdbfiles)
@@ -424,6 +429,7 @@ class deap_sga_protein:
 
             #Fast relax
             self.my_protein_problem.relax_population(offspring_output_pdbfiles)
+            offspring_output_pdbfiles = list(map(lambda file: file.replace(".pdb", "_relaxed.pdb"), offspring_output_pdbfiles))
 
             #Evaluate in parallel
             fitness = self.my_protein_problem.fitnessPop(offspring_output_pdbfiles)
@@ -478,7 +484,7 @@ class deap_sga_protein:
                 
                 src1 = elite_file               
                 ## 1-Change names
-                dst1 = self.output + "/g" + str(gen) + "/" + "g"+ str(gen) +"_" + str(i) + ".pdb"
+                dst1 = self.output + "/g" + str(gen) + "/" + "g"+ str(gen) +"_" + str(i) + "_relaxed.pdb"
                 elite_inds[i].pdb = dst1
 
                 ## 2-Copy to directory
@@ -507,7 +513,7 @@ class deap_sga_protein:
                 
                 ##pdb files
                 src1 = population_output_pdbfiles[idx]
-                dst1 = self.output + "/g" + str(gen) + "/" + "g"+ str(gen) +"_" + str(i) + ".pdb"
+                dst1 = self.output + "/g" + str(gen) + "/" + "g"+ str(gen) +"_" + str(i) + "_relaxed.pdb"
                 offspring[i_].pdb = dst1
                 #copy the original individual pdb file 
                 shutil.copyfile(src1, dst1)
@@ -538,7 +544,7 @@ class deap_sga_protein:
                 i=0    
                 for ind in pop:
                     fit=ind.fitness.values
-                    output_file.write((str(ind)) + " " + str(fit) + " "+ str(self.output + "/g" + str(gen) + "/" + "g"+ str(gen) +"_" + str(i) + ".pdb")+'\n')   
+                    output_file.write((str(ind)) + " " + str(fit) + " "+ str(self.output + "/g" + str(gen) + "/" + "g"+ str(gen) +"_" + str(i) + "_relaxed.pdb")+'\n')   
                     i=i+1    
             output_file.close() 
 
@@ -547,7 +553,7 @@ class deap_sga_protein:
                 i=0    
                 for ind in pop:
                     fit=ind.fitness.values 
-                    output_file.write((str(ind)) + " " + str(fit) + " "+ str(self.output + "/g" + str(gen) + "/" + "g"+ str(gen) +"_" + str(i) + ".pdb")+'\n')   
+                    output_file.write((str(ind)) + " " + str(fit) + " "+ str(self.output + "/g" + str(gen) + "/" + "g"+ str(gen) +"_" + str(i) + "_relaxed.pdb")+'\n')   
                     i=i+1    
             output_file.close() 
 
@@ -577,6 +583,9 @@ class deap_sga_protein:
 
         logging.info("-- End of Evolution --")
 
+        # Graphing generations tree
+        graphTree(self.output + "/individuals.csv", self.output)
+
         ## Remove tmp files
         
         logging.info("-- Saving Evolution Statistics--")
@@ -589,5 +598,4 @@ class deap_sga_protein:
             for i in range(0, int(ngenerations)): 
                 stat_file.write(str(genrt[i])+","+str(avg[i])+","+str(min[i])+","+str(max[i])+","+str(std[i])+"\n")   
         stat_file.close() 
-
 

@@ -434,6 +434,7 @@ class deap_sga_protein:
             #Fast relax
             self.my_protein_problem.relax_population(offspring_output_pdbfiles)
             offspring_output_pdbfiles = list(map(lambda file: file.replace(".pdb", "_relaxed.pdb"), offspring_output_pdbfiles))
+            population_output_pdbfiles = list(map(lambda file: file.replace(".pdb", "_relaxed.pdb"), population_output_pdbfiles))
 
             #Evaluate in parallel
             fitness = self.my_protein_problem.fitnessPop(offspring_output_pdbfiles)

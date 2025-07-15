@@ -261,17 +261,17 @@ class deap_sga_protein:
                 random.setstate(cp['rndstate'])
                 population_output_pdbfiles = cp['population_output_pdbfiles']
             except FileNotFoundError as fne:
-                logging.critical(f"Checkpoint file not found or corrupted.\n{fne}")
+                logging.critical(f"Checkpoint file not found.\n{fne}")
                 return 
             
             except EOFError as ee:
-                logging.critical(f"Checkpoint file not found or corrupted.\n{ee}")
+                logging.critical(f"Checkpoint file corrupted.\n{ee}")
                 return 
         else:
             logging.info("Starting new run")
 
             #Delete old individuals.csv
-            os.remove(self.output + "/individuals.csv")
+            if(os.path.exists(self.output + "/individuals.csv")):os.remove(self.output + "/individuals.csv")
     
             #Create individual0
             logging.info(f"Creating Individual 0 from pdbfile: {self.pdbfile}")

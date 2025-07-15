@@ -263,6 +263,7 @@ class prot_problem:
             pool.map(self.relax, pdb_files)
     
     def relax(self, pdb_file):
+        #pyrosetta.init() <-- For Mac
         logging.debug(f"Relaxing: {pdb_file}")
         scorefxn = pyrosetta.get_fa_scorefxn()
         relax = FastRelax()

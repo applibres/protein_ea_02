@@ -260,8 +260,12 @@ class deap_sga_protein:
                 logbook = cp['logbook']
                 random.setstate(cp['rndstate'])
                 population_output_pdbfiles = cp['population_output_pdbfiles']
-            except (FileNotFoundError, EOFError):
-                logging.critical(f"Checkpoint file not found or corrupted.\n{FileNotFoundError}\n{EOFError}")
+            except FileNotFoundError as fne:
+                logging.critical(f"Checkpoint file not found or corrupted.\n{fne}")
+                return 
+            
+            except EOFError as ee:
+                logging.critical(f"Checkpoint file not found or corrupted.\n{ee}")
                 return 
         else:
             logging.info("Starting new run")

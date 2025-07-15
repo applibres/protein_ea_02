@@ -58,6 +58,8 @@ def main():
     randomseed=15
     output=output+"/run"+str(randomseed)
 
+    # Create output directory
+    os.makedirs(output, exist_ok=True)
     # Create checkpoint.pkl if it isn't exist
     checkpoint_path = f'{output}/checkpoint.pkl'
     if not os.path.exists(checkpoint_path):

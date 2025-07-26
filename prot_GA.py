@@ -23,7 +23,7 @@ import shutil
 import numpy
 import random
 from prot_interface.logging_config import setup_logging
-from graphTree import graphTree
+from csvToJson import csvToTree
 import logging
 import pickle
 
@@ -31,9 +31,11 @@ import pickle
 setup_logging()
 logger = logging.getLogger(__name__)
 
+CSV_FILE = 'individuals.csv'
+
 # Custom function to save the population to a CSV file
 def save_population_to_csv(population, generation, path):
-    save_file = f'{path}/individuals.csv'
+    save_file = f'{path}/{CSV_FILE}'
     file_exists = os.path.isfile(save_file)
 
     with open(save_file, mode='a', newline='') as file:
@@ -98,8 +100,6 @@ class deap_sga_protein:
 
         #Initialize pyrosetta
         pyrosetta.init()
-
-
 
 
     def unique_offspring(self, population, selection_func, k, elite_idx):
@@ -220,11 +220,19 @@ class deap_sga_protein:
 
         ##Generation 0
 
+        #Relaxing Original inidividual if it is not
+        relaxed_name = self.pdbfile.replace('.pdb','_relaxed.pdb')
+        if not os.path.exists(self.my_protein_problem.config_path + relaxed_name): 
+            logging.info("Relaxing Original Individual")
+            self.my_protein_problem.relax(self.my_protein_problem.config_path + self.pdbfile)
+        
+        self.pdbfile = relaxed_name
+
         # # #Get the fitness value
         pdbfile_path = sets.CONFIG_PATH + self.scenario + "/" +self.pdbfile 
 
         src = pdbfile_path
-        dst = output_path + "g0_00.pdb"
+        dst = output_path + "g0_00_relaxed.pdb"
         
 
         #copy the original individual pdb file 
@@ -270,8 +278,8 @@ class deap_sga_protein:
         else:
             logging.info("Starting new run")
 
-            #Delete old individuals.csv
-            if(os.path.exists(self.output + "/individuals.csv")):os.remove(self.output + "/individuals.csv")
+            #Delete old CSV_FILE
+            if(os.path.exists(self.output + f"/{CSV_FILE}")):os.remove(self.output + f"/{CSV_FILE}")
     
             #Create individual0
             logging.info(f"Creating Individual 0 from pdbfile: {self.pdbfile}")
@@ -307,8 +315,7 @@ class deap_sga_protein:
             offspring_list = self.my_protein_problem.mutate_population(argument)
 
             #Fast relax
-            self.my_protein_problem.relax_population(offspring_output_pdbfiles)
-            offspring_output_pdbfiles = list(map(lambda file: file.replace(".pdb", "_relaxed.pdb"), offspring_output_pdbfiles))
+            offspring_output_pdbfiles = self.my_protein_problem.relax_population(offspring_output_pdbfiles)
     
             #Evaluate in parallel
             fitness = self.my_protein_problem.fitnessPop(offspring_output_pdbfiles)
@@ -416,7 +423,7 @@ class deap_sga_protein:
 
                 output_file_path = self.output + "/tmp" + "/" + "temp_g"+ str(gen) +"_" + str(num_ind) + ".pdb"
 
-                 #Add to generation_pdb_files the new ones (pop + offspring)
+                #Add to generation_pdb_files the new ones (pop + offspring)
                 
                 population_output_pdbfiles.append(output_file_path)
                 offspring_output_pdbfiles.append(output_file_path)
@@ -432,8 +439,7 @@ class deap_sga_protein:
             offspring = self.my_protein_problem.mutate_population(argument)
 
             #Fast relax
-            self.my_protein_problem.relax_population(offspring_output_pdbfiles)
-            offspring_output_pdbfiles = list(map(lambda file: file.replace(".pdb", "_relaxed.pdb"), offspring_output_pdbfiles))
+            offspring_output_pdbfiles = self.my_protein_problem.relax_population(offspring_output_pdbfiles)
             population_output_pdbfiles = list(map(lambda file: file.replace(".pdb", "_relaxed.pdb") if not file.endswith("_relaxed.pdb") else file, population_output_pdbfiles))
 
             #Evaluate in parallel
@@ -588,10 +594,16 @@ class deap_sga_protein:
 
         logging.info("-- End of Evolution --")
 
-        # Graphing generations tree
-        graphTree(self.output + "/individuals.csv", self.output)
+        # CSV to JSON
+        csv_path = os.path.join(self.output, CSV_FILE)
+        json_path = os.path.join(self.output, CSV_FILE.replace('.csv', '.json'))
+        csvToTree(csv_path, json_path)
 
         ## Remove tmp files
+        temp_files_path = os.path.join(self.output, "tmp")
+        for file_temp in os.listdir(temp_files_path):
+            file_temp_path = os.path.join(temp_files_path, file_temp)
+            os.remove(file_temp_path)
         
         logging.info("-- Saving Evolution Statistics--")
         logbook.header = "gen", "avg", "min", "max", "std"

@@ -261,6 +261,7 @@ class prot_problem:
     def relax_population(self, pdb_files):
         with Pool() as pool:
             pool.map(self.relax, pdb_files)
+        return list(map(lambda file: file.replace(".pdb", "_relaxed.pdb"), pdb_files))
     
     def relax(self, pdb_file):
         #pyrosetta.init() <-- For Mac
@@ -272,5 +273,6 @@ class prot_problem:
     
         pose = pyrosetta.pose_from_pdb(pdb_file)
         relax.apply(pose)
+        os.remove(pdb_file)
         output_file = pdb_file.replace(".pdb", "_relaxed.pdb")
         pose.dump_pdb(output_file)

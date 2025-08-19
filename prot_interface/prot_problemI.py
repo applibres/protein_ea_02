@@ -31,7 +31,6 @@ import prot_interface.prot_settingsI as sets
 from prot_interface.logging_config import setup_logging
 import logging
 import os
-import shutil
 
 # Initialize logging before anything else
 setup_logging()
@@ -176,6 +175,7 @@ class prot_problem:
         Parameters
         ----------
         pose_file: mutated chain pdb file name 
+        countmut: it takes both the new and original indiviudals and computes the num of mutations between them.
             
         
         Returns
@@ -189,7 +189,8 @@ class prot_problem:
         #f[0]: dG_separated
         #f[1]: dSASA_int
         #f[2]: dG_separated/dSASAx100
-        #f[3]: hbonds_int]
+        #f[3]: fa_atr
+        #f[4]: hbonds_int]
         f = self.protEn.getEnergyInterf(pdb_file)
         return f
 
@@ -218,12 +219,15 @@ class prot_problem:
             #result_f[0]:dG_separated
             #result_f[1]:dSASA_int
             #result_f[2]:dG_separated/dSASAx100
+            #result f[3]: fa_atr
             #result_f[3]:hbonds_int
         
 
         for result_f in pool.map(self.fitness,pop_pdb_files):
             #return the fitness solution
             evaluation.append(result_f)
+
+        pool.close()
         
         return evaluation 
 
@@ -237,6 +241,8 @@ class prot_problem:
         for result_f in pool.starmap(self.mutate, args):
             ind = result_f
             population.append(ind)
+
+        pool.close()
         
         return population
 
@@ -258,12 +264,13 @@ class prot_problem:
        #Get the sequence
        return seqTemp.sequence()
     
-    def relax_population(self, pdb_files):
+    def relax_population(self, pdb_files, remove_old=False):
+        args = [(pdb_file, remove_old) for pdb_file in pdb_files]
         with Pool() as pool:
-            pool.map(self.relax, pdb_files)
-        return list(map(lambda file: file.replace(".pdb", "_relaxed.pdb"), pdb_files))
-    
-    def relax(self, pdb_file):
+            pool.starmap(self.relax, args)
+        return [file.replace(".pdb", "_relaxed.pdb") for file in pdb_files]
+        
+    def relax(self, pdb_file, remove_old=False):
         #pyrosetta.init() <-- For Mac
         logging.debug(f"Relaxing: {pdb_file}")
         scorefxn = pyrosetta.get_fa_scorefxn()
@@ -273,6 +280,6 @@ class prot_problem:
     
         pose = pyrosetta.pose_from_pdb(pdb_file)
         relax.apply(pose)
-        os.remove(pdb_file)
         output_file = pdb_file.replace(".pdb", "_relaxed.pdb")
         pose.dump_pdb(output_file)
+        if remove_old: os.remove(pdb_file)

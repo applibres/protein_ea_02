@@ -3,5 +3,6 @@ __pycache__/
 **/__pycache__/
 *.pyc
 .venv/
-checkpoint.pkl
 loggest.txt
+exec_test.sh
+graphs.ipynb

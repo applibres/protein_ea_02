@@ -20,7 +20,7 @@ START_PATTERN = "##### PAIRWISE SHORT-RANGE ENERGIES #####"
 ###Params rosetta-commons docker image
 ROSETTA_BIN = "/usr/local/bin/"
 CONFIG_PATH = "/app/scenarios/"
-INTERF_EN = "interface_energy.cxx11threadserialization.linuxgccrelease -s"
+INTERF_EN = "interface_energy.default.linuxgccrelease -s"
 
 ###Params Cedia Cluster###
 #ROSETTA_BIN = "/usr/local/bin/"
@@ -33,10 +33,10 @@ FACE2_FILE_NAME = "faceC.txt"
 MSA_MATRIX = "MSA_matrix.tsv"
 
 ###Params Cedia Cluster###
-INTERF_AN = "InterfaceAnalyzer.cxx11threadserialization.linuxgccrelease -s"
+INTERF_AN = "InterfaceAnalyzer.default.linuxgccrelease -s"
 
 #INTERF_AN = "InterfaceAnalyzer.static.macosclangrelease -s"
-SCORE_INDEXES = [4,7,5,23] #score positions for dG_separated, dSASA_int, dG_separated/dSASAx100, hbonds_int
+SCORE_INDEXES = [4,7,5,11,23] #score positions for dG_separated, dSASA_int, dG_separated/dSASAx100, hbonds_int
 FLAGS = "-compute_packstat true -tracer_data_print false -pack_input true " \
         "-pack_separated true -add_regular_scores_to_scorefile true " \
         "-atomic_burial_cutoff 0.01 -sasa_calculator_probe_radius 1.4 " \

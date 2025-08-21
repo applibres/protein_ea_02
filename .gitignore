@@ -2,6 +2,12 @@ __pycache__/
 */__pycache__/
 **/__pycache__/
 *.pyc
+*.csv
+*_relaxed.pdb*
+*AA.txt
+*.json
+*.pkl
+test*/
 .venv/
 loggest.txt
 exec_test.sh

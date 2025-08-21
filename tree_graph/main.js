@@ -25,7 +25,7 @@ document.getElementById("json").addEventListener("change", (e) => {
 var i = 0,
     duration = 750,
     rectW = 70,
-    rectH = 60;
+    rectH = 70;
 
 var tree = d3.layout.tree().nodeSize([90, 40]);
 var diagonal = d3.svg.diagonal()

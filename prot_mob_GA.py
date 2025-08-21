@@ -25,7 +25,7 @@ import numpy as np
 import csv
 import random
 from prot_interface.logging_config import setup_logging
-from utils import csvToTree, read_scfiles, save_population_to_csv, save_HallofFame
+from utils import csvToTree, read_scfiles, save_population_to_csv, save_HallofFame, hamming_distance
 import logging
 import pickle
 
@@ -42,6 +42,7 @@ class CustomIndividual(list):
         self.father = None
         self.fitness = creator.FitnessMin()
         self.pdb = None
+        self.nmut = 0
 
 
 class deap_mob_sga_protein:
@@ -250,6 +251,7 @@ class deap_mob_sga_protein:
                     cp = pickle.load(cp_file)
 
                 pop = cp['population']
+                ind0 = cp['ind0']
                 ref_point = cp['ref_point']
                 hof = cp['hof']
                 ngen = cp['generation'] + 1
@@ -288,7 +290,7 @@ class deap_mob_sga_protein:
             fitness_indv0 = self.my_protein_problem.fitness(dst)
             
             # # # Set initial fitness value
-            ind0.fitness.values = (fitness_indv0[FITNESS_INDEX], fitness_indv0[FITNESS_INDEX_2])  
+            ind0.fitness.values = (fitness_indv0[FITNESS_INDEX], fitness_indv0[FITNESS_INDEX_2], 0)  
             logging.debug(f"Fitness Indv0: {ind0.fitness.values}")
 
             ## Create parameters to run in parallel
@@ -324,8 +326,9 @@ class deap_mob_sga_protein:
                 ind = creator.Individual(indiv)
                 ind.father = '0'
                 ind.pdb = pdb_file
+                ind.nmut = hamming_distance(ind0, indiv)
                 ind.id = f'0-{ind.id}'
-                ind.fitness.values = (fitness[i][FITNESS_INDEX],fitness[i][FITNESS_INDEX_2])  
+                ind.fitness.values = (fitness[i][FITNESS_INDEX],fitness[i][FITNESS_INDEX_2], hamming_distance(ind0, indiv))  
                 logging.debug(f"Fitness: {ind.fitness.values}")
                 pop.append(ind)
                 i=i+1
@@ -438,7 +441,8 @@ class deap_mob_sga_protein:
                 ind = creator.Individual(indiv)
                 ind.father = pop_copy[i].id  # Set the father of the individual
                 ind.id = f'{gen}-{ind.id}'
-                ind.fitness.values = (fitness[i][FITNESS_INDEX],fitness[i][FITNESS_INDEX_2])  
+                ind.nmut = hamming_distance(pop_copy[i], indiv)
+                ind.fitness.values = (fitness[i][FITNESS_INDEX],fitness[i][FITNESS_INDEX_2], hamming_distance(pop_copy[i], indiv))  
                 #Add the new individuals to population
                 pop.append(ind)
                 i=i+1
@@ -528,6 +532,7 @@ class deap_mob_sga_protein:
                 logging.debug(f"Checkpoint reached at generation {gen}, saving logbook.")
                 cp = dict(
                     population=pop,
+                    ind0=ind0,
                     ref_point=ref_point,
                     hof=hof,
                     hv=hv,

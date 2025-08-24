@@ -87,16 +87,17 @@ class prot_mut:
 		## Step 1: Choose Position to Mutate ####
 		# Get list of stable and unstable aa
         list_aa = prot_aa.prot_aa_extract(scenario, ligand_chain)
-        aans, aas = list_aa.aa_stab_nstab_list(pdb_file) 
+        aans, aas = list_aa.aa_stab_nstab_list(pdb_file)
+        logging.debug(f"AANS aminoacids: {aans}")
+        logging.debug(f"AAS aminoacids: {aas}")
 
 
         pyrosetta.init()
         init_pose = pyrosetta.io.pose_from_pdb(pdb_file)
         mut_pose = pyrosetta.io.Pose()
         mut_pose.assign(init_pose)
-
-
-
+        
+    
         if (len(aans) > 0 or len(aas) > 0):
             min_mut = int(1)
             max_mut = 0
@@ -105,17 +106,20 @@ class prot_mut:
                 max_mut = len(aans)*mut_rate
             elif (len(aas) > 0):
                 max_mut = len(aas)*mut_rate
+
+            logging.debug(f"Max mut: {max_mut}")
             
             if (int(max_mut) <= 1):
                 num_of_mut = 1
-            else:    
+            else:
                 num_of_mut = np.random.randint(min_mut,int(max_mut))
 
             logging.info("Number of Mutations =%s", num_of_mut)
 
 
             mut_locations = []
-            for i in range(num_of_mut):
+
+            for _ in range(num_of_mut):
                 if (len(aans)>0):
                     aa2mut = random.choice(aans)
                 elif (len(aas)>0):

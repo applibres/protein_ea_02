@@ -9,9 +9,10 @@ def csvToTree(csv_data, output):
     df['id'] = df['id'].astype(object)
     df['fitness'] = df['fitness'].astype(object)
     df['sequence'] = df['sequence'].astype(object)
+    df['nmut'] = df['nmut'].astype(object)
     frst = df.iloc[0]
     df = df[df['id'] != 'Original']
-    tree = {"name":str(frst['id']), "fitness":frst['fitness'].split(','), "sequence":frst['sequence']}
+    tree = {"name":str(frst['id']), "fitness":frst['fitness'].split(','), "sequence":frst['sequence'], "nmut":frst['nmut']}
     nodes = {tree['name']:tree}
 
     for _, row in df.iterrows():
@@ -19,11 +20,12 @@ def csvToTree(csv_data, output):
         father = row['father']
         fitness = row['fitness'].split(',')
         sequence = row['sequence']
+        nmut = row['nmut']
 
         if not nodes.get(name):
             node_father = nodes.get(father)
             if node_father:
-                node = {"name":name, "fitness":fitness, "sequence":sequence}
+                node = {"name":name, "fitness":fitness, "sequence":sequence, "nmut":nmut}
                 if not node_father.get("children"): node_father['children'] = []
                 node_father['children'].append(node)
                 nodes[name] = node
@@ -41,13 +43,14 @@ def save_population_to_csv(population, generation, savefile_path):
     with open(savefile_path, mode='a', newline='') as file:
         writer = csv.writer(file)
         if not file_exists:
-            writer.writerow(['generation', 'id', 'father', 'pdb_file', 'fitness', 'sequence'])
+            writer.writerow(['generation', 'id', 'father', 'nmut', 'pdb_file', 'fitness', 'sequence'])
 
         for ind in population:
             writer.writerow([
                 generation,
                 ind.id,
                 ind.father,
+                ind.nmut,
                 ind.pdb,
                 ','.join(map(str, ind.fitness.values)),
                 ''.join(map(str, ind))
@@ -60,7 +63,7 @@ def save_HallofFame(hof, savefile_path):
     with open(savefile_path, mode='a', newline='') as file:
         writer = csv.writer(file)
         if not file_exists:
-            writer.writerow(['generation','id', 'father', 'pdb_file', 'fitness', 'sequence'])
+            writer.writerow(['generation','id', 'father', 'nmut', 'pdb_file', 'fitness', 'sequence'])
         
         for ind in hof:
             if ind.id in seen: continue
@@ -69,6 +72,7 @@ def save_HallofFame(hof, savefile_path):
                 ind.id.split('-')[0],
                 ind.id,
                 ind.father,
+                ind.nmut,
                 ind.pdb,
                 ','.join(map(str, ind.fitness.values)),
                 ''.join(map(str, ind))

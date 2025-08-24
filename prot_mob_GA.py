@@ -290,7 +290,7 @@ class deap_mob_sga_protein:
             fitness_indv0 = self.my_protein_problem.fitness(dst)
             
             # # # Set initial fitness value
-            ind0.fitness.values = (fitness_indv0[FITNESS_INDEX], fitness_indv0[FITNESS_INDEX_2], 0)  
+            ind0.fitness.values = (fitness_indv0[FITNESS_INDEX], fitness_indv0[FITNESS_INDEX_2])  
             logging.debug(f"Fitness Indv0: {ind0.fitness.values}")
 
             ## Create parameters to run in parallel
@@ -328,7 +328,7 @@ class deap_mob_sga_protein:
                 ind.pdb = pdb_file
                 ind.nmut = hamming_distance(ind0, indiv)
                 ind.id = f'0-{ind.id}'
-                ind.fitness.values = (fitness[i][FITNESS_INDEX],fitness[i][FITNESS_INDEX_2], hamming_distance(ind0, indiv))  
+                ind.fitness.values = (fitness[i][FITNESS_INDEX],fitness[i][FITNESS_INDEX_2])
                 logging.debug(f"Fitness: {ind.fitness.values}")
                 pop.append(ind)
                 i=i+1
@@ -441,8 +441,8 @@ class deap_mob_sga_protein:
                 ind = creator.Individual(indiv)
                 ind.father = pop_copy[i].id  # Set the father of the individual
                 ind.id = f'{gen}-{ind.id}'
-                ind.nmut = hamming_distance(pop_copy[i], indiv)
-                ind.fitness.values = (fitness[i][FITNESS_INDEX],fitness[i][FITNESS_INDEX_2], hamming_distance(pop_copy[i], indiv))  
+                ind.nmut = hamming_distance(ind0, indiv)
+                ind.fitness.values = (fitness[i][FITNESS_INDEX],fitness[i][FITNESS_INDEX_2])  
                 #Add the new individuals to population
                 pop.append(ind)
                 i=i+1

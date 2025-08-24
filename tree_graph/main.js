@@ -25,7 +25,7 @@ document.getElementById("json").addEventListener("change", (e) => {
 var i = 0,
     duration = 750,
     rectW = 70,
-    rectH = 70;
+    rectH = 85;
 
 var tree = d3.layout.tree().nodeSize([90, 40]);
 var diagonal = d3.svg.diagonal()
@@ -97,6 +97,12 @@ function update(source) {
         .attr("x", rectW / 2)
         .attr("dy", "0em")
         .text(function(d) { return d.name; });
+
+    // nmut
+    nodeText.append("tspan")
+        .attr("x", rectW / 2)
+        .attr("dy", "1em")
+        .text(function(d) { return `nmut: ${d.nmut}`; });
         
     // fitness
     nodeText.each(function(d) {

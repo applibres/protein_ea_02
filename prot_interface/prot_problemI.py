@@ -256,7 +256,7 @@ class prot_problem:
 
 
 
-     ##return the pose sequence    
+     ##return the pose sequence
     def sequence(self,pdb_file):
        #Call the object constructor
        

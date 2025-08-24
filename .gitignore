@@ -10,5 +10,5 @@ __pycache__/
 test*/
 .venv/
 loggest.txt
+test.ipynb
 exec_test.sh
-graphs.ipynb

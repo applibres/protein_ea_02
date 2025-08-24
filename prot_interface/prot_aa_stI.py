@@ -67,8 +67,6 @@ class prot_aa_extract:
        	tuple: Two lists - positive_interactions and negative_interactions, two sums - sum_positive and sum_negative,
               and a dictionary of ligand entities and their interactions.
     	"""
-		positive_interactions = []  # Initialize empty list for positive interactions
-		negative_interactions = []  # Initialize empty list for negative interactions
 		sum_positive = 0.0  # Initialize sum for positive energies
 		sum_negative = 0.0  # Initialize sum for negative energies
 		ligand_interactions = {}  # Dictionary to store interactions for ligand entities

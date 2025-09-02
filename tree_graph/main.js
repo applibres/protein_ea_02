@@ -3,6 +3,11 @@ var root;
 const width_ = window.innerWidth;
 const height_ = window.innerHeight;
 
+var i = 0,
+    duration = 750,
+    rectW = 70,
+    rectH = 0;
+
 document.getElementById("json").addEventListener("change", (e) => {
     const file = e.target.files?.[0];
     
@@ -11,6 +16,8 @@ document.getElementById("json").addEventListener("change", (e) => {
     const reader = new FileReader();
     reader.onload = function(){
         const data = JSON.parse(reader.result);
+        rectH = data.fitness.length*40 - 5
+        
         root = data;
         root.x0 = width_/2;
         root.y0 = height_ / 2;
@@ -20,12 +27,6 @@ document.getElementById("json").addEventListener("change", (e) => {
 
     reader.readAsText(file);
 });
-
-
-var i = 0,
-    duration = 750,
-    rectW = 70,
-    rectH = 85;
 
 var tree = d3.layout.tree().nodeSize([90, 40]);
 var diagonal = d3.svg.diagonal()

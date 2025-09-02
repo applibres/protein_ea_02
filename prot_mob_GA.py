@@ -47,7 +47,7 @@ class CustomIndividual(list):
 
 class deap_mob_sga_protein:
 
-    def __init__(self, scenario, algoritm_params, sim_params, output, randomseed):
+    def __init__(self, scenario, algoritm_params, sim_params, fitness_idxs, output, randomseed):
         """Constructor
         
         Parameters
@@ -66,7 +66,8 @@ class deap_mob_sga_protein:
 
         """
         self.algoritm_params = algoritm_params 
-        self.sim_params = sim_params   
+        self.sim_params = sim_params
+        self.fitness_idxs = fitness_idxs 
         self.output = output
         self.randomseed = randomseed
         self.scenario = scenario
@@ -122,6 +123,26 @@ class deap_mob_sga_protein:
                     selected.add(rand_idx)
 
         return unique_inds, indices
+    
+    def modify_mutrate(self, hv, window=5, eps=1e-3, inc=0.1, dec=0.1):
+        """Adaptive mutation rate based on hypervolume trend"""
+        if len(hv) < window+1:
+            return 0.0
+    
+        curr_hv = hv[-1]
+        prev_best = max(hv[-window-1:-1])
+        delta = curr_hv - prev_best
+    
+        if delta < -eps:
+            return inc
+    
+        elif abs(delta) <= eps:
+            return inc
+    
+        else:
+            return -dec
+    
+
 
     # Custom simple evolutionary algorithm
     def run(self, checkpoint=False, freq=2):
@@ -139,9 +160,6 @@ class deap_mob_sga_protein:
 
         #Algorithm Params
 
-        FITNESS_INDEX = 2
-        FITNESS_INDEX_2 = 3
-
         PATH_STATISTICS = os.path.join(os.path.dirname(self.output), "statistics")
         SCFILE_CSV = os.path.join(PATH_STATISTICS, f"run{self.randomseed}_scfile.csv")
         SAVEPOPGEN_CSV = os.path.join(PATH_STATISTICS, f'run{self.randomseed}_individuals.csv')
@@ -153,7 +171,7 @@ class deap_mob_sga_protein:
         
         popsize = self.algoritm_params['popsize']
         ngenerations = self.algoritm_params['gen']
-        nobj = self.algoritm_params['obj']
+        nobj = len(self.fitness_idxs)
         mutprob = self.algoritm_params['mutp']
         logging.info("###Algorithm Parameters###")
         logging.info(f"popsize = {popsize}")
@@ -262,11 +280,11 @@ class deap_mob_sga_protein:
                 population_output_pdbfiles = cp['population_output_pdbfiles']
             except FileNotFoundError as fne:
                 logging.critical(f"Checkpoint file not found.\n{fne}")
-                return 
+                exit(1)
             
             except EOFError as ee:
                 logging.critical(f"Checkpoint file corrupted.\n{ee}")
-                return 
+                exit(1)
         else:
             logging.info("Starting new run")
 
@@ -290,7 +308,7 @@ class deap_mob_sga_protein:
             fitness_indv0 = self.my_protein_problem.fitness(dst)
             
             # # # Set initial fitness value
-            ind0.fitness.values = (fitness_indv0[FITNESS_INDEX], fitness_indv0[FITNESS_INDEX_2])  
+            ind0.fitness.values = tuple(fitness_indv0[fitness_idx] for fitness_idx in self.fitness_idxs)
             logging.debug(f"Fitness Indv0: {ind0.fitness.values}")
 
             ## Create parameters to run in parallel
@@ -328,7 +346,7 @@ class deap_mob_sga_protein:
                 ind.pdb = pdb_file
                 ind.nmut = hamming_distance(ind0, indiv)
                 ind.id = f'0-{ind.id}'
-                ind.fitness.values = (fitness[i][FITNESS_INDEX],fitness[i][FITNESS_INDEX_2])
+                ind.fitness.values = tuple(fitness[i][fitness_idx] for fitness_idx in self.fitness_idxs)
                 logging.debug(f"Fitness: {ind.fitness.values}")
                 pop.append(ind)
                 i=i+1
@@ -442,7 +460,7 @@ class deap_mob_sga_protein:
                 ind.father = pop_copy[i].id  # Set the father of the individual
                 ind.id = f'{gen}-{ind.id}'
                 ind.nmut = hamming_distance(ind0, indiv)
-                ind.fitness.values = (fitness[i][FITNESS_INDEX],fitness[i][FITNESS_INDEX_2])  
+                ind.fitness.values = tuple(fitness[i][fitness_idx] for fitness_idx in self.fitness_idxs) 
                 #Add the new individuals to population
                 pop.append(ind)
                 i=i+1
@@ -506,7 +524,11 @@ class deap_mob_sga_protein:
             logging.info(f"new_generation_output_pdbfiles={new_generation_output_pdbfiles}")
             ##Update population output files from new generation ###
             population_output_pdbfiles.clear()
-            population_output_pdbfiles = new_generation_output_pdbfiles.copy()    
+            population_output_pdbfiles = new_generation_output_pdbfiles.copy()  
+
+            #Update mut_rate
+            #mut_rate = np.clip(mut_rate + self.modify_mutrate(hv), 0.05, 0.6)
+            #logging.debug(f"Mutation rate: {mut_rate}")
 
 
             ###Save population to text file AA representation###

@@ -12,13 +12,13 @@ def csvToTree(csv_data, output):
     df['nmut'] = df['nmut'].astype(object)
     frst = df.iloc[0]
     df = df[df['id'] != 'Original']
-    tree = {"name":str(frst['id']), "fitness":frst['fitness'].split(','), "sequence":frst['sequence'], "nmut":frst['nmut']}
+    tree = {"name":str(frst['id']), "fitness":frst['fitness'], "sequence":frst['sequence'], "nmut":frst['nmut']}
     nodes = {tree['name']:tree}
 
     for _, row in df.iterrows():
         name = row['id']
         father = row['father']
-        fitness = row['fitness'].split(',')
+        fitness = row['fitness']
         sequence = row['sequence']
         nmut = row['nmut']
 
@@ -78,20 +78,33 @@ def save_HallofFame(hof, savefile_path):
                 ''.join(map(str, ind))
             ])
 
+def get_sequence(generation, indiv):
+    with open(f"test3_2mobj/run15/g{generation}/pop_g{generation}_AA.txt", "r") as f:
+        lines = f.readlines()
+
+    line = lines[indiv].strip()
+    sequence = re.findall(r"[A-Za-z]", line.split(']')[0])
+    return sequence
+
 def add_sc(sc_file):
     df = pd.read_csv(sc_file, sep=r"\s+", skiprows=1)
     df.drop(columns=["SCORE:"], inplace=True)
     return df
 
 def read_scfiles(path, output):
+    original_sequence = get_sequence(0,0)
     dirs = [os.path.join(path, d) for d in os.listdir(path) if os.path.isdir(os.path.join(path, d)) and d != 'tmp']
     df = pd.DataFrame()
     for dir in dirs:
+        generation = int(re.search(r"g(\d+)", dir).group(1))
         for file in os.listdir(dir):
-            generation = int(re.search(r"g(\d+)", dir).group(1))
             if file.endswith(".sc"):
+                n_indiv = int(re.search(r"_(\d+)_", file).group(1))
+                sequence = get_sequence(generation, n_indiv)
                 df_ = add_sc(os.path.join(dir, file))
                 df_['generation'] = generation
+                df_['sequence'] = "".join(sequence)
+                df_['nmut'] = hamming_distance(original_sequence, sequence)
                 df = pd.concat([df_,df], axis=0, ignore_index=True)
     
     df.drop(columns=["description"], inplace=True)

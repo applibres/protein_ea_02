@@ -23,7 +23,7 @@ import shutil
 import numpy
 import random
 from prot_interface.logging_config import setup_logging
-from utils import csvToTree
+from utils import csvToTree, hamming_distance, save_population_to_csv, read_scfiles
 import logging
 import pickle
 
@@ -32,26 +32,6 @@ setup_logging()
 logger = logging.getLogger(__name__)
 
 CSV_FILE = 'individuals.csv'
-
-# Custom function to save the population to a CSV file
-def save_population_to_csv(population, generation, path):
-    save_file = f'{path}/{CSV_FILE}'
-    file_exists = os.path.isfile(save_file)
-
-    with open(save_file, mode='a', newline='') as file:
-        writer = csv.writer(file)
-        if not file_exists:
-            writer.writerow(['generation', 'id', 'father', 'pdb_file', 'fitness', 'sequence'])
-
-        for ind in population:
-            writer.writerow([
-                generation,
-                ind.id,
-                ind.father,
-                ind.pdb,
-                f'{ind.fitness.values[0]},{ind.fitness.values[1]}' if ind.fitness.valid else None,
-                ''.join(map(str, ind))
-            ])
 
 class CustomIndividual(list):
     counter = 0
@@ -62,10 +42,11 @@ class CustomIndividual(list):
         self.father = None
         self.fitness = creator.FitnessMin()
         self.pdb = None
+        self.nmut = 0
 
 class deap_sga_protein:
 
-    def __init__(self, scenario, algoritm_params, sim_params, output, randomseed):
+    def __init__(self, scenario, algoritm_params, sim_params, fitness_idx, output, randomseed):
         """Constructor
         
         Parameters
@@ -84,7 +65,8 @@ class deap_sga_protein:
 
         """
         self.algoritm_params = algoritm_params 
-        self.sim_params = sim_params   
+        self.sim_params = sim_params
+        self.fitness_idx = fitness_idx[0]
         self.output = output
         self.randomseed = randomseed
         self.scenario = scenario
@@ -156,16 +138,20 @@ class deap_sga_protein:
         #Capture parameters
 
         #Algorithm Params
+        
+        PATH_STATISTICS = os.path.join(os.path.dirname(self.output), "statistics")
+        SCFILE_CSV = os.path.join(PATH_STATISTICS, f"run{self.randomseed}_scfile.csv")
+        SAVEPOPGEN_CSV = os.path.join(PATH_STATISTICS, f'run{self.randomseed}_individuals.csv')
+        SAVE_STATISTICS_CSV = os.path.join(PATH_STATISTICS, f"run{self.randomseed}_statistics.csv")
 
-        FITNESS_INDEX = 2 #index to capture the fitness value
+        os.makedirs(PATH_STATISTICS, exist_ok=True)
+        
         popsize = self.algoritm_params['popsize']
         ngenerations = self.algoritm_params['gen']
-        nobj = self.algoritm_params['obj']
         mutprob = self.algoritm_params['mutp']
         logging.info("###Algorithm Parameters###")
         logging.info(f"popsize = {popsize}")
         logging.info(f"ngenerations = {ngenerations}")
-        logging.info(f"nobj = {nobj}")
         logging.info(f"mut prob = {mutprob}")
     
         
@@ -193,7 +179,6 @@ class deap_sga_protein:
         else:
             os.makedirs(output_path)
             logging.debug(f"{output_path} directory created")
-
 
         ##Declare FitnessMinimization and Individual
         creator.create("FitnessMin", base.Fitness, weights=(-1.0,))  # Minimization problem
@@ -263,6 +248,7 @@ class deap_sga_protein:
                     cp = pickle.load(cp_file)
 
                 pop = cp['population']
+                ind0 = cp['ind0']
                 ngen = cp['generation'] + 1
                 record = cp['record']
                 logbook = cp['logbook']
@@ -294,7 +280,7 @@ class deap_sga_protein:
             fitness_indv0 = self.my_protein_problem.fitness(dst)
             
             # # # Set initial fitness value
-            ind0.fitness.values = (fitness_indv0[FITNESS_INDEX],)  
+            ind0.fitness.values = (fitness_indv0[self.fitness_idx],)  
             logging.debug(f"Fitness Indv0: {ind0.fitness.values}")
 
             ## Create parameters to run in parallel
@@ -331,7 +317,8 @@ class deap_sga_protein:
                 ind.father = '0'
                 ind.pdb = pdb_file
                 ind.id = f'0-{ind.id}'
-                ind.fitness.values = (fitness[i][FITNESS_INDEX],)  
+                ind.nmut = hamming_distance(ind0, indiv)
+                ind.fitness.values = (fitness[i][self.fitness_idx],)  
                 logging.debug(f"Fitness: {ind.fitness.values}")
                 pop.append(ind)
                 i=i+1
@@ -367,7 +354,7 @@ class deap_sga_protein:
             output_file.close() 
     
             population_output_pdbfiles = offspring_output_pdbfiles.copy()
-            save_population_to_csv(pop, gen, self.output)
+            save_population_to_csv(pop, gen, SAVEPOPGEN_CSV)
         
         # ############################ 
         # ## Main evolutionary loop ##
@@ -459,7 +446,8 @@ class deap_sga_protein:
                 ind = creator.Individual(indiv)
                 ind.father = pop_copy[i].id  # Set the father of the individual
                 ind.id = f'{gen}-{ind.id}'
-                ind.fitness.values = (fitness[i][FITNESS_INDEX],)  
+                ind.nmut = hamming_distance(ind0, indiv)
+                ind.fitness.values = (fitness[i][self.fitness_idx],)  
                 #Add the new individuals to population
                 pop.append(ind)
                 i=i+1
@@ -549,15 +537,6 @@ class deap_sga_protein:
             ##Update population output files from new generation ###
             population_output_pdbfiles.clear()
             population_output_pdbfiles = new_generation_output_pdbfiles.copy()    
-                
-            ###Save population to text file integer representation###
-            with open(gendir+"/pop_g" + str(gen) + ".txt", "w") as output_file:
-                i=0    
-                for ind in pop:
-                    fit=ind.fitness.values
-                    output_file.write((str(ind)) + " " + str(fit) + " "+ str(self.output + "/g" + str(gen) + "/" + "g"+ str(gen) +"_" + str(i) + "_relaxed.pdb")+'\n')   
-                    i=i+1    
-            output_file.close() 
 
             ###Save population to text file AA representation###
             with open(gendir+"/pop_g" + str(gen) + "_AA.txt", "w") as output_file:
@@ -575,13 +554,14 @@ class deap_sga_protein:
             logging.info("stats: ", record)
             logbook.record(gen=gen, **record)
 
-            save_population_to_csv(pop, gen, self.output)
+            save_population_to_csv(pop, gen, SAVEPOPGEN_CSV)
 
             # # Save the logbook to a file
             if gen % freq == 0 or gen == ngenerations - 1:
                 logging.debug(f"Checkpoint reached at generation {gen}, saving logbook.")
                 cp = dict(
                     population=pop,
+                    ind0=ind0,
                     generation=gen,
                     record=record,
                     logbook=logbook,
@@ -601,15 +581,16 @@ class deap_sga_protein:
         logging.info("-- End of Evolution --")
 
         # CSV to JSON
-        csv_path = os.path.join(self.output, CSV_FILE)
-        json_path = os.path.join(self.output, CSV_FILE.replace('.csv', '.json'))
-        csvToTree(csv_path, json_path)
+        csvToTree(SAVEPOPGEN_CSV, SAVEPOPGEN_CSV.replace('.csv', '.json'))
+
+        # Group .sc files into .csv
+        read_scfiles(self.output,SCFILE_CSV)
         
         logging.info("-- Saving Evolution Statistics--")
         logbook.header = "gen", "avg", "min", "max", "std"
         gen, avg, min, max, std = logbook.select("gen", "avg", "min", "max", "std") 
         
-        with open(self.output+"/run"+str(self.randomseed)+"_statistics.csv", "w") as stat_file:                    
+        with open(SAVE_STATISTICS_CSV, "w") as stat_file:                    
             genrt, avg, min, max, std = logbook.select("gen", "avg", "min", "max", "std") 
             stat_file.write("gen,avg,min,max,std\n")
             for i in range(0, int(ngenerations)): 

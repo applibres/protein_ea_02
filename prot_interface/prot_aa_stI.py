@@ -131,8 +131,9 @@ class prot_aa_extract:
 			subprocess.call("sleep 5", shell=True)			
 
 		except subprocess.CalledProcessError as e:
-			logging.error(f"Unexpected error trying to run command: {command}, {return_code}: return_code")
-			logging.error(e.output)
+			logging.critical(f"Unexpected error trying to run command: {command}, {return_code}: return_code")
+			logging.critical(e.output)
+			exit(1)
 
 		energy_file_path = output_file_name
 

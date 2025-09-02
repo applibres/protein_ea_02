@@ -39,3 +39,9 @@ def parse_params(param_str):
             else:
                 dict_params[key] = parse_value(value)
     return dict_params
+
+def parse_list(list_str):
+    ''' convert string param to a list '''
+    list_params = list_str.split('=')[1].split(',')
+    return list(map(lambda x:int(x), list_params))
+

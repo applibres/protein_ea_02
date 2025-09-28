@@ -30,7 +30,7 @@ INTERF_EN = "interface_energy.default.linuxgccrelease -s"
 
 FACE1_FILE_NAME = "faceA.txt"
 FACE2_FILE_NAME = "faceC.txt"
-MSA_MATRIX = "MSA_matrix.tsv"
+MSA_MATRIX = "MSA_matrix_old.tsv"
 
 ###Params Cedia Cluster###
 INTERF_AN = "InterfaceAnalyzer.default.linuxgccrelease -s"

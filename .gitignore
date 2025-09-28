@@ -12,3 +12,4 @@ test*/
 loggest.txt
 test.ipynb
 exec_test.sh
+*.sqsh

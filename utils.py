@@ -78,8 +78,9 @@ def save_HallofFame(hof, savefile_path):
                 ''.join(map(str, ind))
             ])
 
-def get_sequence(generation, indiv):
-    with open(f"test3_2mobj/run15/g{generation}/pop_g{generation}_AA.txt", "r") as f:
+def get_sequence(generation, indiv, src_path):
+    file = os.path.join(src_path, f"g{generation}/pop_g{generation}_AA.txt")
+    with open(file, "r") as f:
         lines = f.readlines()
 
     line = lines[indiv].strip()
@@ -92,7 +93,7 @@ def add_sc(sc_file):
     return df
 
 def read_scfiles(path, output):
-    original_sequence = get_sequence(0,0)
+    original_sequence = get_sequence(0, 0, path)
     dirs = [os.path.join(path, d) for d in os.listdir(path) if os.path.isdir(os.path.join(path, d)) and d != 'tmp']
     df = pd.DataFrame()
     for dir in dirs:
@@ -100,7 +101,7 @@ def read_scfiles(path, output):
         for file in os.listdir(dir):
             if file.endswith(".sc"):
                 n_indiv = int(re.search(r"_(\d+)_", file).group(1))
-                sequence = get_sequence(generation, n_indiv)
+                sequence = get_sequence(generation, n_indiv, path)
                 df_ = add_sc(os.path.join(dir, file))
                 df_['generation'] = generation
                 df_['sequence'] = "".join(sequence)

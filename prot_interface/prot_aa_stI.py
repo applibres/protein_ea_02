@@ -9,8 +9,6 @@ Phage Therapy Group
 """
 
 import subprocess
-import re
-from pathlib import Path
 import prot_interface.prot_settingsI as sets
 from prot_interface.logging_config import setup_logging
 import logging
@@ -152,19 +150,13 @@ class prot_aa_extract:
 
 		list_of_aa_s = []
 		list_of_aa_ns = []
-		positive_interactions_ranked = []
-		negative_interactions_ranked = []
 		for ligand_entity, data in ligand_interactions.items():
 			total_energy = data["total_energy"]
 			n_positive = data["positive_interactions"]
 			n_negative = data["negative_interactions"]
 			if total_energy >= 0:
 				list_of_aa_ns.append([ligand_entity, total_energy, n_positive, n_negative])
-        		# Rank positive interactions (most positive first)
-				positive_interactions_ranked = sorted(list_of_aa_ns, key=lambda x: x[1], reverse=True)
 			else:
 				list_of_aa_s.append([ligand_entity, total_energy, n_positive, n_negative])
-        		# Rank negative interactions (most negative first)
-				negative_interactions_ranked = sorted(list_of_aa_s, key=lambda x: x[1])
 
-		return positive_interactions_ranked, negative_interactions_ranked
+		return list_of_aa_ns, list_of_aa_s

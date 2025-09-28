@@ -81,7 +81,16 @@ class deap_sga_protein:
 
 
         #Initialize pyrosetta
-        pyrosetta.init()
+        pyrosetta.init(
+            "-nstruct 1 "
+            "-ignore_zero_occupancy false "
+            "-ex1 -ex2 "
+            "-use_input_sc "
+            "-flip_HNQ "
+            "-no_optH false"
+        )
+        #pyrosetta.init()
+
 
 
     def unique_offspring(self, population, selection_func, k, elite_idx):
@@ -273,7 +282,7 @@ class deap_sga_protein:
             logging.info(f"Individual-Original : {aa0}")
             ind0 = creator.Individual(aa0)  # Instantiate the Individual with fixed values
             ind0.father = "Original"
-            ind0.pdb = self.pdbfile
+            ind0.pdb = "g0_00_relaxed.pdb"
             
             logging.debug(f"ind0: {ind0}")
     

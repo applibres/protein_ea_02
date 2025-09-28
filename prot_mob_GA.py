@@ -527,7 +527,7 @@ class deap_mob_sga_protein:
             population_output_pdbfiles = new_generation_output_pdbfiles.copy()  
 
             #Update mut_rate
-            #mut_rate = np.clip(mut_rate + self.modify_mutrate(hv), 0.05, 0.6)
+            #mut_rate = np.clip(mut_rate + self.modify_mutrate(hv), 0.1, 0.8)
             #logging.debug(f"Mutation rate: {mut_rate}")
 
 

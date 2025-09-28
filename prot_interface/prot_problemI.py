@@ -30,6 +30,7 @@ import prot_interface.prot_aa_stI as prot_aa
 import prot_interface.prot_settingsI as sets
 from prot_interface.logging_config import setup_logging
 import logging
+import random
 import os
 
 # Initialize logging before anything else
@@ -271,15 +272,24 @@ class prot_problem:
         return [file.replace(".pdb", "_relaxed.pdb") for file in pdb_files]
         
     def relax(self, pdb_file, remove_old=False):
-        #pyrosetta.init() <-- For Mac
+        #pyrosetta.init(        <-- For Mac
+        #    "-nstruct 1 "
+        #    "-ignore_zero_occupancy false "
+        #    "-ex1 -ex2 "
+        #    "-use_input_sc "
+        #    "-flip_HNQ "
+        #    "-no_optH false"
+        #)
+        pose = pyrosetta.pose_from_pdb(pdb_file)
+
         logging.debug(f"Relaxing: {pdb_file}")
         scorefxn = pyrosetta.get_fa_scorefxn()
         relax = FastRelax()
         relax.set_scorefxn(scorefxn)
-        relax.constrain_relax_to_start_coords(False)
-    
-        pose = pyrosetta.pose_from_pdb(pdb_file)
+        relax.constrain_relax_to_start_coords(True)
+        relax.ramp_down_constraints(False)
         relax.apply(pose)
+
         output_file = pdb_file.replace(".pdb", "_relaxed.pdb")
         pose.dump_pdb(output_file)
         if remove_old: os.remove(pdb_file)

@@ -1,2 +1,6 @@
 tree_graph/
 .venv/
+test*/
+*.ipynb
+__pycache__/
+*/__pycache__/

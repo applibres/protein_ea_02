@@ -49,8 +49,9 @@ class prot_energyInterf:
 			return_code = subprocess.call(command, shell=True)
 
 		except subprocess.CalledProcessError as e:
-			logging.error(f"Unexpected error trying to run command: {command}, {return_code}: return_code")
-			logging.error(e.output)
+			logging.critical(f"Unexpected error trying to run command: {command}, {return_code}: return_code")
+			logging.critical(e.output)
+			exit(1)
 
 		# open the output file 
 		file = open(output_file_name) 

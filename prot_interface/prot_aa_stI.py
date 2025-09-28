@@ -9,8 +9,6 @@ Phage Therapy Group
 """
 
 import subprocess
-import re
-from pathlib import Path
 import prot_interface.prot_settingsI as sets
 from prot_interface.logging_config import setup_logging
 import logging
@@ -67,8 +65,6 @@ class prot_aa_extract:
        	tuple: Two lists - positive_interactions and negative_interactions, two sums - sum_positive and sum_negative,
               and a dictionary of ligand entities and their interactions.
     	"""
-		positive_interactions = []  # Initialize empty list for positive interactions
-		negative_interactions = []  # Initialize empty list for negative interactions
 		sum_positive = 0.0  # Initialize sum for positive energies
 		sum_negative = 0.0  # Initialize sum for negative energies
 		ligand_interactions = {}  # Dictionary to store interactions for ligand entities
@@ -133,8 +129,9 @@ class prot_aa_extract:
 			subprocess.call("sleep 5", shell=True)			
 
 		except subprocess.CalledProcessError as e:
-			logging.error(f"Unexpected error trying to run command: {command}, {return_code}: return_code")
-			logging.error(e.output)
+			logging.critical(f"Unexpected error trying to run command: {command}, {return_code}: return_code")
+			logging.critical(e.output)
+			exit(1)
 
 		energy_file_path = output_file_name
 
@@ -153,19 +150,13 @@ class prot_aa_extract:
 
 		list_of_aa_s = []
 		list_of_aa_ns = []
-		positive_interactions_ranked = []
-		negative_interactions_ranked = []
 		for ligand_entity, data in ligand_interactions.items():
 			total_energy = data["total_energy"]
 			n_positive = data["positive_interactions"]
 			n_negative = data["negative_interactions"]
 			if total_energy >= 0:
 				list_of_aa_ns.append([ligand_entity, total_energy, n_positive, n_negative])
-        		# Rank positive interactions (most positive first)
-				positive_interactions_ranked = sorted(list_of_aa_ns, key=lambda x: x[1], reverse=True)
 			else:
 				list_of_aa_s.append([ligand_entity, total_energy, n_positive, n_negative])
-        		# Rank negative interactions (most negative first)
-				negative_interactions_ranked = sorted(list_of_aa_s, key=lambda x: x[1])
 
-		return positive_interactions_ranked, negative_interactions_ranked
+		return list_of_aa_ns, list_of_aa_s

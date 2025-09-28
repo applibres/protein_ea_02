@@ -3,13 +3,21 @@ var root;
 const width_ = window.innerWidth;
 const height_ = window.innerHeight;
 
+var i = 0,
+    duration = 750,
+    rectW = 70,
+    rectH = 0;
+
 document.getElementById("json").addEventListener("change", (e) => {
     const file = e.target.files?.[0];
+    
     if (!file) return;
 
     const reader = new FileReader();
     reader.onload = function(){
         const data = JSON.parse(reader.result);
+        rectH = data.fitness.length*40 - 5
+        
         root = data;
         root.x0 = width_/2;
         root.y0 = height_ / 2;
@@ -20,13 +28,7 @@ document.getElementById("json").addEventListener("change", (e) => {
     reader.readAsText(file);
 });
 
-
-var i = 0,
-    duration = 750,
-    rectW = 60,
-    rectH = 30;
-
-var tree = d3.layout.tree().nodeSize([70, 40]);
+var tree = d3.layout.tree().nodeSize([90, 40]);
 var diagonal = d3.svg.diagonal()
     .projection(function (d) {
     return [d.x + rectW / 2, d.y + rectH / 2];
@@ -87,7 +89,7 @@ function update(source) {
 
     var nodeText = nodeEnter.append("text")
         .attr("x", rectW / 2)
-        .attr("y", rectH / 2)
+        .attr("y", rectH / 4)
         .attr("dy", ".35em")
         .attr("text-anchor", "middle");
 
@@ -96,14 +98,59 @@ function update(source) {
         .attr("x", rectW / 2)
         .attr("dy", "0em")
         .text(function(d) { return d.name; });
-    
-    // fitness
+
+    // nmut
     nodeText.append("tspan")
         .attr("x", rectW / 2)
-        .attr("dy", "1.2em")
-        .text(function(d) {
-            return "fit: " + (d.fitness !== undefined ? d.fitness.toFixed(2) : "N/A");
+        .attr("dy", "1em")
+        .text(function(d) { return `nmut: ${d.nmut}`; });
+        
+    // fitness
+    nodeText.each(function(d) {
+        let fitnessValues = [];
+    
+        if (Array.isArray(d.fitness)) {
+            fitnessValues = d.fitness;
+        } else if (typeof d.fitness === "string") {
+            fitnessValues = d.fitness.split(",");
+        }
+        
+        d3.select(this).selectAll("tspan.fitness")
+            .data(fitnessValues)
+            .enter()
+            .append("tspan")
+            .attr("class", "fitness")
+            .attr("x", rectW / 2)
+            .attr("dy", "1.2em")
+            .text((f, i) => `fit${i+1}: ${(+f).toFixed(3)}`);
+    });
+
+
+    // Sequence Button Rectangle
+    nodeEnter.append("rect")
+        .attr("x", 0)
+        .attr("y", rectH - 15)
+        .attr("width", rectW)
+        .attr("height", 14)
+        .attr("rx", 3) 
+        .attr("fill", "#3498db")
+        .attr("stroke", "#2980b9")
+        .attr("class", "sequence-button")
+        .style("cursor", "pointer")
+        .on("click", function(d) {
+            alert("Sequence:\n" + d.sequence);
+            d3.event.stopPropagation(); 
         });
+    
+    // Sequence Button Text
+    nodeEnter.append("text")
+        .attr("x", rectW / 2)
+        .attr("y", rectH - 4)
+        .attr("text-anchor", "middle")
+        .attr("fill", "white")
+        .attr("font-size", "10px")
+        .style("pointer-events", "none")
+        .text("Ver Seq");
 
     // Transition nodes to their new position.
     var nodeUpdate = node.transition()

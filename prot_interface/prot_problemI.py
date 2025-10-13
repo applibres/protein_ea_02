@@ -264,12 +264,20 @@ class prot_problem:
         return list(map(lambda file: file.replace(".pdb", "_relaxed.pdb"), pdb_files))
     
     def relax(self, pdb_file):
-        #pyrosetta.init() <-- For Mac
+        #pyrosetta.init(
+        #    "-nstruct 1 "
+        #    "-ignore_zero_occupancy false "
+        #    "-ex1 -ex2 "
+        #    "-use_input_sc "
+        #    "-flip_HNQ "
+        #    "-no_optH false"
+        #) <- For Mac
         logging.debug(f"Relaxing: {pdb_file}")
         scorefxn = pyrosetta.get_fa_scorefxn()
         relax = FastRelax()
         relax.set_scorefxn(scorefxn)
-        relax.constrain_relax_to_start_coords(False)
+        relax.constrain_relax_to_start_coords(True)
+        relax.ramp_down_constraints(False)
     
         pose = pyrosetta.pose_from_pdb(pdb_file)
         relax.apply(pose)

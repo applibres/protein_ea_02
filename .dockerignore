@@ -1,6 +1,9 @@
-tree_graph/
-.venv/
+tree_graph
+.venv
 test*/
 *.ipynb
-__pycache__/
+__pycache__
 */__pycache__/
+.git
+.gitignore
+*.sqsh

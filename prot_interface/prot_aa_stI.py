@@ -112,7 +112,7 @@ class prot_aa_extract:
 		return sum_positive, sum_negative, ligand_interactions
 
 
-	def energy_interact_file (self, pdb_file_name):
+	def energy_interact_file(self, pdb_file_name):
 		##Execute the command and reeturn the file name
 		# #Build the command
 		output_file_name = pdb_file_name + ".txt"

@@ -27,9 +27,9 @@ logger = logging.getLogger(__name__)
 def main():
 
     # command line arguments
-    if len(sys.argv) != 8:
+    if len(sys.argv) != 9:
         print(len(sys.argv))
-        logging.critical(f'usage: {sys.argv[0]} <scenario> <sea/moea> <sim params> <algo params> <fitness_idxs> <restore> <checkpoint>')
+        logging.critical(f'usage: {sys.argv[0]} <scenario> <sea/moea> <sim params> <algo params> <fitness_idxs> <restore> <checkpoint> <RANDOMSEED>')
         sys.exit(-1)
 
     logging.info("Init Main")
@@ -44,6 +44,7 @@ def main():
     CHECKPOINT_STR = str(sys.argv[6])
     CHECKPOINT     = True if CHECKPOINT_STR == "True" else False
     FREQ           = int(sys.argv[7])
+    RANDOMSEED     = int(sys.argv[8])
 
     ALGO_PARAMS    = parser.parse_params(ALGO_PARAM_STR)
     SIM_PARAMS     = parser.parse_params(SIM_PARAM_STR)
@@ -59,7 +60,7 @@ def main():
 	
     tic=timeit.default_timer()
 
-    randomseed=15
+    randomseed=RANDOMSEED
     output=output+"/run"+str(randomseed)
 
     # Create output directory

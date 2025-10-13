@@ -124,24 +124,6 @@ class deap_mob_sga_protein:
 
         return unique_inds, indices
     
-    def modify_mutrate(self, hv, window=5, eps=1e-3, inc=0.1, dec=0.1):
-        """Adaptive mutation rate based on hypervolume trend"""
-        if len(hv) < window+1:
-            return 0.0
-    
-        curr_hv = hv[-1]
-        prev_best = max(hv[-window-1:-1])
-        delta = curr_hv - prev_best
-    
-        if delta < -eps:
-            return inc
-    
-        elif abs(delta) <= eps:
-            return inc
-    
-        else:
-            return -dec
-    
 
 
     # Custom simple evolutionary algorithm
@@ -230,14 +212,6 @@ class deap_mob_sga_protein:
         random.seed(self.randomseed)
 
         ##Generation 0
-
-        #Relaxing Original inidividual if it is not
-        relaxed_name = self.pdbfile.replace('.pdb','_relaxed.pdb')
-        if not os.path.exists(self.my_protein_problem.config_path + relaxed_name): 
-            logging.info("Relaxing Original Individual")
-            self.my_protein_problem.relax(self.my_protein_problem.config_path + self.pdbfile, True)
-        
-        self.pdbfile = relaxed_name
 
         # # #Get the fitness value
         pdbfile_path = sets.CONFIG_PATH + self.scenario + "/" +self.pdbfile 
@@ -524,11 +498,7 @@ class deap_mob_sga_protein:
             logging.info(f"new_generation_output_pdbfiles={new_generation_output_pdbfiles}")
             ##Update population output files from new generation ###
             population_output_pdbfiles.clear()
-            population_output_pdbfiles = new_generation_output_pdbfiles.copy()  
-
-            #Update mut_rate
-            #mut_rate = np.clip(mut_rate + self.modify_mutrate(hv), 0.1, 0.8)
-            #logging.debug(f"Mutation rate: {mut_rate}")
+            population_output_pdbfiles = new_generation_output_pdbfiles.copy()
 
 
             ###Save population to text file AA representation###

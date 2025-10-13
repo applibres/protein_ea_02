@@ -19,3 +19,8 @@ loggest.txt
 test.ipynb
 exec_test.sh
 *.sqsh
+experiments
+*.zip
+*.sqsh
+compress_runs.sh
+replicates.sh

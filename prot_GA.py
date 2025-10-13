@@ -214,14 +214,6 @@ class deap_sga_protein:
 
         ##Generation 0
 
-        #Relaxing Original inidividual if it is not
-        relaxed_name = self.pdbfile.replace('.pdb','_relaxed.pdb')
-        if not os.path.exists(self.my_protein_problem.config_path + relaxed_name): 
-            logging.info("Relaxing Original Individual")
-            self.my_protein_problem.relax(self.my_protein_problem.config_path + self.pdbfile, True)
-        
-        self.pdbfile = relaxed_name
-
         # # #Get the fitness value
         pdbfile_path = sets.CONFIG_PATH + self.scenario + "/" +self.pdbfile 
 
@@ -282,7 +274,7 @@ class deap_sga_protein:
             logging.info(f"Individual-Original : {aa0}")
             ind0 = creator.Individual(aa0)  # Instantiate the Individual with fixed values
             ind0.father = "Original"
-            ind0.pdb = "g0_00_relaxed.pdb"
+            ind0.pdb = dst
             
             logging.debug(f"ind0: {ind0}")
     
@@ -339,17 +331,6 @@ class deap_sga_protein:
             record = stats.compile(pop)
             logging.info("stats: %s", record)
             logbook.record(gen=0, **record)
-    
-     
-            ###Save population to text file integer representation###
-            gendir = self.output + "/g" + str(gen) + "/"
-            with open(gendir+"/pop_g" + str(gen) + ".txt", "w") as output_file:
-                i=0
-                for ind in pop:
-                    fit=ind.fitness.values 
-                    output_file.write((str(ind)) + " " + str(fit) + " "+ str(offspring_output_pdbfiles[i])+'\n')   
-                    i=i+1    
-            output_file.close() 
     
             ###Save population to text file AA representation###
             gendir = self.output + "/g" + str(gen) + "/"
@@ -488,11 +469,16 @@ class deap_sga_protein:
             #Save elite files to directory
              
             i=0
-            for elite_file in elite_pdb_files: 
-                
+            for elite_file in elite_pdb_files:
+
+                if i < 10:
+                    num_ind="0"+str(i)
+                else:
+                    num_ind=i
+
                 src1 = elite_file               
                 ## 1-Change names
-                dst1 = self.output + "/g" + str(gen) + "/" + "g"+ str(gen) +"_" + str(i) + "_relaxed.pdb"
+                dst1 = self.output + "/g" + str(gen) + "/" + "g"+ str(gen) +"_" + str(num_ind) + "_relaxed.pdb"
                 elite_inds[i].pdb = dst1
 
                 ## 2-Copy to directory
@@ -519,9 +505,14 @@ class deap_sga_protein:
             i=elite_size
             for i_, idx in enumerate(selected_indices):
                 
+                if i < 10:
+                    num_ind="0"+str(i)
+                else:
+                    num_ind=i
+
                 ##pdb files
                 src1 = population_output_pdbfiles[idx]
-                dst1 = self.output + "/g" + str(gen) + "/" + "g"+ str(gen) +"_" + str(i) + "_relaxed.pdb"
+                dst1 = self.output + "/g" + str(gen) + "/" + "g"+ str(gen) +"_" + str(num_ind) + "_relaxed.pdb"
                 offspring[i_].pdb = dst1
                 #copy the original individual pdb file 
                 shutil.copyfile(src1, dst1)
@@ -551,8 +542,12 @@ class deap_sga_protein:
             with open(gendir+"/pop_g" + str(gen) + "_AA.txt", "w") as output_file:
                 i=0    
                 for ind in pop:
+                    if i < 10:
+                        num_ind="0"+str(i)
+                    else:
+                        num_ind=i
                     fit=ind.fitness.values 
-                    output_file.write((str(ind)) + " " + str(fit) + " "+ str(self.output + "/g" + str(gen) + "/" + "g"+ str(gen) +"_" + str(i) + "_relaxed.pdb")+'\n')   
+                    output_file.write((str(ind)) + " " + str(fit) + " "+ str(self.output + "/g" + str(gen) + "/" + "g"+ str(gen) +"_" + str(num_ind) + "_relaxed.pdb")+'\n')   
                     i=i+1    
             output_file.close() 
 
@@ -580,12 +575,24 @@ class deap_sga_protein:
                 with open(f"{self.output}/checkpoint.pkl", 'wb') as cp_file:
                     pickle.dump(cp, cp_file)
 
+            # This mutation block is necesary to create the .pdb.txt files for the last generation
+            if gen == (ngenerations - 1):
+                argument.clear()
+                i=0
+                for mutant in pop:
+                    indiv_to_mutate_pdb = population_output_pdbfiles[i]
+                    output_file_path = self.output + "/tmp" + "/" + "temp_g"+ str(gen) +"_" + str(i) + ".pdb"
+                    argument.append((indiv_to_mutate_pdb,output_file_path,mut_rate))                 
+                    i=i+1
+        
+                offspring = self.my_protein_problem.mutate_population(argument)
+    
             ## Remove tmp files
             temp_files_path = os.path.join(self.output, "tmp")
             for file_temp in os.listdir(temp_files_path):
                 file_temp_path = os.path.join(temp_files_path, file_temp)
                 os.remove(file_temp_path)
-            
+    
 
         logging.info("-- End of Evolution --")
 

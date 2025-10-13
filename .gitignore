@@ -3,11 +3,9 @@ __pycache__/
 **/__pycache__/
 *.pyc
 *.csv
-*_relaxed.pdb*
-*AA.txt
 *.json
 *.pkl
-test*/
+tests/
 .venv/
 *.pdb*
 *.txt

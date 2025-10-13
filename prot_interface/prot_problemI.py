@@ -31,7 +31,6 @@ import prot_interface.prot_settingsI as sets
 from prot_interface.logging_config import setup_logging
 import logging
 import os
-import shutil
 
 # Initialize logging before anything else
 setup_logging()

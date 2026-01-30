@@ -1,0 +1,6 @@
+numpy>=1.24
+deap
+pandas
+matplotlib
+torch
+transformers

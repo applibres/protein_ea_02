@@ -1,0 +1,10 @@
+tests
+out.log
+compress_runs.sh
+exec_test.sh
+loggest.txt
+__pycache__
+.venv
+*/__pycache__
+*.pyc
+ROSETTA*

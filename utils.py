@@ -43,7 +43,7 @@ def save_population_to_csv(population, generation, savefile_path):
     with open(savefile_path, mode='a', newline='') as file:
         writer = csv.writer(file)
         if not file_exists:
-            writer.writerow(['generation', 'id', 'father', 'nmut', 'pdb_file', 'fitness', "prescores", 'sequence'])
+            writer.writerow(['generation', 'id', 'father', 'nmut', 'pdb_file', 'fitness', 'sequence'])
 
         for ind in population:
             writer.writerow([
@@ -53,7 +53,6 @@ def save_population_to_csv(population, generation, savefile_path):
                 ind.nmut,
                 ind.pdb,
                 ','.join(map(str, ind.fitness.values)),
-                ind.prescores,
                 ''.join(map(str, ind))
             ])
 

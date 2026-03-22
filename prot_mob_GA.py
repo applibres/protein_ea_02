@@ -511,15 +511,18 @@ class deap_mob_sga_protein:
             fits = [ind.fitness.values[0] for ind in pop]
             logging.info(f"Fitness : {fits}")
             
-            new_generation_output_pdbfiles = [] 
+            new_generation_output_pdbfiles = []
 
 
             # Save the rest of pdb files from population    
             for i_, idx in enumerate(selected_indices):
+
+                str_index = str(i_)
+                if (i_/10) < 1: str_index = f"0{i_}"
                 
                 ##pdb files
                 src1 = population_output_pdbfiles[idx]
-                dst1 = self.output + "/g" + str(gen) + "/" + "g"+ str(gen) +"_" + str(i_) + ".pdb"
+                dst1 = self.output + "/g" + str(gen) + "/" + "g"+ str(gen) +"_" + str_index + ".pdb"
                 offspring[i_].pdb = dst1
                 #copy the original individual pdb file 
                 shutil.copyfile(src1, dst1)

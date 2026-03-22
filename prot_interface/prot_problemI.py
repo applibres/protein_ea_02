@@ -281,7 +281,7 @@ class prot_problem:
             Mutated amino acid sequence
         """
         # Mutate
-        sequence = "".join(self.get_individual_seq(pdb_file))
+        sequence = "".join(self.sequence(pdb_file))
         self.mut.mutate(self.scenario, self.ligand_chain, pdb_file, output_file, mut_rate, sequence)
         aa = self.get_individual_seq(output_file)
         return aa

@@ -59,7 +59,7 @@ class prot_mut:
         Load the MSA matrix from a TSV (tab-separated values) file.
         Assumes the first column contains amino acids, and the rest are probabilities.
         """
-        self.msa_df = pd.read_csv(self.config_path + self.matrix_file_name, sep='\t', index_col=0)
+        #self.msa_df = pd.read_csv(self.config_path + self.matrix_file_name, sep='\t', index_col=0)
     
 		#Initialize pyrosetta
         

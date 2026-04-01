@@ -36,13 +36,15 @@ logger = logging.getLogger(__name__)
 def main():
 
     # command line arguments
-    if len(sys.argv) != 10:
+    if len(sys.argv) != 11:
         print(len(sys.argv))
-        logging.critical(f'usage: {sys.argv[0]} <scenario> <sea/moea> <sim params> <algo params> <fitness_idxs> <restore> <checkpoint> <multiobj> <RANDOMSEED>')
+        logging.critical(f'usage: {sys.argv[0]} <scenario> <sea/moea> <sim params> <algo params> <fitness_idxs> <fitness_weights> <checkpoint> <freq> <multiobj> <RANDOMSEED>')
         sys.exit(-1)
 
-    logging.info("Init Main")
-    
+    print(sys.argv)
+    print(len(sys.argv))
+
+
     SCENARIO       = sys.argv[1] # Scenario Name
     # Given the scenario, set the pdb file and mutation limits
     
@@ -50,20 +52,27 @@ def main():
     SIM_PARAM_STR  = sys.argv[3]
     ALGO_PARAM_STR = sys.argv[4]
     FITNESS_IDXS   = sys.argv[5]
-    CHECKPOINT     = True if str(sys.argv[6]) == "True" else False
-    FREQ           = int(sys.argv[7])
-    MOBJ           = True if str(sys.argv[8]) == "True" else False
-    RANDOMSEED     = int(sys.argv[9])
+    FITNESS_WEIGHTS= sys.argv[6]
+    CHECKPOINT     = True if str(sys.argv[7]).split("=")[1] == "True" else False
+    FREQ           = int(str(sys.argv[8]).split("=")[1])
+    MOBJ           = True if str(str(sys.argv[9]).split("=")[1]) == "True" else False
+    RANDOMSEED     = int(str(sys.argv[10]).split("=")[1])
 
     ALGO_PARAMS    = parser.parse_params(ALGO_PARAM_STR)
     SIM_PARAMS     = parser.parse_params(SIM_PARAM_STR)
     FITNESS_IDXS   = parser.parse_list(FITNESS_IDXS)
+    FITNESS_WEIGHTS= parser.parse_list(FITNESS_WEIGHTS)
 
     logging.info("SCENARIO: %s",SCENARIO)
     logging.info("ALGO_NAME: %s",ALGO_NAME)
     logging.info("ALGO_PARAMS: %s",ALGO_PARAMS)
     logging.info("SIM_PARAMS: %s",SIM_PARAMS)
     logging.info("FITNESS_IDXS: %s",FITNESS_IDXS)
+    logging.info("FITNESS_WEIGHTS: %s",FITNESS_WEIGHTS)
+    logging.info("CHECKPOINT: %s",CHECKPOINT)
+    logging.info("FREQ: %s",FREQ)
+    logging.info("MOBJ: %s",MOBJ)
+    logging.info("RANDOMSEED: %s",RANDOMSEED)
     
     output="../output"
 	
@@ -83,7 +92,7 @@ def main():
 
     # Run the genetic algorithm
     if(MOBJ):
-        sga_mob.deap_mob_sga_protein(SCENARIO, ALGO_PARAMS, SIM_PARAMS, FITNESS_IDXS, output, randomseed).run(checkpoint=CHECKPOINT, freq=FREQ)
+        sga_mob.deap_mob_sga_protein(SCENARIO, ALGO_PARAMS, SIM_PARAMS, FITNESS_IDXS, FITNESS_WEIGHTS, output, randomseed).run(checkpoint=CHECKPOINT, freq=FREQ)
     else:
         sga.deap_sga_protein(SCENARIO, ALGO_PARAMS, SIM_PARAMS, FITNESS_IDXS, output, randomseed).run(checkpoint=CHECKPOINT, freq=FREQ)
 

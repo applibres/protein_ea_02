@@ -51,7 +51,7 @@ class CustomIndividual(list):
 
 class deap_mob_sga_protein:
 
-    def __init__(self, scenario, algoritm_params, sim_params, fitness_idxs, output, randomseed):
+    def __init__(self, scenario, algoritm_params, sim_params, fitness_idxs, fitness_weights, output, randomseed):
         """Constructor
         
         Parameters
@@ -71,7 +71,8 @@ class deap_mob_sga_protein:
         """
         self.algoritm_params = algoritm_params 
         self.sim_params = sim_params
-        self.fitness_idxs = fitness_idxs 
+        self.fitness_idxs = fitness_idxs
+        self.fitness_weights = fitness_weights
         self.output = output
         self.randomseed = randomseed
         self.scenario = scenario
@@ -221,7 +222,7 @@ class deap_mob_sga_protein:
 
 
         ##Declare FitnessMinimization and Individual
-        creator.create("FitnessMin", base.Fitness, weights=(-1.0, 1.0))  # Minimization problem
+        creator.create("FitnessMin", base.Fitness, weights=(*self.fitness_weights, 1.0))  # Minimization problem
         creator.create("Individual", CustomIndividual)
 
         # Initialize toolbox

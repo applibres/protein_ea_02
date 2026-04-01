@@ -12,27 +12,27 @@ You need to install the software listed below:
 
 1) Create docker image from Dockerfile using
 
-'''bash
+```bash
 
 docker build -t protein_ea_02 .
 
-'''
+```
 
 2) Run the docker image
 
-'''bash
+```bash
 
 docker run -it --rm protein_ea_02
 
-'''
+```
 
 MultiObjective mode makes use of ESM2 model, so if your device has GPU, you can use the next command:
 
-'''bash
+```bash
 
 docker run -it --rm --gpus all protein_ea_02
 
-'''
+```
 
 3) Change the respective parameters values inside file prot_interface/prot_settingsI.py. The following parameters need to set according to your local repository and  rosetta-commons instalation:
 

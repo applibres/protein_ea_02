@@ -161,7 +161,7 @@ class prot_mut:
         except subprocess.CalledProcessError as e:
             print(f'Error: {e}')
             
-    def mutate(self, scenario, ligand_chain, pdb_file, output_file, mut_rate, sequence):
+    def mutate(self, scenario, ligand_chain, pdb_file, output_file, mut_rate, sequence, generation, ngen):
         """Mutate a protein structure
         
         Parameters
@@ -240,7 +240,7 @@ class prot_mut:
                 
                 # Get the most probable replacement from ESM2
                 # Note: most_probable_replacement now only takes sequence and position
-                aa_mut = self.esm2_prob_matrix.most_probable_replacement(sequence, position_in_seq)
+                aa_mut = self.esm2_prob_matrix.most_probable_replacement(sequence, position_in_seq, generation, ngen)
                 logging.info("Decision: %s %s %s", aa2mut, " --> ", aa_mut)
 
                 res = self.aatype(aa_mut[0])

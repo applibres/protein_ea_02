@@ -3,12 +3,12 @@
 CLI="eaprot_call.py"
 
 # command line arguments
-#$./protmut_run.sh test04 sea pdbfile=protein01.pdb,partners=A_C,ligand_chain=C gen=5,popsize=5,mutp=1 fitness_idxs=2,3 False 2 True 15
+#$./protmut_run.sh test04 sea pdbfile=protein01.pdb,partners=A_C,ligand_chain=C gen=5,popsize=5,mutp=1 fitness_idxs=2,3 checkpoint=False checks=2 mobj=True randomseed=15
 
 if [ $# -lt 8 ]; then
     echo "usage: ./protmut_run.sh <scenario> <algo> <sim_params> <algo_params> <checkpoint> <fitness_idxs> <freq> <multiobj> <randomseed>"
     echo "for example:"
-    echo "$./protmut_run.sh test04 sea pdbfile=protein01.pdb,partners=A_C,ligand_chain=C gen=5,popsize=5,mutp=1 fitness_idxs=2,3 False 2 True 15"
+    echo "$./protmut_run.sh test04 sea pdbfile=protein01.pdb,partners=A_C,ligand_chain=C gen=5,popsize=5,mutp=1 fitness_idxs=2,3 checkpoint=False checks=2 mobj=True randomseed=15"
     exit 1
 fi
 

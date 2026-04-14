@@ -50,10 +50,10 @@ def main():
     SIM_PARAM_STR  = sys.argv[3]
     ALGO_PARAM_STR = sys.argv[4]
     FITNESS_IDXS   = sys.argv[5]
-    CHECKPOINT     = True if str(sys.argv[6]) == "True" else False
-    FREQ           = int(sys.argv[7])
-    MOBJ           = True if str(sys.argv[8]) == "True" else False
-    RANDOMSEED     = int(sys.argv[9])
+    CHECKPOINT     = True if str(sys.argv[6].split("=")[1]).lower() == "true" else False
+    FREQ           = int(sys.argv[7].split("=")[1])
+    MOBJ           = True if str(sys.argv[8].split("=")[1]).lower() == "true" else False
+    RANDOMSEED     = int(sys.argv[9].split("=")[1])
 
     ALGO_PARAMS    = parser.parse_params(ALGO_PARAM_STR)
     SIM_PARAMS     = parser.parse_params(SIM_PARAM_STR)

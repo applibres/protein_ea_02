@@ -7,14 +7,14 @@ INIT=$1
 END=$2
 
 if [ $# -lt 2 ]; then
-    echo "usage: ./exec_test.sh <INIT> <END>"
+    echo "usage: ./replicates.sh <INIT> <END>"
     echo "example:"
-    echo "./exec_test.sh 10 30"
+    echo "./replicates.sh 10 30"
     exit 1
 fi
 
 for (( K=INIT; K<=END; K+=1 )); do 
-  ./protmut_run.sh test05 sea pdbfile=6M0J_nowaters.pdb,partners=A_E,ligand_chain=E gen=20,popsize=25,mutp=0.3 fitness_idsx=2 False 2 True $K
+  ./protmut_run.sh test06 sea pdbfile=9Q1V_prepared_clean_relaxed.pdb,partners=A_B,ligand_chain=B gen=20,popsize=25,mutp=0.3 fitness_idsx=5,7 checkpoint=False checks=2 mobj=True randomseed=$K
   if [ $? -ne 0 ]; then
     echo "-----------------------------Error in replicate $K---------------------------" 
     exit 1

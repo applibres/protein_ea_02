@@ -193,7 +193,8 @@ class deap_sga_protein:
             logging.debug(f"{output_path} directory created")
 
         ##Declare FitnessMinimization and Individual
-        creator.create("FitnessMin", base.Fitness, weights=(-1.0,))  # Minimization problem
+        weights = (sets.SCORE_OBJECTIVE[fidx] for fidx in self.fitness_idxs)
+        creator.create("FitnessMin", base.Fitness, weights=weights)  # Minimization problem
         creator.create("Individual", CustomIndividual)
 
         # Initialize toolbox
@@ -233,7 +234,7 @@ class deap_sga_protein:
             elite_size = 1      
 
         #Create Mutated individuals 
-        mut_rate = 0.3
+        mut_rate = mutprob
 
         # # ## Create Population 0 
         gen = 0

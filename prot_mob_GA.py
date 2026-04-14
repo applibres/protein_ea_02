@@ -12,11 +12,8 @@ Simple Genetic Algorithm for Protein Mutation
 """
 
 from deap import base, creator, tools
-from deap.benchmarks.tools import hypervolume
-from deap.tools.emo import sortNondominated
+from deap.tools.emo import uniform_reference_points
 
-from Bio.PDB import PDBParser
-from Bio.SeqUtils import seq1
 
 from prot_interface.prot_problemI import *
 import prot_interface.prot_problemI as problem
@@ -25,7 +22,6 @@ import pyrosetta
 import os
 import shutil
 import numpy as np
-import csv
 import random
 from prot_interface.logging_config import setup_logging
 from prot_interface.prot_esm2 import ESM2ProbMatrix
@@ -132,31 +128,6 @@ class deap_mob_sga_protein:
 
         return unique_inds, indices
 
-    def get_complete_sequence(self, pdbfile, chain_id):
-        parser = PDBParser(QUIET=True)
-        structure = parser.get_structure("protein", pdbfile)
-    
-        sequences = {}
-    
-        for model in structure:
-            seq = ""
-            for chain in model:
-                if chain.id != chain_id:
-                    continue
-    
-                for residue in chain:
-                    if residue.id[0] != " ":
-                        continue
-                    try:
-                        seq += seq1(residue.resname)
-                    except Exception:
-                        seq += "X"
-    
-            if seq:
-                sequences[model.id] = seq
-    
-        return sequences[0]
-
 
     # Custom simple evolutionary algorithm
     def run(self, checkpoint=False, freq=2):
@@ -178,7 +149,6 @@ class deap_mob_sga_protein:
         SCFILE_CSV = os.path.join(PATH_STATISTICS, f"run{self.randomseed}_scfile.csv")
         SAVEPOPGEN_CSV = os.path.join(PATH_STATISTICS, f'run{self.randomseed}_individuals.csv')
         SAVEHALLOFFAME_CSV = os.path.join(PATH_STATISTICS, f'run{self.randomseed}_hallofame.csv')
-        SAVEHYPERVOLUME_CSV = os.path.join(PATH_STATISTICS, f"run{self.randomseed}_hv.csv")
         SAVE_STATISTICS_CSV = os.path.join(PATH_STATISTICS, f"run{self.randomseed}_statistics.csv")
 
         os.makedirs(PATH_STATISTICS, exist_ok=True)
@@ -221,14 +191,19 @@ class deap_mob_sga_protein:
 
 
         ##Declare FitnessMinimization and Individual
-        creator.create("FitnessMin", base.Fitness, weights=(-1.0, 1.0))  # Minimization problem
+        weights = (sets.SCORE_OBJECTIVE[fidx] for fidx in self.fitness_idxs)
+        weights = (*weights, 1)
+        creator.create("FitnessMin", base.Fitness, weights=weights)  # Minimization problem
         creator.create("Individual", CustomIndividual)
 
         # Initialize toolbox
         toolbox = base.Toolbox()
+
+        p = 12  # nivel de discretización (puedes ajustar)
+        ref_points = uniform_reference_points(nobj, p)
         
         ##Selection operator implemented by framework##
-        toolbox.register("select", tools.selNSGA2)
+        toolbox.register("select", tools.selNSGA3, ref_points=ref_points)
         
         # Statistics
         stats = tools.Statistics(key=lambda ind: ind.fitness.values)
@@ -256,14 +231,13 @@ class deap_mob_sga_protein:
         shutil.copyfile(src, dst)
 
         #Create Mutated individuals 
-        mut_rate = 0.3
+        mut_rate = mutprob
 
         # # ## Create Population 0 
         gen = 0
 
         offspring_output_pdbfiles=[]
         argument=[]
-
 
         if checkpoint:
             try:
@@ -276,12 +250,12 @@ class deap_mob_sga_protein:
 
                 pop = cp['population']
                 ind0 = cp['ind0']
-                ref_point = cp['ref_point']
                 hof = cp['hof']
                 ngen = cp['generation'] + 1
                 record = cp['record']
-                hv = cp['hv']
                 logbook = cp['logbook']
+                ll_father = cp['ll_father']
+                father_embedding = cp['father_embedding']
                 random.setstate(cp['rndstate'])
                 population_output_pdbfiles = cp['population_output_pdbfiles']
             except FileNotFoundError as fne:
@@ -316,6 +290,7 @@ class deap_mob_sga_protein:
             # # # Set initial fitness value
             fitness_values = tuple(fitness_indv0[fitness_idx] for fitness_idx in self.fitness_idxs)
             ifitness_values = (*fitness_values, 0)
+            ind0.fitness.values = ifitness_values
             logging.debug(f"Fitness Indv0: {ifitness_values}")
 
             ## Create parameters to run in parallel
@@ -327,12 +302,11 @@ class deap_mob_sga_protein:
     
                 output_file_path = self.output + "/g" + str(gen) + "/" + "g"+ str(gen) +"_" + str(num_ind) + ".pdb"
                 offspring_output_pdbfiles.append(output_file_path)
-                argument.append((pdbfile_path,output_file_path,mut_rate))
+                argument.append((pdbfile_path,output_file_path,mut_rate,gen,ngenerations))
     
             logging.debug(f"Arguments:{argument}")
             
             #Mutate in parallel
-            offspring_list = []
             offspring_list = self.my_protein_problem.mutate_population(argument)
     
             #Evaluate in parallel
@@ -343,9 +317,8 @@ class deap_mob_sga_protein:
             i=0
             pop = []
             ##Add original individual
-            ind0.fitness.values = (*fitness_values, 0)
-            father_complete_sequence = self.get_complete_sequence(ind0.pdb, self.ligand_chain)
-            ll_father = self.esm2.get_esm_ll(father_complete_sequence)
+            father_complete_sequence = self.my_protein_problem.get_complete_interest_sequence(ind0.pdb, self.ligand_chain)
+            ll_father, father_embedding = self.esm2.get_esm_ll(father_complete_sequence)
 
             pop.append(ind0)
             for indiv, pdb_file in zip(offspring_list, offspring_output_pdbfiles):
@@ -356,24 +329,22 @@ class deap_mob_sga_protein:
                 ind.id = f'0-{ind.id}'
 
                 
-                ind_complete_sequence = self.get_complete_sequence(pdb_file, self.ligand_chain)
-                ll = self.esm2.get_esm_ll(ind_complete_sequence)
+                ind_complete_sequence = self.my_protein_problem.get_complete_interest_sequence(pdb_file, self.ligand_chain)
+                ll, embedding = self.esm2.get_esm_ll(ind_complete_sequence)
 
                 delta_ll = ll - ll_father
+                father_dis = 10*np.sum((embedding - father_embedding) ** 2)
+                
                 fitness_values = tuple(fitness[i][fitness_idx] for fitness_idx in self.fitness_idxs)
                 ind.fitness.values = (*fitness_values, delta_ll)
                 logging.debug(f"Fitness: {ind.fitness.values}")
                 pop.append(ind)
                 i=i+1
 
+
+
             #Update HallOfFame
             hof.update(pop)
-
-            # Compute Hypervolume
-            front = sortNondominated(pop, k=len(pop), first_front_only=True)[0]
-            ref_point = np.max([ind.fitness.values for ind in pop], axis=0) + 0.1
-            hv_first = hypervolume(front, ref_point)
-            hv = [hv_first]
     
             ## Add original individual pdb file to begining of the output file list            
             offspring_output_pdbfiles.insert(0,dst)
@@ -434,15 +405,15 @@ class deap_mob_sga_protein:
                 if i < 10:
                     num_ind="0"+str(i)
                 else:
-                    num_ind=i
+                    num_ind=str(i)
 
-                output_file_path = self.output + "/tmp" + "/" + "temp_g"+ str(gen) +"_" + str(num_ind) + ".pdb"
+                output_file_path = self.output + "/tmp" + "/" + "temp_g"+ str(gen) +"_" + num_ind + ".pdb"
 
                 #Add to generation_pdb_files the new ones (pop + offspring)
                 
                 population_output_pdbfiles.append(output_file_path)
                 offspring_output_pdbfiles.append(output_file_path)
-                argument.append((indiv_to_mutate_pdb,output_file_path,mut_rate))
+                argument.append((indiv_to_mutate_pdb,output_file_path,mut_rate,gen,ngenerations))
                 i=i+1
 
             logging.info(f"Population_pdb_files: {population_output_pdbfiles}")
@@ -450,7 +421,6 @@ class deap_mob_sga_protein:
             logging.info(f"Argument-gen{gen}: {argument}")
              
             #Mutate in parallel
-            offspring = []
             offspring = self.my_protein_problem.mutate_population(argument)
 
             #Evaluate in parallel
@@ -473,12 +443,14 @@ class deap_mob_sga_protein:
                 ind.nmut = hamming_distance(ind0, indiv)
                 ind.pdb = pdb_file
 
-                father_complete_sequence = self.get_complete_sequence(pop_copy[i].pdb, self.ligand_chain)
-                ind_complete_sequence = self.get_complete_sequence(ind.pdb, self.ligand_chain)
-                ll_father = self.esm2.get_esm_ll(father_complete_sequence)
-                ll = self.esm2.get_esm_ll(ind_complete_sequence)
+                #father_complete_sequence = self.my_protein_problem.get_complete_interest_sequence(pop_copy[i].pdb, self.ligand_chain)
+                ind_complete_sequence = self.my_protein_problem.get_complete_interest_sequence(ind.pdb, self.ligand_chain)
+                #ll_father = self.esm2.get_esm_ll(father_complete_sequence)
+                ll, embedding = self.esm2.get_esm_ll(ind_complete_sequence)
 
                 delta_ll = ll - ll_father
+                father_dis = 10*np.sum((embedding - father_embedding) ** 2)
+                
                 fitness_values = tuple(fitness[i][fitness_idx] for fitness_idx in self.fitness_idxs)
                 ind.fitness.values = (*fitness_values, delta_ll)
                 #Add the new individuals to population
@@ -499,12 +471,6 @@ class deap_mob_sga_protein:
             logging.info("New Population with elite and offspring ")
             logging.info(f"Pop = {pop} size: {len(pop)}")
 
-            # Compute hypervolume
-            front = sortNondominated(pop, k=len(pop), first_front_only=True)[0]
-
-            hv_pop = hypervolume(front, ref_point)
-            hv.append(hv_pop)
-
             ##Add to population elite individuals
             
             # Gather all the fitnesses in one list and printthe stats
@@ -517,12 +483,12 @@ class deap_mob_sga_protein:
             # Save the rest of pdb files from population    
             for i_, idx in enumerate(selected_indices):
 
-                str_index = str(i_)
-                if (i_/10) < 1: str_index = f"0{i_}"
+                num_ind = str(i_)
+                if i_ < 10: num_ind = f"0{i_}"
                 
                 ##pdb files
                 src1 = population_output_pdbfiles[idx]
-                dst1 = self.output + "/g" + str(gen) + "/" + "g"+ str(gen) +"_" + str_index + ".pdb"
+                dst1 = self.output + "/g" + str(gen) + "/" + "g"+ str(gen) +"_" + num_ind + ".pdb"
                 offspring[i_].pdb = dst1
                 #copy the original individual pdb file 
                 shutil.copyfile(src1, dst1)
@@ -554,8 +520,10 @@ class deap_mob_sga_protein:
             with open(gendir+"/pop_g" + str(gen) + "_AA.txt", "w") as output_file:
                 i=0    
                 for ind in pop:
+                    num_ind = str(i)
+                    if i < 10: num_ind = f"0{i}"
                     fit=ind.fitness.values 
-                    output_file.write((str(ind)) + " " + str(fit) + " "+ str(self.output + "/g" + str(gen) + "/" + "g"+ str(gen) +"_" + str(i) + ".pdb")+'\n')   
+                    output_file.write((str(ind)) + " " + str(fit) + " "+ str(self.output + "/g" + str(gen) + "/" + "g"+ str(gen) +"_" + num_ind + ".pdb")+'\n')   
                     i=i+1    
             output_file.close() 
 
@@ -574,12 +542,12 @@ class deap_mob_sga_protein:
                 cp = dict(
                     population=pop,
                     ind0=ind0,
-                    ref_point=ref_point,
                     hof=hof,
-                    hv=hv,
                     generation=gen,
                     record=record,
                     logbook=logbook,
+                    ll_father=ll_father,
+                    father_embedding=father_embedding,
                     rndstate=random.getstate(),
                     population_output_pdbfiles=population_output_pdbfiles
                 )
@@ -615,11 +583,3 @@ class deap_mob_sga_protein:
                     values = entry[stat] 
                     row += [str(v) for v in values]
                 stat_file.write(",".join(row) + "\n")
-
-        
-        logging.info("--Saving Hypervolumes per generation--")
-        with open(SAVEHYPERVOLUME_CSV, mode="w", newline='') as hv_file:
-            writer = csv.writer(hv_file)
-            writer.writerow(["Gen","HV"])
-            for i,v in enumerate(hv):
-                writer.writerow([i,v])

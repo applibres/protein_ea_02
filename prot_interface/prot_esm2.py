@@ -35,7 +35,9 @@ class ESM2ProbMatrix:
         tokens = self.tokenizer(seq, return_tensors="pt").to(self.device)
         input_ids = tokens["input_ids"]
 
-        outputs = self.model(**tokens)
+        outputs = self.model(**tokens, output_hidden_states=True)
+        hidden_states = outputs.hidden_states[-1]
+        pooled_embed = hidden_states.mean(dim=1).squeeze().cpu().numpy()
         logits = outputs.logits[:, 1:-1, :]  # remove <cls> and <eos>
 
         log_probs = F.log_softmax(logits, dim=-1)
@@ -43,7 +45,6 @@ class ESM2ProbMatrix:
 
         # Extract probs only for the 20 canonical AAs
         prob_matrix = probs[0, :, self.aa_ids]      # [L, 20]
-        log_prob_matrix = log_probs[0, :, self.aa_ids]
 
         # True sequence likelihood
         true_ids = input_ids[0, 1:-1]
@@ -56,28 +57,46 @@ class ESM2ProbMatrix:
             "prob_matrix": prob_matrix
         }
 
-        self.cache[seq] = data
-        return data
+        self.cache[seq] = data, pooled_embed
+        return data, pooled_embed
 
     def get_esm_ll(self, seq):
-        """Total log-likelihood."""
-        return self._forward(seq)["ll"]
+        """Total log-likelihood and sequence embedding"""
+        data, embedding = self._forward(seq)
+        return data['ll'], embedding
 
     def get_probability_matrix(self, seq):
         """L x 20 probability matrix."""
-        return self._forward(seq)["prob_matrix"]
+        return self._forward(seq)[0]["prob_matrix"]
 
-    def most_probable_replacement(self, seq, position):
-        """
-        Returns:
-          (best_aa, probability)
-        """
-        data = self._forward(seq)
+    def most_probable_replacement(self, seq, position, generation, ngen):
+        # schedule de temperatura
+        temperature = 3.0 * (1 - ((generation + 1) / ngen))
+        temperature = max(temperature, 0.1)
+    
+        data, _ = self._forward(seq)
         probs = data["prob_matrix"][position].clone()
-
+    
         wt_aa = seq[position]
         wt_idx = self.AMINO_ACIDS.index(wt_aa)
         probs[wt_idx] = 0.0
-
-        best_idx = probs.argmax().item()
-        return self.AMINO_ACIDS[best_idx], probs[best_idx].item()
+    
+        # estabilidad numérica
+        probs = torch.clamp(probs, min=1e-8)
+    
+        # temperatura
+        logits = torch.log(probs) / temperature
+        probs_temp = F.softmax(logits, dim=0)
+    
+        # limpiar NaN / inf
+        probs_temp = torch.nan_to_num(probs_temp, nan=0.0, posinf=0.0, neginf=0.0)
+    
+        # renormalizar
+        if probs_temp.sum() <= 0:
+            probs_temp = torch.ones_like(probs_temp) / len(probs_temp)
+        else:
+            probs_temp = probs_temp / probs_temp.sum()
+    
+        idx = torch.multinomial(probs_temp, num_samples=1).item()
+    
+        return self.AMINO_ACIDS[idx], probs_temp[idx].item()

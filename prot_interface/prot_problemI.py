@@ -30,7 +30,9 @@ import prot_interface.prot_aa_stI as prot_aa
 import prot_interface.prot_settingsI as sets
 from prot_interface.logging_config import setup_logging
 import logging
-import os
+from Bio.PDB import PDBParser
+from Bio.SeqUtils import seq1
+
 
 # Initialize logging before anything else
 setup_logging()
@@ -163,7 +165,7 @@ class prot_problem:
 
         # Extract absolute position values as a list
         self.aa_pos_list = list(aa_pos_dict.values())
-        logging.debug(self.aa_pos_list)
+        logging.debug(f"List absolute position values: {self.aa_pos_list}")
 
 
         # Create new dictionary where key = value from list, value = index position
@@ -194,13 +196,16 @@ class prot_problem:
         Tuple 
             Fitness values
         """
-        f = [0.0,0.0,0.0,0.0]
         
         #Evaluate the solution
-        #f[0]: dG_separated
-        #f[1]: dSASA_int
-        #f[2]: dG_separated/dSASAx100
-        #f[3]: hbonds_int]
+        # f[0]: packstat -> MAXIMIZAR (Calidad del empaquetamiento; valor ideal > 0.65)
+        # f[1]: sc_value -> MAXIMIZAR (Complementariedad de formas; valor ideal > 0.60) 
+        # f[2]: total_score -> MINIMIZAR (Estabilidad global del complejo) [3, 4]
+        # f[3]: delta_unsatHbonds -> MINIMIZAR (Penalización por polares no satisfechos; ideal cercano a 0) [5]
+        # f[4]: fa_rep -> MINIMIZAR (Repulsión estérica/choques; debe mantenerse bajo para ser físicamente posible) 
+        # f[5]: per_residue_energy_int -> MINIMIZAR (Energía promedio por residuo en la interfaz) 
+        # f[6]: dSASA_int -> MAXIMIZAR (Área enterrada; valor ideal entre 1200-2000 A^2)
+        # f[7]: dG_separated/dSASAx100 -> MINIMIZAR
         f = self.protEn.getEnergyInterf(pdb_file)
         return f
 
@@ -225,10 +230,14 @@ class prot_problem:
             
             # Calling pool for run in parallel
             # Fitness:
-            # result_f[0]:dG_separated
-            # result_f[1]:dSASA_int
-            # result_f[2]:dG_separated/dSASAx100
-            # result_f[3]:hbonds_int
+            # f[0]: packstat -> MAXIMIZAR (Calidad del empaquetamiento; valor ideal > 0.65)
+            # f[1]: sc_value -> MAXIMIZAR (Complementariedad de formas; valor ideal > 0.60) 
+            # f[2]: total_score -> MINIMIZAR (Estabilidad global del complejo) [3, 4]
+            # f[3]: delta_unsatHbonds -> MINIMIZAR (Penalización por polares no satisfechos; ideal cercano a 0) [5]
+            # f[4]: fa_rep -> MINIMIZAR (Repulsión estérica/choques; debe mantenerse bajo para ser físicamente posible) 
+            # f[5]: per_residue_energy_int -> MINIMIZAR (Energía promedio por residuo en la interfaz) 
+            # f[6]: dSASA_int -> MAXIMIZAR (Área enterrada; valor ideal entre 1200-2000 A^2)
+            # f[7]: dG_separated/dSASAx100 -> MINIMIZAR
             
             for result_f in pool.map(self.fitness, pop_pdb_files):
                 # return the fitness solution
@@ -263,7 +272,7 @@ class prot_problem:
 
 
     ## Mutation Operator ##
-    def mutate(self, pdb_file, output_file, mut_rate):
+    def mutate(self, pdb_file, output_file, mut_rate, generation, ngen):
         """Mutate an individual
         
         Parameters
@@ -281,10 +290,38 @@ class prot_problem:
             Mutated amino acid sequence
         """
         # Mutate
-        sequence = "".join(self.sequence(pdb_file))
-        self.mut.mutate(self.scenario, self.ligand_chain, pdb_file, output_file, mut_rate, sequence)
+        sequence = "".join(self.get_complete_interest_sequence(pdb_file, self.ligand_chain))
+        self.mut.mutate(self.scenario, self.ligand_chain, pdb_file, output_file, mut_rate, sequence, generation, ngen)
         aa = self.get_individual_seq(output_file)
         return aa
+
+
+    def get_complete_interest_sequence(self, pdbfile, chain_id):
+        parser = PDBParser(QUIET=True)
+        structure = parser.get_structure("protein", pdbfile)
+    
+        sequences = {}
+    
+        for model in structure:
+            seq = ""
+            for chain in model:
+                if chain.id != chain_id:
+                    continue
+    
+                for residue in chain:
+                    if residue.id[0] != " ":
+                        continue
+                    try:
+                        seq += seq1(residue.resname)
+                    except Exception:
+                        seq += "X"
+    
+            if seq:
+                sequences[model.id] = seq
+
+        logging.debug(f"SEQUENCES: \n{sequences}\n")
+    
+        return sequences[0]
 
 
 

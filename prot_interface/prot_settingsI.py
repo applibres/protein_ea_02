@@ -45,8 +45,9 @@ SCORE_INDEXES = [
     16, # fa_rep -> MINIMIZAR (Repulsión estérica/choques; debe mantenerse bajo para ser físicamente posible) 
     30, # per_residue_energy_int -> MINIMIZAR (Energía promedio por residuo en la interfaz) 
     7,  # dSASA_int -> MAXIMIZAR (Área enterrada; valor ideal entre 1200-2000 A^2)
-    5]  # dG_separated/dSASAx100 -> MINIMIZAR
-SCORE_OBJECTIVE = [1,1,-1,-1,-1,-1,1,-1]
+    5,  # dG_separated/dSASAx100 -> MINIMIZAR
+    23] # hbonds_int
+SCORE_OBJECTIVE = [1,1,-1,-1,-1,-1,1,-1,1]
 FLAGS = "-compute_packstat true -tracer_data_print false -pack_input false " \
         "-pack_separated true -add_regular_scores_to_scorefile true " \
         "-atomic_burial_cutoff 0.01 -sasa_calculator_probe_radius 1.4 " \

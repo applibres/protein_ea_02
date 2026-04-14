@@ -14,7 +14,7 @@ if [ $# -lt 2 ]; then
 fi
 
 for (( K=INIT; K<=END; K+=1 )); do 
-  ./protmut_run.sh test06 sea pdbfile=9Q1V_prepared_clean_relaxed.pdb,partners=A_B,ligand_chain=B gen=20,popsize=25,mutp=0.3 fitness_idsx=5,7 checkpoint=False checks=2 mobj=True randomseed=$K
+  ./protmut_run.sh test06 sea pdbfile=9Q1V_prepared_clean_relaxed.pdb,partners=A_B,ligand_chain=B gen=20,popsize=25,mutp=0.3 fitness_idsx=8,7,3 checkpoint=False checks=2 mobj=True randomseed=$K
   if [ $? -ne 0 ]; then
     echo "-----------------------------Error in replicate $K---------------------------" 
     exit 1

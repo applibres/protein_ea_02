@@ -333,7 +333,7 @@ class deap_mob_sga_protein:
                 ll, embedding = self.esm2.get_esm_ll(ind_complete_sequence)
 
                 delta_ll = ll - ll_father
-                father_dis = 10*np.sum((embedding - father_embedding) ** 2)
+                #father_dis = 10*np.sum((embedding - father_embedding) ** 2)
                 
                 fitness_values = tuple(fitness[i][fitness_idx] for fitness_idx in self.fitness_idxs)
                 ind.fitness.values = (*fitness_values, delta_ll)
@@ -449,7 +449,7 @@ class deap_mob_sga_protein:
                 ll, embedding = self.esm2.get_esm_ll(ind_complete_sequence)
 
                 delta_ll = ll - ll_father
-                father_dis = 10*np.sum((embedding - father_embedding) ** 2)
+                #father_dis = 10*np.sum((embedding - father_embedding) ** 2)
                 
                 fitness_values = tuple(fitness[i][fitness_idx] for fitness_idx in self.fitness_idxs)
                 ind.fitness.values = (*fitness_values, delta_ll)

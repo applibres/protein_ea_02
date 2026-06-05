@@ -10,3 +10,4 @@ __pycache__
 ROSETTA*
 *.out
 settings.json
+test/

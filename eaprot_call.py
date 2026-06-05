@@ -15,7 +15,8 @@ import timeit
 import multiprocessing as mp
 import prot_interface.prot_parserI as parser
 import prot_GA as sga
-import prot_mob_GA as sga_mob
+#import prot_mob_GA as sga_mob
+import prot_mob_pymoo as sga_mob
 from prot_interface.logging_config import setup_logging
 import logging
 import os
@@ -65,7 +66,7 @@ def main():
     logging.info("SIM_PARAMS: %s",SIM_PARAMS)
     logging.info("FITNESS_IDXS: %s",FITNESS_IDXS)
     
-    output="../output"
+    output="/output"
 	
     tic=timeit.default_timer()
 
@@ -83,7 +84,7 @@ def main():
 
     # Run the genetic algorithm
     if(MOBJ):
-        sga_mob.deap_mob_sga_protein(SCENARIO, ALGO_PARAMS, SIM_PARAMS, FITNESS_IDXS, output, randomseed).run(checkpoint=CHECKPOINT, freq=FREQ)
+        sga_mob.pymoo_sga_protein(SCENARIO, ALGO_PARAMS, SIM_PARAMS, FITNESS_IDXS, output, randomseed).run(checkpoint=CHECKPOINT, freq=FREQ)
     else:
         sga.deap_sga_protein(SCENARIO, ALGO_PARAMS, SIM_PARAMS, FITNESS_IDXS, output, randomseed).run(checkpoint=CHECKPOINT, freq=FREQ)
 

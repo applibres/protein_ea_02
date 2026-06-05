@@ -190,6 +190,9 @@ class prot_mut:
 
         path_pdb = os.path.dirname(os.path.abspath(output_file))
         base = os.path.basename(output_file)
+
+        temp = os.path.join(path_pdb, f"tmp_{str(base).split('.pdb')[0]}")
+        os.makedirs(temp, exist_ok=True)
     
         if (len(aans) > 0 or len(aas) > 0):
             aminoacids = aans + aas
@@ -219,9 +222,6 @@ class prot_mut:
             logging.debug(f"Path pdb file: {path_pdb}")
             logging.debug(f"Base pdb file: {base}")
 
-            temp = os.path.join(path_pdb, f"tmp_{str(base).split('.pdb')[0]}")
-            os.makedirs(temp, exist_ok=True)
-
             for i in range(num_of_mut):
                 aa2mut = random.choices(aminoacids, weights=weights_aas, k=1)[0]
 
@@ -249,8 +249,86 @@ class prot_mut:
                 # Step 3: mutate
                 temp_file = os.path.join(temp, f"{base.split('.pdb')[0]}_{i}.pdb")
                 self.mutate_local_relax(pdb_file, temp_file, posi, res)
-                pdb_file = temp_file
+                pdb_file = temp_file                
+                
+                if os.path.isfile(pdb_file):
+                    logging.info(f"Temporal mutant: {pdb_file}")
+                else:
+                    logging.info(f"Not found: {pdb_file}")
 
         # Create the mutant in pdb file
-        shutil.move(pdb_file, os.path.join(path_pdb, base))
+        logging.info(f"Moving Mutant pdb: {pdb_file} -> {output_file}")
+        shutil.move(pdb_file, output_file)
+        shutil.rmtree(temp)
+
+    def crossover(self, pdb_file, output_file, positions_to_mutate, aminoacids_to_place):
+        """
+        Perform crossover on a protein structure by applying a predefined list
+        of mutations (position → amino acid), without probabilistic selection.
+    
+        Parameters
+        ----------
+        pdb_file : str
+            Input PDB file path.
+        output_file : str
+            Output PDB file path.
+        positions_to_mutate : list[int]
+            List of residue positions (Rosetta numbering) to mutate.
+            e.g. [45, 78, 112]
+        aminoacids_to_place : list[str]
+            List of single-letter amino acid codes to place at each position.
+            Must have the same length as positions_to_mutate.
+            e.g. ['A', 'V', 'L']
+    
+        Raises
+        ------
+        ValueError
+            If positions_to_mutate and aminoacids_to_place have different lengths.
+    
+        Example
+        -------
+        prot.crossover(
+            pdb_file="input.pdb",
+            output_file="crossover.pdb",
+            positions_to_mutate=[45, 78, 112],
+            aminoacids_to_place=['A', 'V', 'L']
+        )
+        """
+        if len(positions_to_mutate) != len(aminoacids_to_place):
+            raise ValueError(
+                f"positions_to_mutate (len={len(positions_to_mutate)}) and "
+                f"aminoacids_to_place (len={len(aminoacids_to_place)}) must have the same length."
+            )
+    
+        path_pdb = os.path.dirname(os.path.abspath(output_file))
+        base = os.path.basename(output_file)
+    
+        temp = os.path.join(path_pdb, f"tmp_crossover_{str(base).split('.pdb')[0]}")
+        os.makedirs(temp, exist_ok=True)
+    
+        current_pdb = pdb_file
+    
+        for i, (posi, aa_single) in enumerate(zip(positions_to_mutate, aminoacids_to_place)):
+    
+            res = self.aatype(aa_single)   # single-letter → 3-letter (e.g. 'A' → 'ALA')
+    
+            if res is None:
+                logging.warning(f"[Crossover] Unknown amino acid '{aa_single}' at position {posi}. Skipping.")
+                continue
+    
+            logging.info(f"[Crossover] Step {i+1}/{len(positions_to_mutate)}: "
+                         f"pos={posi}  aa={aa_single} ({res})")
+    
+            temp_file = os.path.join(temp, f"{base.split('.pdb')[0]}_xover_{i}.pdb")
+            self.mutate_local_relax(current_pdb, temp_file, posi, res)
+    
+            if os.path.isfile(temp_file):
+                logging.info(f"[Crossover] Temporal crossover file: {temp_file}")
+                current_pdb = temp_file
+            else:
+                logging.warning(f"[Crossover] File not found after step {i+1}: {temp_file}. "
+                                "Keeping previous structure.")
+    
+        logging.info(f"[Crossover] Moving final structure: {current_pdb} -> {output_file}")
+        shutil.move(current_pdb, output_file)
         shutil.rmtree(temp)

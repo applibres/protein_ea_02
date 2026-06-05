@@ -116,7 +116,7 @@ class prot_problem:
 
         return dict(sorted(mapping.items()))
 
-    def absolute_AA_positions(AA_map_positions):
+    def absolute_AA_positions(self, AA_map_positions):
         # Extract values as a list
         values_list = list(AA_map_positions.values())
 
@@ -294,6 +294,63 @@ class prot_problem:
         self.mut.mutate(self.scenario, self.ligand_chain, pdb_file, output_file, mut_rate, sequence, generation, ngen)
         aa = self.get_individual_seq(output_file)
         return aa
+    
+
+    def _crossover_worker(self, pdb_file, output_file, positions_to_mutate, aminoacids_to_place):
+        """
+        Worker wrapper for parallel crossover.
+        Calls prot_mut.crossover() and returns the resulting sequence.
+    
+        Parameters
+        ----------
+        pdb_file : str
+            Structural base PDB (parent_a).
+        output_file : str
+            Path for the output crossover PDB.
+        positions_to_mutate : List[int]
+            Rosetta residue positions to apply from parent_b.
+        aminoacids_to_place : List[str]
+            Single-letter AA codes to place at each position.
+    
+        Returns
+        -------
+        list
+            Amino acid sequence of the resulting child at the interface positions.
+        """
+        if positions_to_mutate:
+            self.mut.crossover(
+                pdb_file=pdb_file,
+                output_file=output_file,
+                positions_to_mutate=positions_to_mutate,
+                aminoacids_to_place=aminoacids_to_place,
+            )
+        else:
+            import shutil
+            shutil.copy(pdb_file, output_file)
+    
+        return self.get_individual_seq(output_file)
+    
+    
+    def crossover_population(self, args):
+        """
+        Apply crossover to a list of (parent_a_pdb, output_file, positions, aas) tuples in parallel.
+    
+        Each arg tuple:
+            (pdb_file, output_file, positions_to_mutate, aminoacids_to_place)
+    
+        Parameters
+        ----------
+        args : list of tuples
+            Each tuple: (pdb_file, output_file, positions_to_mutate, aminoacids_to_place)
+    
+        Returns
+        -------
+        list of list
+            One AA sequence per child, in the same order as args.
+        """
+        with mp.Pool(processes=mp.cpu_count(), initializer=_init_pyrosetta_worker) as pool:
+            results = pool.starmap(self._crossover_worker, args)
+        return results
 
 
     def get_complete_interest_sequence(self, pdbfile, chain_id):

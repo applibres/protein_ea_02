@@ -272,7 +272,7 @@ class prot_problem:
 
 
     ## Mutation Operator ##
-    def mutate(self, pdb_file, output_file, mut_rate, generation, ngen):
+    def mutate(self, pdb_file, output_file, mut_rate, generation, ngen, original_sequence):
         """Mutate an individual
         
         Parameters
@@ -291,7 +291,7 @@ class prot_problem:
         """
         # Mutate
         sequence = "".join(self.get_complete_interest_sequence(pdb_file, self.ligand_chain))
-        self.mut.mutate(self.scenario, self.ligand_chain, pdb_file, output_file, mut_rate, sequence, generation, ngen)
+        self.mut.mutate(self.scenario, self.ligand_chain, pdb_file, output_file, mut_rate, sequence, generation, ngen, original_sequence)
         aa = self.get_individual_seq(output_file)
         return aa
     

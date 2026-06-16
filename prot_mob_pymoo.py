@@ -12,7 +12,8 @@ Simple Genetic Algorithm for Protein Mutation - MOEA/D
 
 from typing import List
 
-from genetic_operators.moead import SelectionOperatorMOEAD, CrossoverOperatorMOEAD
+from genetic_operators.crossoever_operators import llm_crossover, uniform_crossover
+from genetic_operators.moead import SelectionOperatorMOEAD
 from genetic_operators.individual import Individual
 from prot_interface.prot_problemI import *
 import prot_interface.prot_problemI as problem
@@ -25,13 +26,33 @@ from prot_interface.logging_config import setup_logging
 from prot_interface.prot_esm2 import ESM2ProbMatrix
 from utils import (
     csvToTree, read_scfiles, save_population_to_csv, save_HallofFame,
-    hamming_distance, save_evolutions_statistics, save_population_aa, num2str
+    mutation_labels, save_evolutions_statistics, save_population_aa, num2str
 )
 import logging
 import pickle
 
 setup_logging()
 logger = logging.getLogger(__name__)
+
+
+SCORE_OBJECTIVE_NAMES = {
+    0: "packstat",
+    1: "sc_value",
+    2: "total_score",
+    3: "delta_unsatHbonds",
+    4: "fa_rep",
+    5: "per_residue_energy_int",
+    6: "dSASA_int",
+    7: "dG_separated_per_dSASA",
+    8: "hbonds_int",
+}
+
+def _primary_fitness(ind: Individual) -> float:
+    fitness = ind.fitness if ind.fitness is not None else ind.F
+    if fitness is None:
+        raise ValueError(f"Individual {ind.id} does not have fitness values for LLM crossover.")
+    return float(fitness[0])
+
 
 
 class pymoo_sga_protein:
@@ -53,19 +74,17 @@ class pymoo_sga_protein:
         self.nobj         = len(self.fitness_idxs) + 1
         self.mutprob      = self.algoritm_params['mutp']
 
-        self.n_obj = len(self.fitness_idxs) + 1
+        self.n_obj = len(self.fitness_idxs) + 2
 
         # ── MOEA/D operators ─────────────────────────────────────────────────
         moead = SelectionOperatorMOEAD(self.n_obj, n_neighbors=5, n_partitions=6)
         self.moead          = moead                    # full object kept for crossover
         self.selection      = moead.selection          # survival update
         self.parent_select  = moead.parent_selection   # neighbourhood parent picker
-
-        self.crossover_op   = CrossoverOperatorMOEAD(crossover_prob=0.5)
         # ─────────────────────────────────────────────────────────────────────
 
         weights      = [sets.SCORE_OBJECTIVE[fidx] for fidx in self.fitness_idxs]
-        self.weights = [*weights, 1]
+        self.weights = [*weights, 1, -1]
 
         self.my_protein_problem = problem.prot_problem(
             self.scenario, self.partners, self.ligand_chain
@@ -95,6 +114,16 @@ class pymoo_sga_protein:
         os.makedirs(gen_dir, exist_ok=True)
         return gen_dir + "/g" + str(generation) + "_" + num2str(i) + ".pdb"
 
+    def mutation_labels_from_original(self, sequence) -> List[str]:
+        return mutation_labels(sequence, self.aa0, self.my_protein_problem.aa_pos_list)
+
+    def register_mutations_from_original(self, ind: Individual):
+        ind.mutations = self.mutation_labels_from_original(ind.sequence())
+        ind.nmut = len(ind.mutations)
+
+    def count_mutations_from_original(self, sequence) -> int:
+        return len(self.mutation_labels_from_original(sequence))
+
     # ------------------------------------------------------------------ #
     #  Core GA operations                                                  #
     # ------------------------------------------------------------------ #
@@ -104,9 +133,8 @@ class pymoo_sga_protein:
 
         ind        = Individual(self.aa0)
         ind.pdb    = dst
-        ind.id     = f'0-{ind.id}'
-        ind.father = "Original"
         ind.nmut   = 0
+        ind.mutations = []
 
         src_pdb = sets.CONFIG_PATH + self.scenario + "/" + self.pdbfile
         shutil.copy(src_pdb, dst)
@@ -137,19 +165,14 @@ class pymoo_sga_protein:
                 delta_ll = ll - self.ll_father
 
             fitness_individual = [fitness[i][fitness_idx] for fitness_idx in self.fitness_idxs]
-            fit   = [*fitness_individual, delta_ll]
+            fit   = [*fitness_individual, delta_ll, ind.nmut]
             ind.fitness = fit
             ind.F = np.array([f * (-1 * w) for f, w in zip(fit, self.weights)])
 
             logging.info(f"Individual fitness -> {ind.F}")
             logging.info(f"Rosetta scores     -> {fit}")
 
-    def mutation(
-        self,
-        population: List[Individual],
-        generation: int,
-        start: int = 0,
-    ) -> List[Individual]:
+    def mutation(self, population: List[Individual], generation: int, start: int = 0) -> List[Individual]:
         """Apply mutation to every individual in *population*."""
         arguments   = []
         individuals = []
@@ -161,16 +184,15 @@ class pymoo_sga_protein:
         for i, mutant in enumerate(population):
             output_file_path = self.path_temp_file(generation, i + start)
             arguments.append(
-                (mutant.pdb, output_file_path, self.mutprob, generation, self.ngenerations)
+                (mutant.pdb, output_file_path, self.mutprob, generation, self.ngenerations, self.aa0_complete)
             )
 
         newaas = self.my_protein_problem.mutate_population(arguments)
 
-        for aa, father, arg in zip(newaas, population, arguments):
+        for aa, arg in zip(newaas, arguments):
             ind        = Individual(aa)
-            ind.father = father.id
             ind.pdb    = arg[1]
-            ind.nmut   = hamming_distance(aa, father.sequence())
+            self.register_mutations_from_original(ind)
             individuals.append(ind)
 
         logging.info(f"PDB Files: {arguments}")
@@ -180,12 +202,7 @@ class pymoo_sga_protein:
     #  MOEA/D crossover                                                    #
     # ------------------------------------------------------------------ #
 
-    def crossover(
-        self,
-        population: List[Individual],
-        generation: int,
-        mut_start_offset: int = 0,
-    ) -> List[Individual]:
+    def crossover(self, population: List[Individual], generation: int, mut_start_offset: int = 0) -> List[Individual]:
         """
         Produce one child per sub-problem via neighbourhood crossover.
 
@@ -214,18 +231,41 @@ class pymoo_sga_protein:
 
         crossover_args: List[tuple] = []   # args for prot_problem.crossover_population
         meta: List[dict] = []              # lineage info per child
+        interface_reference = "".join(self.aa0)
+        population_context = [
+            {
+                "sequence": ind.sequence(),
+                "fitness": (_primary_fitness(ind),),
+            }
+            for ind in population
+        ]
+        objective_description = (
+            "Improve the protein-protein interface by minimizing "
+            "dG_separated/dSASAx100, the first fitness value passed to the LLM."
+        )
 
         for i in range(len(population)):
-            parent_a, parent_b = self.parent_select(population, i)
+            parent_a, parent_b = self.parent_select(population, i)[0]
 
-            # Sequence-level indices + alleles from parent_b
-            pdb_base, out_file_placeholder, seq_indices, child_aas = \
-                self.crossover_op.get_crossover_args(
-                    parent_a,
-                    parent_b,
-                    output_file="__placeholder__",   # replaced below
-                )
+            # Sequence-level indices + alleles for the child
+            pdb_base = parent_a.pdb
+            #try:
+            #    seq_indices, child_aas = llm_crossover(
+            #        parent_a=parent_a,
+            #        parent_b=parent_b,
+            #        individuals=population_context,
+            #        objective_description=objective_description,
+            #        sequence_initial=interface_reference,
+            #    )
+            #except Exception as exc:
+            #    logging.warning(
+            #        "[Crossover] LLM crossover failed for sub-problem %s; ",
+            #        "falling back to uniform crossover: %s",
+            #        i, exc,
+            #    )
+            seq_indices, child_aas = uniform_crossover(parent_a, parent_b)
 
+            
             # Build the actual output path
             output_file = self.path_temp_file(generation, i + mut_start_offset + len(population))
 
@@ -234,17 +274,7 @@ class pymoo_sga_protein:
 
             crossover_args.append((pdb_base, output_file, rosetta_positions, child_aas))
 
-            # Pre-compute the child's full interface sequence for Individual shell
-            seq_a = list(parent_a.sequence())
-            for idx, aa in zip(seq_indices, child_aas):
-                seq_a[idx] = aa
-
-            meta.append({
-                "child_seq":  seq_a,
-                "output_file": output_file,
-                "father_id":  f"{parent_a.id}+{parent_b.id}",
-                "nmut":       len(seq_indices),
-            })
+            meta.append({"output_file": output_file})
 
             logging.info(
                 f"[Crossover] sub-problem {i}: "
@@ -260,8 +290,7 @@ class pymoo_sga_protein:
         for m, aa in zip(meta, new_seqs):
             child        = Individual(aa)
             child.pdb    = m["output_file"]
-            child.father = m["father_id"]
-            child.nmut   = m["nmut"]
+            self.register_mutations_from_original(child)
             children.append(child)
 
         return children
@@ -293,11 +322,7 @@ class pymoo_sga_protein:
     #  Pareto front & statistics                                           #
     # ------------------------------------------------------------------ #
 
-    def update_pareto_front(
-        self,
-        pareto_front: List[Individual],
-        population: List[Individual],
-    ) -> List[Individual]:
+    def update_pareto_front(self, pareto_front: List[Individual], population: List[Individual]) -> List[Individual]:
         combined = pareto_front + population
         F = np.array([ind.F for ind in combined])
 
@@ -455,11 +480,7 @@ class pymoo_sga_protein:
     #  Private helpers                                                     #
     # ------------------------------------------------------------------ #
 
-    def _mutate_children(
-        self,
-        children: List[Individual],
-        generation: int,
-    ) -> List[Individual]:
+    def _mutate_children(self, children: List[Individual], generation: int) -> List[Individual]:
         """
         Apply point mutation to a list of child individuals.
 
@@ -473,16 +494,15 @@ class pymoo_sga_protein:
             # Offset by popsize so temp names don't clash with crossover files
             output_file_path = self.path_temp_file(generation, i + 2 * self.popsize)
             arguments.append(
-                (child.pdb, output_file_path, self.mutprob, generation, self.ngenerations)
+                (child.pdb, output_file_path, self.mutprob, generation, self.ngenerations, self.aa0_complete)
             )
 
         newaas = self.my_protein_problem.mutate_population(arguments)
 
-        for aa, parent_child, arg in zip(newaas, children, arguments):
+        for aa, arg in zip(newaas, arguments):
             ind        = Individual(aa)
-            ind.father = parent_child.id
             ind.pdb    = arg[1]
-            ind.nmut   = hamming_distance(aa, parent_child.sequence())
+            self.register_mutations_from_original(ind)
             individuals.append(ind)
 
         logging.info(f"[Mutation of children] PDB Files: {arguments}")

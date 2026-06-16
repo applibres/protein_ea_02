@@ -161,7 +161,7 @@ class prot_mut:
         except subprocess.CalledProcessError as e:
             print(f'Error: {e}')
             
-    def mutate(self, scenario, ligand_chain, pdb_file, output_file, mut_rate, sequence, generation, ngen):
+    def mutate(self, scenario, ligand_chain, pdb_file, output_file, mut_rate, sequence, generation, ngen, original_sequence):
         """Mutate a protein structure
         
         Parameters
@@ -198,7 +198,11 @@ class prot_mut:
             aminoacids = aans + aas
             energies = np.array([energ[1] for energ in aminoacids])
             max_e = np.max(energies)
-            weights_aas = np.exp(energies - max_e) / np.sum(np.exp(energies - max_e))
+            T0 = 5.0      # temperatura inicial
+            Tmin = 0.2
+            alpha = 0.99
+            temperature = max(Tmin, T0 * (alpha ** generation))
+            weights_aas = (np.exp(energies - max_e)/ temperature) / np.sum(np.exp(energies - max_e))
     
             logging.debug(f"Sequence for ESM2: {sequence}")
 
@@ -237,14 +241,20 @@ class prot_mut:
 
                 # Get the position index in the sequence
                 position_in_seq = self.positions.index(int(aa_pos[0]))
-                
-                # Get the most probable replacement from ESM2
-                # Note: most_probable_replacement now only takes sequence and position
-                aa_mut = self.esm2_prob_matrix.most_probable_replacement(sequence, position_in_seq, generation, ngen)
-                logging.info("Decision: %s %s %s", aa2mut, " --> ", aa_mut)
 
-                res = self.aatype(aa_mut[0])
                 posi = int(aa_pos[1])
+                
+                if(random.random() < 0.3):
+                    res = self.aatype(original_sequence[int(aa_pos[0])])
+                    logging.info("Back to an original aminoacid")
+                    logging.info("Decision: %s %s %s", aa2mut, " --> ", res)
+                else:
+                    # Get the most probable replacement from ESM2
+                    # Note: most_probable_replacement now only takes sequence and position
+                    aa_mut = self.esm2_prob_matrix.most_probable_replacement(sequence, position_in_seq, generation, ngen)
+                    logging.info("Decision: %s %s %s", aa2mut, " --> ", aa_mut[0])
+
+                    res = self.aatype(aa_mut[0])
 
                 # Step 3: mutate
                 temp_file = os.path.join(temp, f"{base.split('.pdb')[0]}_{i}.pdb")

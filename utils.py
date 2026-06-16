@@ -11,32 +11,53 @@ def csvToTree(csv_data, output):
     df['fitness']  = df['fitness'].astype(object)
     df['sequence'] = df['sequence'].astype(object)
     df['nmut']     = df['nmut'].astype(object)
+    if 'mutations' in df.columns:
+        df['mutations'] = df['mutations'].astype(object)
 
-    frst = df.iloc[0]
-    df   = df[df['id'] != 'Original']
-
-    tree  = {"name": str(frst['id']), "fitness": frst['fitness'],
-             "sequence": frst['sequence'], "nmut": frst['nmut']}
-    nodes = {tree['name']: tree}
-
+    nodes = []
     for _, row in df.iterrows():
-        name   = row['id']
-        father = row['father']
-        if nodes.get(name):
-            continue
-        node_father = nodes.get(father)
-        if node_father:
-            node = {"name": name, "fitness": row['fitness'],
-                    "sequence": row['sequence'], "nmut": row['nmut']}
-            node_father.setdefault('children', []).append(node)
-            nodes[name] = node
+        node = {
+            "generation": row['generation'],
+            "name": str(row['id']),
+            "fitness": row['fitness'],
+            "sequence": row['sequence'],
+            "nmut": row['nmut'],
+        }
+        if 'mutations' in df.columns:
+            node["mutations"] = row['mutations']
+        nodes.append(node)
 
     with open(output, 'w') as f:
-        json.dump(tree, f, indent=2)
-
+        json.dump({"individuals": nodes}, f, indent=2)
 
 def hamming_distance(seq1, seq2):
+    if len(seq1) != len(seq2):
+        raise ValueError(
+            f"Cannot compute Hamming distance for sequences with different lengths: "
+            f"{len(seq1)} != {len(seq2)}"
+        )
     return sum(a != b for a, b in zip(seq1, seq2))
+
+
+def mutation_labels(sequence, reference, positions=None):
+    if len(sequence) != len(reference):
+        raise ValueError(
+            f"Cannot list mutations for sequences with different lengths: "
+            f"{len(sequence)} != {len(reference)}"
+        )
+    if positions is None:
+        positions = range(1, len(reference) + 1)
+    positions = list(positions)
+    if len(positions) != len(reference):
+        raise ValueError(
+            f"Mutation positions must match the short interface sequence length: "
+            f"{len(positions)} != {len(reference)}"
+        )
+    return [
+        f"{ref}{pos}{aa}"
+        for ref, aa, pos in zip(reference, sequence, positions)
+        if ref != aa
+    ]
 
 
 def save_population_to_csv(population, generation, savefile_path):
@@ -46,15 +67,15 @@ def save_population_to_csv(population, generation, savefile_path):
     with open(savefile_path, mode='a', newline='') as file:
         writer = csv.writer(file)
         if not file_exists:
-            writer.writerow(['generation', 'id', 'father', 'nmut',
+            writer.writerow(['generation', 'id', 'nmut', 'mutations',
                              'pdb_file', 'fitness', 'sequence'])
 
         for ind in population:
             writer.writerow([
                 generation,
                 ind.id,
-                ind.father,
                 ind.nmut,
+                ';'.join(getattr(ind, 'mutations', [])),
                 ind.pdb,
                 ','.join(map(str, ind.fitness)),   # ind.F  (np.ndarray)
                 ind.sequence(),              # ind.sequence()
@@ -69,7 +90,7 @@ def save_HallofFame(hof, savefile_path):
     with open(savefile_path, mode='a', newline='') as file:
         writer = csv.writer(file)
         if not file_exists:
-            writer.writerow(['generation', 'id', 'father', 'nmut',
+            writer.writerow(['generation', 'id', 'nmut', 'mutations',
                              'pdb_file', 'fitness', 'sequence'])
 
         for ind in hof:
@@ -77,10 +98,10 @@ def save_HallofFame(hof, savefile_path):
                 continue
             seen.add(ind.id)
             writer.writerow([
-                ind.id.split('-')[0],
+                '',
                 ind.id,
-                ind.father,
                 ind.nmut,
+                ';'.join(getattr(ind, 'mutations', [])),
                 ind.pdb,
                 ','.join(map(str, ind.fitness)),   # ind.F  (np.ndarray)
                 ind.sequence(),              # ind.sequence()

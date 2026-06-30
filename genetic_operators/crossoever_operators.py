@@ -174,16 +174,34 @@ def _record_from_individual(individual: Individual, sequence: str) -> Individual
 def _clean_child_sequence(child_sequence: str) -> str:
     return "".join(child_sequence.strip().upper().split())
 
+def _primary_fitness(ind: Individual) -> float:
+    fitness = ind.fitness if ind.fitness is not None else ind.F
+    if fitness is None:
+        raise ValueError(f"Individual {ind.id} does not have fitness values for LLM crossover.")
+    return float(fitness[0])
+
 
 def llm_crossover(
-    parent_a: Individual, parent_b: Individual, individuals: List[IndividualRecord], objective_description: str,
-    sequence_initial: Optional[str] = None, model_name: str = "llama3.1:8b", temperature: float = 0.3,
+    parent_a: Individual, parent_b: Individual, population: List[Individual], sequence_initial: Optional[str] = None, model_name: str = "llama3.1:8b", temperature: float = 0.3,
     ollama_host: str = "http://ollama:11434"
 ) -> Tuple[List[int], List[str]]:
     
     """Return interface-level crossover edits proposed by the LLM."""
     seq_a = parent_a.sequence()
     seq_b = parent_b.sequence()
+
+    objective_description = (
+            "Improve the protein-protein interface by minimizing "
+            "dG_separated/dSASAx100, the first fitness value passed to the LLM."
+        )
+    
+    individuals = [
+            {
+                "sequence": ind.sequence(),
+                "fitness": (_primary_fitness(ind),),
+            }
+            for ind in population
+        ]
 
     if len(seq_a) != len(seq_b):
         raise ValueError("parent_a and parent_b interface sequences must have the same length.")

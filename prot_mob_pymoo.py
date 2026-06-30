@@ -47,12 +47,6 @@ SCORE_OBJECTIVE_NAMES = {
     8: "hbonds_int",
 }
 
-def _primary_fitness(ind: Individual) -> float:
-    fitness = ind.fitness if ind.fitness is not None else ind.F
-    if fitness is None:
-        raise ValueError(f"Individual {ind.id} does not have fitness values for LLM crossover.")
-    return float(fitness[0])
-
 
 
 class pymoo_sga_protein:
@@ -172,7 +166,7 @@ class pymoo_sga_protein:
             logging.info(f"Individual fitness -> {ind.F}")
             logging.info(f"Rosetta scores     -> {fit}")
 
-    def mutation(self, population: List[Individual], generation: int, start: int = 0) -> List[Individual]:
+    def mutation(self, population: List[Individual], generation: int) -> List[Individual]:
         """Apply mutation to every individual in *population*."""
         arguments   = []
         individuals = []
@@ -182,16 +176,25 @@ class pymoo_sga_protein:
         )
 
         for i, mutant in enumerate(population):
-            output_file_path = self.path_temp_file(generation, i + start)
+            output_file_path = self.path_temp_file(generation, i)
             arguments.append(
-                (mutant.pdb, output_file_path, self.mutprob, generation, self.ngenerations, self.aa0_complete)
+                (
+                    mutant.id,
+                    mutant.pdb,
+                    output_file_path,
+                    self.mutprob,
+                    generation,
+                    self.ngenerations,
+                    self.aa0_complete,
+                )
             )
 
-        newaas = self.my_protein_problem.mutate_population(arguments)
+        mutation_results = self.my_protein_problem.mutate_population(arguments)
 
-        for aa, arg in zip(newaas, arguments):
-            ind        = Individual(aa)
-            ind.pdb    = arg[1]
+        for result in mutation_results:
+            ind        = Individual(result["sequence"])
+            ind.pdb    = result["pdb"]
+            ind.parent_id = result["parent_id"]
             self.register_mutations_from_original(ind)
             individuals.append(ind)
 
@@ -231,18 +234,6 @@ class pymoo_sga_protein:
 
         crossover_args: List[tuple] = []   # args for prot_problem.crossover_population
         meta: List[dict] = []              # lineage info per child
-        interface_reference = "".join(self.aa0)
-        population_context = [
-            {
-                "sequence": ind.sequence(),
-                "fitness": (_primary_fitness(ind),),
-            }
-            for ind in population
-        ]
-        objective_description = (
-            "Improve the protein-protein interface by minimizing "
-            "dG_separated/dSASAx100, the first fitness value passed to the LLM."
-        )
 
         for i in range(len(population)):
             parent_a, parent_b = self.parent_select(population, i)[0]
@@ -253,9 +244,8 @@ class pymoo_sga_protein:
             #    seq_indices, child_aas = llm_crossover(
             #        parent_a=parent_a,
             #        parent_b=parent_b,
-            #        individuals=population_context,
-            #        objective_description=objective_description,
-            #        sequence_initial=interface_reference,
+            #        population=population,
+            #        sequence_initial="".join(self.aa0),
             #    )
             #except Exception as exc:
             #    logging.warning(
@@ -391,9 +381,7 @@ class pymoo_sga_protein:
             ind0 = self.create_initial_individual()
             population: List[Individual] = [ind0]
 
-            for i in range(1, self.popsize):
-                ind = self.mutation([ind0], 0, i)[0]
-                population.append(ind)
+            population += self.mutation(population * self.popsize, 0)
 
             self.evaluate(population)
             self.move_population(population, 0)
@@ -421,7 +409,7 @@ class pymoo_sga_protein:
 
             # Step 2: Mutation applied to the crossover children
             logging.info(f"[Gen {generation}] Mutation...")
-            mutants = self._mutate_children(children, generation)
+            mutants = self._mutate_children(children, population, generation)
 
             # Step 3: Evaluate mutants
             logging.info(f"[Gen {generation}] Evaluation...")
@@ -462,7 +450,13 @@ class pymoo_sga_protein:
             # Clean temp directory
             temp_dir = os.path.join(self.output, "tmp")
             for f in os.listdir(temp_dir):
-                os.remove(os.path.join(temp_dir, f))
+                entry_path = os.path.join(temp_dir, f)
+                if os.path.islink(entry_path) or os.path.isfile(entry_path):
+                    os.remove(entry_path)
+                elif os.path.isdir(entry_path):
+                    shutil.rmtree(entry_path)
+                else:
+                    logging.warning(f"Skipping unknown temp entry type: {entry_path}")
 
             logging.info(f"-- End Generation {generation} --")
 
@@ -480,7 +474,7 @@ class pymoo_sga_protein:
     #  Private helpers                                                     #
     # ------------------------------------------------------------------ #
 
-    def _mutate_children(self, children: List[Individual], generation: int) -> List[Individual]:
+    def _mutate_children(self, children: List[Individual], population: List[Individual], generation: int) -> List[Individual]:
         """
         Apply point mutation to a list of child individuals.
 
@@ -494,14 +488,23 @@ class pymoo_sga_protein:
             # Offset by popsize so temp names don't clash with crossover files
             output_file_path = self.path_temp_file(generation, i + 2 * self.popsize)
             arguments.append(
-                (child.pdb, output_file_path, self.mutprob, generation, self.ngenerations, self.aa0_complete)
+                (
+                    child.id,
+                    child.pdb,
+                    output_file_path,
+                    self.mutprob,
+                    generation,
+                    self.ngenerations,
+                    self.aa0_complete,
+                )
             )
 
-        newaas = self.my_protein_problem.mutate_population(arguments)
+        mutation_results = self.my_protein_problem.mutate_population(arguments)
 
-        for aa, arg in zip(newaas, arguments):
-            ind        = Individual(aa)
-            ind.pdb    = arg[1]
+        for result in mutation_results:
+            ind        = Individual(result["sequence"])
+            ind.pdb    = result["pdb"]
+            ind.parent_id = result["parent_id"]
             self.register_mutations_from_original(ind)
             individuals.append(ind)
 

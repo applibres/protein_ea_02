@@ -1,0 +1,206 @@
+********  (C) Copyright Rosetta Commons Member Institutions.  ***************
+* Use of Rosetta for commercial purposes may require purchase of a license. *
+********  See LICENSE.md or email license@uw.edu for more details. **********
+core.init: Checking for fconfig files in pwd and ./rosetta/flags 
+core.init: Rosetta version: 2025.51+HEAD.612b6ef9e9 612b6ef9e9d4638e6f1e47fabee02587d9453733 https://github.com/RosettaCommons/rosetta.git 2025-12-16T13:47:52
+core.init: Rosetta extras: []
+core.init: command: /usr/local/bin/interface_energy.default.linuxgccrelease -s /app/scenarios/test07/1BRS_nowaters_relaxed.pdb -face1 /app/scenarios/test07/faceA.txt -face2 /app/scenarios/test07/faceD.txt -score:hbond_bb_per_residue_energy
+basic.random.init_random_generator: 'RNG device' seed mode, using '/dev/urandom', seed=213880839 seed_offset=0 real_seed=213880839
+basic.random.init_random_generator: RandomGenerator:init: Normal mode, seed=213880839 RG_type=mt19937
+core.init: found database environment variable ROSETTA3_DB: /usr/local/database
+core.chemical.GlobalResidueTypeSet: Finished initializing fa_standard residue type set.  Created 985 residue types
+core.chemical.GlobalResidueTypeSet: Total time to initialize 0.364532 seconds.
+core.import_pose.import_pose: File '/app/scenarios/test07/1BRS_nowaters_relaxed.pdb' automatically determined to be of type PDB from contents.
+core.scoring.ScoreFunctionFactory: SCOREFUNCTION: ref2015
+core.scoring.etable: Starting energy table calculation
+core.scoring.etable: smooth_etable: changing atr/rep split to bottom of energy well
+core.scoring.etable: smooth_etable: spline smoothing lj etables (maxdis = 6)
+core.scoring.etable: smooth_etable: spline smoothing solvation etables (max_dis = 6)
+core.scoring.etable: Finished calculating energy tables.
+basic.io.database: Database file opened: scoring/score_functions/hbonds/ref2015_params/HBPoly1D.csv
+basic.io.database: Database file opened: scoring/score_functions/hbonds/ref2015_params/HBFadeIntervals.csv
+basic.io.database: Database file opened: scoring/score_functions/hbonds/ref2015_params/HBEval.csv
+basic.io.database: Database file opened: scoring/score_functions/hbonds/ref2015_params/DonStrength.csv
+basic.io.database: Database file opened: scoring/score_functions/hbonds/ref2015_params/AccStrength.csv
+basic.io.database: Database file opened: scoring/score_functions/rama/fd/all.ramaProb
+basic.io.database: Database file opened: scoring/score_functions/rama/fd/prepro.ramaProb
+basic.io.database: Database file opened: scoring/score_functions/omega/omega_ppdep.all.txt
+basic.io.database: Database file opened: scoring/score_functions/omega/omega_ppdep.gly.txt
+basic.io.database: Database file opened: scoring/score_functions/omega/omega_ppdep.pro.txt
+basic.io.database: Database file opened: scoring/score_functions/omega/omega_ppdep.valile.txt
+basic.io.database: Database file opened: scoring/score_functions/P_AA_pp/P_AA
+basic.io.database: Database file opened: scoring/score_functions/P_AA_pp/P_AA_n
+core.scoring.P_AA: shapovalov_lib::shap_p_aa_pp_smooth_level of 1( aka low_smooth ) got activated.
+basic.io.database: Database file opened: scoring/score_functions/P_AA_pp/shapovalov/10deg/kappa131/a20.prop
+basic.io.database: Database file opened: scoring/score_functions/elec_cp_reps.dat
+core.scoring.elec.util: Read 40 countpair representative atoms
+core.pack.dunbrack.RotamerLibrary: shapovalov_lib_fixes_enable option is true.
+core.pack.dunbrack.RotamerLibrary: shapovalov_lib::shap_dun10_smooth_level of 1( aka lowest_smooth ) got activated.
+core.pack.dunbrack.RotamerLibrary: Binary rotamer library selected: /usr/local/database/rotamer/shapovalov/StpDwn_0-0-0/Dunbrack10.lib.bin
+core.pack.dunbrack.RotamerLibrary: Using Dunbrack library binary file '/usr/local/database/rotamer/shapovalov/StpDwn_0-0-0/Dunbrack10.lib.bin'.
+core.pack.dunbrack.RotamerLibrary: Dunbrack 2010 library took 0.09798 seconds to load from binary
+##### PAIRWISE SHORT-RANGE ENERGIES #####
+HIS102_A(100) --- GLU80_D(186): 0
+HIS102_A(100) --- GLU76_D(182): 0
+HIS102_A(100) --- TRP44_D(152): -0.000113079
+HIS102_A(100) --- THR42_D(150): 0
+HIS102_A(100) --- ASP39_D(147): -3.21855
+HIS102_A(100) --- TRP38_D(146): 0
+HIS102_A(100) --- ASP35_D(143): -0.0564311
+HIS102_A(100) --- TYR29_D(137): -1.74631
+ARG87_A(85) --- GLU80_D(186): 0
+ARG87_A(85) --- GLU76_D(182): 0
+ARG87_A(85) --- TRP44_D(152): 0.00247222
+ARG87_A(85) --- THR42_D(150): 0
+ARG87_A(85) --- ASP39_D(147): -3.41146
+ARG87_A(85) --- TRP38_D(146): 0
+ARG87_A(85) --- ASP35_D(143): 0
+ARG87_A(85) --- TYR29_D(137): 0.100179
+ARG83_A(81) --- GLU80_D(186): 0
+ARG83_A(81) --- GLU76_D(182): 0
+ARG83_A(81) --- TRP44_D(152): -0.535293
+ARG83_A(81) --- THR42_D(150): 0.0333225
+ARG83_A(81) --- ASP39_D(147): -2.93384
+ARG83_A(81) --- TRP38_D(146): 0
+ARG83_A(81) --- ASP35_D(143): 0
+ARG83_A(81) --- TYR29_D(137): -1.80725
+GLU73_A(71) --- GLU80_D(186): 0
+GLU73_A(71) --- GLU76_D(182): 0
+GLU73_A(71) --- TRP44_D(152): 0
+GLU73_A(71) --- THR42_D(150): 0
+GLU73_A(71) --- ASP39_D(147): 0.988483
+GLU73_A(71) --- TRP38_D(146): -0.346667
+GLU73_A(71) --- ASP35_D(143): -0.000299075
+GLU73_A(71) --- TYR29_D(137): 0
+GLU60_A(58) --- GLU80_D(186): 0
+GLU60_A(58) --- GLU76_D(182): 0
+GLU60_A(58) --- TRP44_D(152): 0
+GLU60_A(58) --- THR42_D(150): 0
+GLU60_A(58) --- ASP39_D(147): 0
+GLU60_A(58) --- TRP38_D(146): 0
+GLU60_A(58) --- ASP35_D(143): -1.83332
+GLU60_A(58) --- TYR29_D(137): 0
+ARG59_A(57) --- GLU80_D(186): 0.00418247
+ARG59_A(57) --- GLU76_D(182): -2.39083
+ARG59_A(57) --- TRP44_D(152): 0
+ARG59_A(57) --- THR42_D(150): 0
+ARG59_A(57) --- ASP39_D(147): 0.00739268
+ARG59_A(57) --- TRP38_D(146): -0.490626
+ARG59_A(57) --- ASP35_D(143): -4.77121
+ARG59_A(57) --- TYR29_D(137): 0
+ASN58_A(56) --- GLU80_D(186): 0
+ASN58_A(56) --- GLU76_D(182): 0
+ASN58_A(56) --- TRP44_D(152): 0
+ASN58_A(56) --- THR42_D(150): 0
+ASN58_A(56) --- ASP39_D(147): 0
+ASN58_A(56) --- TRP38_D(146): 0
+ASN58_A(56) --- ASP35_D(143): -1.08291
+ASN58_A(56) --- TYR29_D(137): 0
+ASP54_A(52) --- GLU80_D(186): 0
+ASP54_A(52) --- GLU76_D(182): 0
+ASP54_A(52) --- TRP44_D(152): 0
+ASP54_A(52) --- THR42_D(150): 0
+ASP54_A(52) --- ASP39_D(147): 0
+ASP54_A(52) --- TRP38_D(146): -0.0661932
+ASP54_A(52) --- ASP35_D(143): 0
+ASP54_A(52) --- TYR29_D(137): 0
+TRP35_A(33) --- GLU80_D(186): 0
+TRP35_A(33) --- GLU76_D(182): 0
+TRP35_A(33) --- TRP44_D(152): -0.0300308
+TRP35_A(33) --- THR42_D(150): -0.0972348
+TRP35_A(33) --- ASP39_D(147): -0.000166147
+TRP35_A(33) --- TRP38_D(146): 0
+TRP35_A(33) --- ASP35_D(143): 0
+TRP35_A(33) --- TYR29_D(137): 0
+LYS27_A(25) --- GLU80_D(186): 0
+LYS27_A(25) --- GLU76_D(182): 0
+LYS27_A(25) --- TRP44_D(152): -0.000351116
+LYS27_A(25) --- THR42_D(150): -2.58125
+LYS27_A(25) --- ASP39_D(147): -3.27114
+LYS27_A(25) --- TRP38_D(146): 0.461643
+LYS27_A(25) --- ASP35_D(143): 0
+LYS27_A(25) --- TYR29_D(137): 0
+
+##### PAIRWISE ENERGIES FOR CI_LR_2B METHOD IN CHARGE OF rama_prepro #####
+HIS102_A(100) --- GLU80_D(186): 0
+HIS102_A(100) --- GLU76_D(182): 0
+HIS102_A(100) --- TRP44_D(152): 0
+HIS102_A(100) --- THR42_D(150): 0
+HIS102_A(100) --- ASP39_D(147): 0
+HIS102_A(100) --- TRP38_D(146): 0
+HIS102_A(100) --- ASP35_D(143): 0
+HIS102_A(100) --- TYR29_D(137): 0
+ARG87_A(85) --- GLU80_D(186): 0
+ARG87_A(85) --- GLU76_D(182): 0
+ARG87_A(85) --- TRP44_D(152): 0
+ARG87_A(85) --- THR42_D(150): 0
+ARG87_A(85) --- ASP39_D(147): 0
+ARG87_A(85) --- TRP38_D(146): 0
+ARG87_A(85) --- ASP35_D(143): 0
+ARG87_A(85) --- TYR29_D(137): 0
+ARG83_A(81) --- GLU80_D(186): 0
+ARG83_A(81) --- GLU76_D(182): 0
+ARG83_A(81) --- TRP44_D(152): 0
+ARG83_A(81) --- THR42_D(150): 0
+ARG83_A(81) --- ASP39_D(147): 0
+ARG83_A(81) --- TRP38_D(146): 0
+ARG83_A(81) --- ASP35_D(143): 0
+ARG83_A(81) --- TYR29_D(137): 0
+GLU73_A(71) --- GLU80_D(186): 0
+GLU73_A(71) --- GLU76_D(182): 0
+GLU73_A(71) --- TRP44_D(152): 0
+GLU73_A(71) --- THR42_D(150): 0
+GLU73_A(71) --- ASP39_D(147): 0
+GLU73_A(71) --- TRP38_D(146): 0
+GLU73_A(71) --- ASP35_D(143): 0
+GLU73_A(71) --- TYR29_D(137): 0
+GLU60_A(58) --- GLU80_D(186): 0
+GLU60_A(58) --- GLU76_D(182): 0
+GLU60_A(58) --- TRP44_D(152): 0
+GLU60_A(58) --- THR42_D(150): 0
+GLU60_A(58) --- ASP39_D(147): 0
+GLU60_A(58) --- TRP38_D(146): 0
+GLU60_A(58) --- ASP35_D(143): 0
+GLU60_A(58) --- TYR29_D(137): 0
+ARG59_A(57) --- GLU80_D(186): 0
+ARG59_A(57) --- GLU76_D(182): 0
+ARG59_A(57) --- TRP44_D(152): 0
+ARG59_A(57) --- THR42_D(150): 0
+ARG59_A(57) --- ASP39_D(147): 0
+ARG59_A(57) --- TRP38_D(146): 0
+ARG59_A(57) --- ASP35_D(143): 0
+ARG59_A(57) --- TYR29_D(137): 0
+ASN58_A(56) --- GLU80_D(186): 0
+ASN58_A(56) --- GLU76_D(182): 0
+ASN58_A(56) --- TRP44_D(152): 0
+ASN58_A(56) --- THR42_D(150): 0
+ASN58_A(56) --- ASP39_D(147): 0
+ASN58_A(56) --- TRP38_D(146): 0
+ASN58_A(56) --- ASP35_D(143): 0
+ASN58_A(56) --- TYR29_D(137): 0
+ASP54_A(52) --- GLU80_D(186): 0
+ASP54_A(52) --- GLU76_D(182): 0
+ASP54_A(52) --- TRP44_D(152): 0
+ASP54_A(52) --- THR42_D(150): 0
+ASP54_A(52) --- ASP39_D(147): 0
+ASP54_A(52) --- TRP38_D(146): 0
+ASP54_A(52) --- ASP35_D(143): 0
+ASP54_A(52) --- TYR29_D(137): 0
+TRP35_A(33) --- GLU80_D(186): 0
+TRP35_A(33) --- GLU76_D(182): 0
+TRP35_A(33) --- TRP44_D(152): 0
+TRP35_A(33) --- THR42_D(150): 0
+TRP35_A(33) --- ASP39_D(147): 0
+TRP35_A(33) --- TRP38_D(146): 0
+TRP35_A(33) --- ASP35_D(143): 0
+TRP35_A(33) --- TYR29_D(137): 0
+LYS27_A(25) --- GLU80_D(186): 0
+LYS27_A(25) --- GLU76_D(182): 0
+LYS27_A(25) --- TRP44_D(152): 0
+LYS27_A(25) --- THR42_D(150): 0
+LYS27_A(25) --- ASP39_D(147): 0
+LYS27_A(25) --- TRP38_D(146): 0
+LYS27_A(25) --- ASP35_D(143): 0
+LYS27_A(25) --- TYR29_D(137): 0
+
+##### TOTAL INTERFACE ENERGY: -29.0738

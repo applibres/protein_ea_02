@@ -18,7 +18,9 @@ Multi-objective
 
 
 """
+import os
 import re
+import shutil
 import pyrosetta
 from multiprocessing import Pool
 import multiprocessing as mp
@@ -253,47 +255,90 @@ class prot_problem:
         Parameters
         ----------
         args: list of tuples
-            Each tuple contains (pdb_file, output_file, mut_rate)
+            Each tuple contains
+            (parent_id, pdb_file, output_file, mut_rate, generation, ngen, original_sequence)
         
         Returns
         -------
         list
-            Population of mutated individuals
+            Population of mutated individuals as dicts:
+            {"sequence": list[str], "pdb": str, "parent_id": str}
         """
-        # Create pool with PyRosetta initializer
-        with mp.Pool(processes=mp.cpu_count(), initializer=_init_pyrosetta_worker) as pool:
-            population = []
-            
-            for result_f in pool.starmap(self.mutate, args):
-                ind = result_f
-                population.append(ind)
-        
+        plans = self.plan_mutation_population(args)
+        unique_plans, index_map = self.deduplicate_mutation_plans(plans)
+        unique_results = self.apply_mutation_population(unique_plans)
+
+        population = []
+        for original_idx, unique_idx in enumerate(index_map):
+            plan = plans[original_idx]
+            canonical = unique_results[unique_idx]
+
+            source_pdb = canonical["pdb"]
+            target_pdb = plan["pdb_out"]
+
+            if os.path.abspath(source_pdb) != os.path.abspath(target_pdb):
+                shutil.copy2(source_pdb, target_pdb)
+
+            population.append(
+                {
+                    "sequence": canonical["sequence"],
+                    "pdb": target_pdb,
+                    "parent_id": plan["parent_id"],
+                }
+            )
+
         return population
 
+    def plan_mutation_population(self, args):
+        """Plan mutation jobs in parallel."""
+        with mp.Pool(processes=mp.cpu_count(), initializer=_init_pyrosetta_worker) as pool:
+            plans = pool.starmap(self._plan_mutation_worker, args)
+        return plans
 
-    ## Mutation Operator ##
-    def mutate(self, pdb_file, output_file, mut_rate, generation, ngen, original_sequence):
-        """Mutate an individual
-        
-        Parameters
-        ----------
-        pdb_file: str
-            Input PDB file path
-        output_file: str
-            Output PDB file path
-        mut_rate: float
-            Mutation rate
-            
-        Returns
-        -------
-        list
-            Mutated amino acid sequence
-        """
-        # Mutate
+    def deduplicate_mutation_plans(self, plans):
+        """Deduplicate plans globally by mutated interface sequence."""
+        unique_plans = []
+        index_map = []
+        key_to_unique_idx = {}
+
+        for plan in plans:
+            key = plan["mutated_interface_sequence"]
+            if key in key_to_unique_idx:
+                idx = key_to_unique_idx[key]
+            else:
+                idx = len(unique_plans)
+                key_to_unique_idx[key] = idx
+                unique_plans.append(plan)
+            index_map.append(idx)
+
+        return unique_plans, index_map
+
+    def apply_mutation_population(self, unique_plans):
+        """Apply unique mutation plans in parallel."""
+        with mp.Pool(processes=mp.cpu_count(), initializer=_init_pyrosetta_worker) as pool:
+            results = pool.map(self._apply_mutation_plan_worker, unique_plans)
+        return results
+
+    def _plan_mutation_worker(self, parent_id, pdb_file, output_file, mut_rate, generation, ngen, original_sequence):
         sequence = "".join(self.get_complete_interest_sequence(pdb_file, self.ligand_chain))
-        self.mut.mutate(self.scenario, self.ligand_chain, pdb_file, output_file, mut_rate, sequence, generation, ngen, original_sequence)
-        aa = self.get_individual_seq(output_file)
-        return aa
+        return self.mut.plan_mutation(
+            scenario=self.scenario,
+            ligand_chain=self.ligand_chain,
+            pdb_file=pdb_file,
+            output_file=output_file,
+            mut_rate=mut_rate,
+            sequence=sequence,
+            generation=generation,
+            ngen=ngen,
+            original_sequence=original_sequence,
+            parent_id=parent_id,
+        )
+
+    def _apply_mutation_plan_worker(self, plan):
+        result = self.mut.apply_mutation_plan(plan)
+        aa = self.get_individual_seq(result["pdb"])
+        result["sequence"] = aa
+        return result
     
 
     def _crossover_worker(self, pdb_file, output_file, positions_to_mutate, aminoacids_to_place):

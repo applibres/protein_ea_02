@@ -36,6 +36,8 @@ from prot_interface.logging_config import setup_logging
 from prot_interface.prot_esm2 import ESM2ProbMatrix
 import logging
 
+from utils import get_temperature
+
 # Initialize logging before anything else
 setup_logging()
 logger = logging.getLogger(__name__)
@@ -160,117 +162,127 @@ class prot_mut:
             subprocess.run(command, shell=True, check=True, executable='/bin/bash')
         except subprocess.CalledProcessError as e:
             print(f'Error: {e}')
-            
-    def mutate(self, scenario, ligand_chain, pdb_file, output_file, mut_rate, sequence, generation, ngen, original_sequence):
-        """Mutate a protein structure
-        
-        Parameters
-        ----------
-        scenario: str
-            Scenario name
-        ligand_chain: str
-            Ligand chain identifier
-        pdb_file: str
-            Input PDB file path
-        output_file: str
-            Output PDB file path
-        mut_rate: float
-            Mutation rate
-        sequence: str
-            Protein sequence
-        """
-        # Instantiate Objects
 
-        ## Step 1: Choose Position to Mutate ####
-        # Get list of stable and unstable aa
+    def plan_mutation(self, scenario, ligand_chain, pdb_file, output_file, mut_rate,
+                      sequence, generation, ngen, original_sequence, parent_id=None):
+        """Plan mutation steps without touching PDB files."""
         list_aa = prot_aa.prot_aa_extract(scenario, ligand_chain)
         aans, aas = list_aa.aa_stab_nstab_list(pdb_file)
         logging.debug(f"AANS aminoacids: {aans}")
         logging.debug(f"AAS aminoacids: {aas}")
 
-        path_pdb = os.path.dirname(os.path.abspath(output_file))
-        base = os.path.basename(output_file)
+        mutations = []
 
-        temp = os.path.join(path_pdb, f"tmp_{str(base).split('.pdb')[0]}")
-        os.makedirs(temp, exist_ok=True)
-    
-        if (len(aans) > 0 or len(aas) > 0):
+        if len(aans) > 0 or len(aas) > 0:
             aminoacids = aans + aas
             energies = np.array([energ[1] for energ in aminoacids])
             max_e = np.max(energies)
-            T0 = 5.0      # temperatura inicial
-            Tmin = 0.2
-            alpha = 0.99
-            temperature = max(Tmin, T0 * (alpha ** generation))
-            weights_aas = (np.exp(energies - max_e)/ temperature) / np.sum(np.exp(energies - max_e))
-    
+
+            temperature = get_temperature(generation, ngen)
+            weights_aas = (np.exp(energies - max_e) / temperature) / np.sum(np.exp(energies - max_e))
+
             logging.debug(f"Sequence for ESM2: {sequence}")
 
-            min_mut = int(1)
-            max_mut = 0
-
-            if (len(aans) > 0):
-                max_mut = len(aans) * mut_rate
-            elif (len(aas) > 0):
-                max_mut = len(aas) * mut_rate
-
+            max_mut = len(aminoacids) * mut_rate
             logging.debug(f"Max mut: {max_mut}")
-            
-            if (int(max_mut) <= 1):
+
+            if int(max_mut) <= 1:
                 num_of_mut = 1
             else:
-                num_of_mut = np.random.randint(min_mut, int(max_mut))
+                num_of_mut = np.random.randint(1, int(max_mut))
 
             logging.info("Number of Mutations =%s", num_of_mut)
 
-            logging.debug(f"Path pdb file: {path_pdb}")
-            logging.debug(f"Base pdb file: {base}")
-
-            for i in range(num_of_mut):
+            for _ in range(num_of_mut):
                 aa2mut = random.choices(aminoacids, weights=weights_aas, k=1)[0]
 
                 logging.info("AA to Mutate: %s", aa2mut)
 
-                # Get AA
                 aa = aa2mut[0][0:3]
                 logging.info("Amino to replace: %s %s %s", aa, "-", self.wildtype(aa))
 
-                # Get position to mutate
                 aa_pos = re.findall(r'\d+', aa2mut[0])
                 logging.info("In Position: %s", aa_pos[1])
 
-                # Get the position index in the sequence
                 position_in_seq = self.positions.index(int(aa_pos[0]))
-
                 posi = int(aa_pos[1])
-                
-                if(random.random() < 0.3):
+
+                if random.random() < 0.3:
                     res = self.aatype(original_sequence[int(aa_pos[0])])
                     logging.info("Back to an original aminoacid")
                     logging.info("Decision: %s %s %s", aa2mut, " --> ", res)
                 else:
-                    # Get the most probable replacement from ESM2
-                    # Note: most_probable_replacement now only takes sequence and position
-                    aa_mut = self.esm2_prob_matrix.most_probable_replacement(sequence, position_in_seq, generation, ngen)
+                    aa_mut = self.esm2_prob_matrix.most_probable_replacement(
+                        sequence, position_in_seq, generation, ngen
+                    )
                     logging.info("Decision: %s %s %s", aa2mut, " --> ", aa_mut[0])
-
                     res = self.aatype(aa_mut[0])
 
-                # Step 3: mutate
-                temp_file = os.path.join(temp, f"{base.split('.pdb')[0]}_{i}.pdb")
-                self.mutate_local_relax(pdb_file, temp_file, posi, res)
-                pdb_file = temp_file                
-                
-                if os.path.isfile(pdb_file):
-                    logging.info(f"Temporal mutant: {pdb_file}")
-                else:
-                    logging.info(f"Not found: {pdb_file}")
+                mutations.append((posi, res, int(aa_pos[0])))
 
-        # Create the mutant in pdb file
-        logging.info(f"Moving Mutant pdb: {pdb_file} -> {output_file}")
-        shutil.move(pdb_file, output_file)
-        shutil.rmtree(temp)
+        mut_sequence = list(sequence[:])
+        for _, res, posi in mutations:
+            mut_sequence[posi] = self.wildtype(res)
 
+        interface_sequence = [mut_sequence[a] for a in self.positions]
+        mutated_interface_sequence = "".join(interface_sequence)
+        logging.info(f"Sequence mutated: {mut_sequence}")
+
+        return {
+            "parent_id": parent_id,
+            "scenario": scenario,
+            "ligand_chain": ligand_chain,
+            "pdb_in": pdb_file,
+            "pdb_out": output_file,
+            "generation": generation,
+            "ngen": ngen,
+            "mut_rate": mut_rate,
+            "mutations": mutations,
+            "mutated_interface_sequence": mutated_interface_sequence,
+        }
+
+    def apply_mutation_plan(self, plan):
+        """Apply a precomputed mutation plan by executing mutate_local_relax."""
+        pdb_file = plan["pdb_in"]
+        output_file = plan["pdb_out"]
+        mutations = plan["mutations"]
+
+        path_pdb = os.path.dirname(os.path.abspath(output_file))
+        base = os.path.basename(output_file)
+        temp = os.path.join(path_pdb, f"tmp_{str(base).split('.pdb')[0]}")
+        os.makedirs(temp, exist_ok=True)
+
+        current_pdb = pdb_file
+
+        for i, (posi, res, _) in enumerate(mutations):
+            temp_file = os.path.join(temp, f"{base.split('.pdb')[0]}_{i}.pdb")
+            self.mutate_local_relax(current_pdb, temp_file, posi, res)
+            current_pdb = temp_file
+
+            if os.path.isfile(current_pdb):
+                logging.info(f"Temporal mutant: {current_pdb}")
+            else:
+                logging.info(f"Not found: {current_pdb}")
+
+        if os.path.abspath(current_pdb) == os.path.abspath(output_file):
+            pass
+        elif os.path.abspath(current_pdb) == os.path.abspath(pdb_file):
+            logging.info(f"Copying Mutant pdb: {current_pdb} -> {output_file}")
+            shutil.copy2(current_pdb, output_file)
+        else:
+            logging.info(f"Moving Mutant pdb: {current_pdb} -> {output_file}")
+            shutil.move(current_pdb, output_file)
+
+        if os.path.isdir(temp):
+            shutil.rmtree(temp)
+
+        return {
+            "parent_id": plan.get("parent_id"),
+            "pdb": output_file,
+            "mutated_interface_sequence": plan.get("mutated_interface_sequence", ""),
+            "mutations": mutations,
+        }
+    
     def crossover(self, pdb_file, output_file, positions_to_mutate, aminoacids_to_place):
         """
         Perform crossover on a protein structure by applying a predefined list

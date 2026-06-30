@@ -17,6 +17,7 @@ class Individual:
         self.fitness: List[str] = None
         self.F_raw: np.ndarray = None  # valores originales sin transformar (para guardar)
         self.pdb: str = None
+        self.parent_id: str = None
         self.nmut: int = 0
         self.mutations: List[str] = []
 
@@ -35,6 +36,7 @@ class Individual:
         new.F     = None if self.F     is None else self.F.copy()
         new.F_raw = None if self.F_raw is None else self.F_raw.copy()
         new.pdb = self.pdb
+        new.parent_id = self.parent_id
         new.nmut = self.nmut
         new.mutations = self.mutations.copy()
         return new

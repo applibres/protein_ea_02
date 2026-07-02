@@ -24,6 +24,7 @@ import numpy as np
 import random
 from prot_interface.logging_config import setup_logging
 from prot_interface.prot_esm2 import ESM2ProbMatrix
+from prot_interface.prot_bo_surrogateI import BOSurrogateGP
 from utils import (
     csvToTree, read_scfiles, save_population_to_csv, save_HallofFame,
     mutation_labels, save_evolutions_statistics, save_population_aa, num2str
@@ -67,6 +68,11 @@ class pymoo_sga_protein:
         self.ngenerations = self.algoritm_params['gen']
         self.nobj         = len(self.fitness_idxs) + 1
         self.mutprob      = self.algoritm_params['mutp']
+        self.bo_enabled = bool(self.algoritm_params.get("bo_enabled", False))
+        self.bo_candidates_per_parent = int(self.algoritm_params.get("bo_candidates_per_parent", 8))
+        self.bo_beta = float(self.algoritm_params.get("bo_beta", 1.0))
+        self.bo_min_train = int(self.algoritm_params.get("bo_min_train", 24))
+        self.bo_score_idx = 7  # dG_separated/dSASAx100
 
         self.n_obj = len(self.fitness_idxs) + 2
 
@@ -87,6 +93,15 @@ class pymoo_sga_protein:
         logging.info("Initializing ESM2 model...")
         self.esm2 = ESM2ProbMatrix()
         logging.info("ESM2 model initialized successfully")
+
+        if self.bo_enabled:
+            self.bo_surrogate = BOSurrogateGP()
+            logging.info(
+                "BO surrogate enabled (candidates_per_parent=%s, beta=%.3f, min_train=%s)",
+                self.bo_candidates_per_parent, self.bo_beta, self.bo_min_train
+            )
+        else:
+            self.bo_surrogate = None
 
         self.aa0 = self.my_protein_problem.create_individual0(self.pdbfile)
         self.aa0_complete = self.my_protein_problem.get_complete_interest_sequence(
@@ -163,8 +178,20 @@ class pymoo_sga_protein:
             ind.fitness = fit
             ind.F = np.array([f * (-1 * w) for f, w in zip(fit, self.weights)])
 
+            if self.bo_enabled and self.bo_surrogate is not None:
+                self.bo_surrogate.add_observation(
+                    ind.sequence(), float(fitness[i][self.bo_score_idx])
+                )
+
             logging.info(f"Individual fitness -> {ind.F}")
             logging.info(f"Rosetta scores     -> {fit}")
+
+        if self.bo_enabled and self.bo_surrogate is not None:
+            fitted = self.bo_surrogate.fit_if_ready(self.bo_min_train)
+            logging.debug(
+                "BO surrogate observations=%s fitted=%s",
+                self.bo_surrogate.n_observations, fitted
+            )
 
     def mutation(self, population: List[Individual], generation: int) -> List[Individual]:
         """Apply mutation to every individual in *population*."""
@@ -189,7 +216,9 @@ class pymoo_sga_protein:
                 )
             )
 
-        mutation_results = self.my_protein_problem.mutate_population(arguments)
+        mutation_results = self.my_protein_problem.mutate_population(
+            arguments, bo_context=self._build_bo_context()
+        )
 
         for result in mutation_results:
             ind        = Individual(result["sequence"])
@@ -499,7 +528,9 @@ class pymoo_sga_protein:
                 )
             )
 
-        mutation_results = self.my_protein_problem.mutate_population(arguments)
+        mutation_results = self.my_protein_problem.mutate_population(
+            arguments, bo_context=self._build_bo_context()
+        )
 
         for result in mutation_results:
             ind        = Individual(result["sequence"])
@@ -510,3 +541,15 @@ class pymoo_sga_protein:
 
         logging.info(f"[Mutation of children] PDB Files: {arguments}")
         return individuals
+
+    def _build_bo_context(self):
+        if not self.bo_enabled or self.bo_surrogate is None:
+            return None
+
+        return {
+            "enabled": True,
+            "candidates_per_parent": self.bo_candidates_per_parent,
+            "beta": self.bo_beta,
+            "min_train": self.bo_min_train,
+            "surrogate": self.bo_surrogate,
+        }

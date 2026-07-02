@@ -14,83 +14,116 @@ import sys
 import timeit
 import multiprocessing as mp
 import prot_interface.prot_parserI as parser
-import prot_GA as sga
-#import prot_mob_GA as sga_mob
-import prot_mob_pymoo as sga_mob
 from prot_interface.logging_config import setup_logging
 import logging
 import os
 
-# Set multiprocessing start method FIRST, before anything else
-if __name__ == '__main__':
-    try:
-        mp.set_start_method('spawn', force=True)
-    except RuntimeError:
-        # Already set, ignore
-        pass
-
-# Initialize logging after setting spawn method
 setup_logging()
 logger = logging.getLogger(__name__)
 
-# Main function to run the genetic algorithm
-def main():
+def _ensure_spawn_start_method():
+    """Ensure multiprocessing uses spawn in an idempotent way."""
+    try:
+        current = mp.get_start_method(allow_none=True)
+        if current != "spawn":
+            mp.set_start_method("spawn", force=True)
+            logger.info("Multiprocessing start method set to spawn")
+    except RuntimeError:
+        # Already configured by the active process runtime.
+        pass
 
-    # command line arguments
+
+def _parse_flag(raw_value):
+    if isinstance(raw_value, bool):
+        return raw_value
+    text = str(raw_value).strip()
+    if "=" in text:
+        text = text.split("=", 1)[1]
+    return text.lower() == "true"
+
+
+def _parse_freq(raw_value):
+    text = str(raw_value).strip()
+    if "=" in text:
+        text = text.split("=", 1)[1]
+    return int(text)
+
+
+def run_eaprot(
+    scenario,
+    algo_name,
+    sim_param_str,
+    algo_param_str,
+    fitness_idxs_str,
+    checkpoint,
+    freq,
+    mobj,
+    randomseed,
+    output_root="/output",
+):
+    _ensure_spawn_start_method()
+
+    tic = timeit.default_timer()
+    randomseed = int(randomseed)
+    checkpoint = _parse_flag(checkpoint)
+    mobj = _parse_flag(mobj)
+    freq = _parse_freq(freq)
+
+    algo_params = parser.parse_params(algo_param_str)
+    sim_params = parser.parse_params(sim_param_str)
+    fitness_idxs = parser.parse_list(fitness_idxs_str)
+
+    output_dir = os.path.join(output_root, "run" + str(randomseed))
+    os.makedirs(output_dir, exist_ok=True)
+    checkpoint_path = os.path.join(output_dir, "checkpoint.pkl")
+    if not os.path.exists(checkpoint_path):
+        with open(checkpoint_path, "wb") as f:
+            f.write(b"")
+
+    logger.info(
+        "Starting eaprot run: scenario=%s algo=%s seed=%s mobj=%s checkpoint=%s",
+        scenario, algo_name, randomseed, mobj, checkpoint
+    )
+    logger.info("Output root: %s | Output dir: %s", output_root, output_dir)
+    logger.info("ALGO_PARAMS: %s", algo_params)
+    logger.info("SIM_PARAMS: %s", sim_params)
+    logger.info("FITNESS_IDXS: %s", fitness_idxs)
+
+    if mobj:
+        import prot_mob_pymoo as sga_mob
+
+        sga_mob.pymoo_sga_protein(
+            scenario, algo_params, sim_params, fitness_idxs, output_dir, randomseed
+        ).run(checkpoint=checkpoint, freq=freq)
+    else:
+        logger.info("mobj=False: no evolutionary execution was launched.")
+
+    toc = timeit.default_timer()
+    logger.info("Finished eaprot run: seed=%s elapsed=%.2f seconds", randomseed, toc - tic)
+    return output_dir
+
+
+def main():
     if len(sys.argv) != 10:
         print(len(sys.argv))
-        logging.critical(f'usage: {sys.argv[0]} <scenario> <sea/moea> <sim params> <algo params> <fitness_idxs> <restore> <checkpoint> <multiobj> <RANDOMSEED>')
+        logging.critical(
+            "usage: %s <scenario> <sea/moea> <sim params> <algo params> "
+            "<fitness_idxs> <checkpoint> <freq> <multiobj> <RANDOMSEED>",
+            sys.argv[0],
+        )
         sys.exit(-1)
 
-    logging.info("Init Main")
-    
-    SCENARIO       = sys.argv[1] # Scenario Name
-    # Given the scenario, set the pdb file and mutation limits
-    
-    ALGO_NAME      = sys.argv[2] # Single Objective (sea) / Multi Objective (moea)   
-    SIM_PARAM_STR  = sys.argv[3]
-    ALGO_PARAM_STR = sys.argv[4]
-    FITNESS_IDXS   = sys.argv[5]
-    CHECKPOINT     = True if str(sys.argv[6].split("=")[1]).lower() == "true" else False
-    FREQ           = int(sys.argv[7].split("=")[1])
-    MOBJ           = True if str(sys.argv[8].split("=")[1]).lower() == "true" else False
-    RANDOMSEED     = int(sys.argv[9].split("=")[1])
-
-    ALGO_PARAMS    = parser.parse_params(ALGO_PARAM_STR)
-    SIM_PARAMS     = parser.parse_params(SIM_PARAM_STR)
-    FITNESS_IDXS   = parser.parse_list(FITNESS_IDXS)
-
-    logging.info("SCENARIO: %s",SCENARIO)
-    logging.info("ALGO_NAME: %s",ALGO_NAME)
-    logging.info("ALGO_PARAMS: %s",ALGO_PARAMS)
-    logging.info("SIM_PARAMS: %s",SIM_PARAMS)
-    logging.info("FITNESS_IDXS: %s",FITNESS_IDXS)
-    
-    output="/output"
-	
-    tic=timeit.default_timer()
-
-    randomseed=RANDOMSEED
-    output=output+"/run"+str(randomseed)
-
-    # Create output directory
-    os.makedirs(output, exist_ok=True)
-    # Create checkpoint.pkl if it isn't exist
-    checkpoint_path = f'{output}/checkpoint.pkl'
-    if not os.path.exists(checkpoint_path):
-        with open(checkpoint_path, 'wb') as f:
-            pass  
-    
-
-    # Run the genetic algorithm
-    if(MOBJ):
-        sga_mob.pymoo_sga_protein(SCENARIO, ALGO_PARAMS, SIM_PARAMS, FITNESS_IDXS, output, randomseed).run(checkpoint=CHECKPOINT, freq=FREQ)
-    else:
-        sga.deap_sga_protein(SCENARIO, ALGO_PARAMS, SIM_PARAMS, FITNESS_IDXS, output, randomseed).run(checkpoint=CHECKPOINT, freq=FREQ)
-
-    toc=timeit.default_timer()
-
-    logging.info("Execution Time = %.2f seconds", toc - tic)
+    run_eaprot(
+        scenario=sys.argv[1],
+        algo_name=sys.argv[2],
+        sim_param_str=sys.argv[3],
+        algo_param_str=sys.argv[4],
+        fitness_idxs_str=sys.argv[5],
+        checkpoint=sys.argv[6],
+        freq=sys.argv[7],
+        mobj=sys.argv[8],
+        randomseed=sys.argv[9],
+    )
 
 
 if __name__ == "__main__":

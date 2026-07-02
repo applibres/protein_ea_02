@@ -21,6 +21,7 @@ Multi-objective
 import os
 import re
 import shutil
+import random
 import pyrosetta
 from multiprocessing import Pool
 import multiprocessing as mp
@@ -249,7 +250,7 @@ class prot_problem:
 
 
     ## Mutate Population in parallel
-    def mutate_population(self, args):
+    def mutate_population(self, args, bo_context=None):
         """Mutate population in parallel
         
         Parameters
@@ -264,13 +265,14 @@ class prot_problem:
             Population of mutated individuals as dicts:
             {"sequence": list[str], "pdb": str, "parent_id": str}
         """
-        plans = self.plan_mutation_population(args)
-        unique_plans, index_map = self.deduplicate_mutation_plans(plans)
+        plans = self.plan_mutation_population(args, bo_context=bo_context)
+        selected_plans = self.select_mutation_plans(plans, bo_context=bo_context)
+        unique_plans, index_map = self.deduplicate_mutation_plans(selected_plans)
         unique_results = self.apply_mutation_population(unique_plans)
 
         population = []
         for original_idx, unique_idx in enumerate(index_map):
-            plan = plans[original_idx]
+            plan = selected_plans[original_idx]
             canonical = unique_results[unique_idx]
 
             source_pdb = canonical["pdb"]
@@ -289,11 +291,50 @@ class prot_problem:
 
         return population
 
-    def plan_mutation_population(self, args):
+    def plan_mutation_population(self, args, bo_context=None):
         """Plan mutation jobs in parallel."""
+        n_candidates = 1
+        if bo_context is not None and bo_context.get("enabled", False):
+            n_candidates = max(1, int(bo_context.get("candidates_per_parent", 1)))
+
+        expanded_args = []
+        for parent_slot, arg in enumerate(args):
+            for _ in range(n_candidates):
+                expanded_args.append((parent_slot, *arg))
+
         with mp.Pool(processes=mp.cpu_count(), initializer=_init_pyrosetta_worker) as pool:
-            plans = pool.starmap(self._plan_mutation_worker, args)
+            plans = pool.starmap(self._plan_mutation_worker_with_slot, expanded_args)
         return plans
+
+    def select_mutation_plans(self, plans, bo_context=None):
+        """Select exactly one candidate plan per parent slot."""
+        if not plans:
+            return []
+
+        grouped = {}
+        for plan in plans:
+            slot = plan["parent_slot"]
+            grouped.setdefault(slot, []).append(plan)
+
+        selected_plans = []
+        bo_enabled = bo_context is not None and bo_context.get("enabled", False)
+        surrogate = None if bo_context is None else bo_context.get("surrogate")
+        beta = 1.0 if bo_context is None else float(bo_context.get("beta", 1.0))
+        min_train = 24 if bo_context is None else int(bo_context.get("min_train", 24))
+        bo_ready = bo_enabled and surrogate is not None and surrogate.is_ready(min_train)
+
+        for slot in sorted(grouped.keys()):
+            candidates = grouped[slot]
+
+            if bo_ready:
+                sequences = [plan["mutated_interface_sequence"] for plan in candidates]
+                acquisition = surrogate.acquisition(sequences, beta=beta)
+                best_idx = min(range(len(candidates)), key=lambda i: float(acquisition[i]))
+                selected_plans.append(candidates[best_idx])
+            else:
+                selected_plans.append(random.choice(candidates))
+
+        return selected_plans
 
     def deduplicate_mutation_plans(self, plans):
         """Deduplicate plans globally by mutated interface sequence."""
@@ -333,6 +374,13 @@ class prot_problem:
             original_sequence=original_sequence,
             parent_id=parent_id,
         )
+
+    def _plan_mutation_worker_with_slot(self, parent_slot, parent_id, pdb_file, output_file, mut_rate, generation, ngen, original_sequence):
+        plan = self._plan_mutation_worker(
+            parent_id, pdb_file, output_file, mut_rate, generation, ngen, original_sequence
+        )
+        plan["parent_slot"] = parent_slot
+        return plan
 
     def _apply_mutation_plan_worker(self, plan):
         result = self.mut.apply_mutation_plan(plan)

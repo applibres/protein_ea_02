@@ -174,12 +174,3 @@ def save_population_aa(gendir, gen, pop, offspring_output_pdbfiles):
 
 def num2str(num, n_digits=2):
     return f"{num:0>{n_digits}}"
-
-
-def get_temperature(generation: int, ngen: int):
-    T0 = 5.0
-    Tmin = 0.2
-    alpha = 0.99
-    temperature = max(Tmin, T0 * (alpha ** generation))
-
-    return temperature

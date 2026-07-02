@@ -36,8 +36,6 @@ from prot_interface.logging_config import setup_logging
 from prot_interface.prot_esm2 import ESM2ProbMatrix
 import logging
 
-from utils import get_temperature
-
 # Initialize logging before anything else
 setup_logging()
 logger = logging.getLogger(__name__)
@@ -178,8 +176,7 @@ class prot_mut:
             energies = np.array([energ[1] for energ in aminoacids])
             max_e = np.max(energies)
 
-            temperature = get_temperature(generation, ngen)
-            weights_aas = (np.exp(energies - max_e) / temperature) / np.sum(np.exp(energies - max_e))
+            weights_aas = np.exp(energies - max_e) / np.sum(np.exp(energies - max_e))
 
             logging.debug(f"Sequence for ESM2: {sequence}")
 
@@ -207,16 +204,11 @@ class prot_mut:
                 position_in_seq = self.positions.index(int(aa_pos[0]))
                 posi = int(aa_pos[1])
 
-                if random.random() < 0.3:
-                    res = self.aatype(original_sequence[int(aa_pos[0])])
-                    logging.info("Back to an original aminoacid")
-                    logging.info("Decision: %s %s %s", aa2mut, " --> ", res)
-                else:
-                    aa_mut = self.esm2_prob_matrix.most_probable_replacement(
-                        sequence, position_in_seq, generation, ngen
-                    )
-                    logging.info("Decision: %s %s %s", aa2mut, " --> ", aa_mut[0])
-                    res = self.aatype(aa_mut[0])
+                aa_mut = self.esm2_prob_matrix.most_probable_replacement(
+                    sequence, position_in_seq, generation, ngen
+                )
+                logging.info("Decision: %s %s %s", aa2mut, " --> ", aa_mut[0])
+                res = self.aatype(aa_mut[0])
 
                 mutations.append((posi, res, int(aa_pos[0])))
 

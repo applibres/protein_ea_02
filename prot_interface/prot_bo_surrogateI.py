@@ -11,22 +11,22 @@ from typing import Dict, List, Sequence, Tuple
 import numpy as np
 
 try:
+    from sklearn.decomposition import PCA
     from sklearn.gaussian_process import GaussianProcessRegressor
     from sklearn.gaussian_process.kernels import ConstantKernel as C
     from sklearn.gaussian_process.kernels import RBF, WhiteKernel
 except ImportError:  # pragma: no cover - optional dependency
+    PCA = None
     GaussianProcessRegressor = None
     C = RBF = WhiteKernel = None
 
+from prot_interface.prot_esm2 import ESM2ProbMatrix
 
 class BOSurrogateGP:
-    """Simple GP surrogate with one-hot sequence encoding."""
+    """Simple GP surrogate with ESM2 embeddings + PCA."""
 
-    AA_ALPHABET = "ACDEFGHIKLMNPQRSTVWY"
-    AA_TO_IDX = {aa: i for i, aa in enumerate(AA_ALPHABET)}
-
-    def __init__(self):
-        if GaussianProcessRegressor is None:
+    def __init__(self, esm2_model: ESM2ProbMatrix = None, pca_components: int = 64):
+        if GaussianProcessRegressor is None or PCA is None:
             raise ImportError(
                 "scikit-learn is required for BO surrogate. "
                 "Install scikit-learn or disable bo_enabled."
@@ -42,6 +42,9 @@ class BOSurrogateGP:
             n_restarts_optimizer=2,
             random_state=42,
         )
+        self.esm2 = esm2_model if esm2_model is not None else ESM2ProbMatrix()
+        self.pca_components = int(pca_components)
+        self.pca = None
         self._observations: Dict[str, float] = {}
         self._sequence_len = None
         self._is_fitted = False
@@ -76,6 +79,10 @@ class BOSurrogateGP:
             return False
 
         X, y = self._build_training_matrix()
+        if X.shape[0] < 2 or X.shape[1] == 0:
+            self._is_fitted = False
+            return False
+
         self.model.fit(X, y)
         self._is_fitted = True
         return True
@@ -96,14 +103,25 @@ class BOSurrogateGP:
 
     def _build_training_matrix(self) -> Tuple[np.ndarray, np.ndarray]:
         sequences = list(self._observations.keys())
-        X = self._encode_sequences(sequences)
+        X_emb = self._embed_sequences(sequences)
+        n_components = max(1, min(self.pca_components, X_emb.shape[0], X_emb.shape[1]))
+        self.pca = PCA(n_components=n_components)
+        X = self.pca.fit_transform(X_emb)
         y = np.array([self._observations[s] for s in sequences], dtype=np.float64)
         return X, y
 
     def _encode_sequences(self, sequences: Sequence[str]) -> np.ndarray:
+        if self.pca is None:
+            raise RuntimeError("PCA is not fitted.")
+        X_emb = self._embed_sequences(sequences)
+        return self.pca.transform(X_emb)
+
+    def _embed_sequences(self, sequences: Sequence[str]) -> np.ndarray:
         rows: List[np.ndarray] = []
         for seq in sequences:
             seq = str(seq).strip().upper()
+            if not seq:
+                continue
             if self._sequence_len is None:
                 self._sequence_len = len(seq)
             if len(seq) != self._sequence_len:
@@ -111,13 +129,7 @@ class BOSurrogateGP:
                     f"Inconsistent sequence length for surrogate: "
                     f"{len(seq)} != {self._sequence_len}"
                 )
-
-            row = np.zeros(self._sequence_len * len(self.AA_ALPHABET), dtype=np.float32)
-            for i, aa in enumerate(seq):
-                aa_idx = self.AA_TO_IDX.get(aa)
-                if aa_idx is None:
-                    continue
-                row[i * len(self.AA_ALPHABET) + aa_idx] = 1.0
-            rows.append(row)
+            _, emb = self.esm2.get_esm_ll(seq)
+            rows.append(np.asarray(emb, dtype=np.float32))
 
         return np.vstack(rows) if rows else np.empty((0, 0), dtype=np.float32)

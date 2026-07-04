@@ -128,7 +128,7 @@ python replicates.py \
   --scenario test06 \
   --algo moea \
   --sim-params "pdbfile=9Q1V_prepared_clean_relaxed.pdb,partners=A_B,ligand_chain=B" \
-  --algo-params "gen=20,popsize=25,mutp=0.3,bo_enabled=1,bo_candidates_per_parent=8,bo_beta=1.0,bo_min_train=24" \
+  --algo-params "gen=20,popsize=25,n_neighbors=5,n_partitions=6,bo_enabled=1,bo_candidates_per_parent=8,bo_beta=1.0,bo_min_train=100" \
   --fitness-idxs "fitness_idxs=7" \
   --checkpoint false \
   --freq 2 \

@@ -78,7 +78,7 @@ prot_mob_GA.py: Evolutionary python algorithm for multi objective mode
 
 To run the evolutionary algorithm, you can go inside of the directory were is located the project code and you can call to shell script file as is shown in the next line:
 
-## ./protmut_run.sh test04 sea pdbfile=protein01.pdb,partners=A_C,ligand_chain=C gen=5,popsize=5,mutp=1 fitness_idxs=2,3 fitness_weights=-1,1 checkpoint=False checks=2 mobj=True randomseed=15
+## ./protmut_run.sh test04 sea pdbfile=protein01.pdb,partners=A_C,ligand_chain=C gen=5,popsize=5 fitness_idxs=2,3 fitness_weights=-1,1 checkpoint=False checks=2 mobj=True randomseed=15
 
 
 At following the parameters description:
@@ -99,7 +99,6 @@ popsize= population size
 
 obj= number of evaluation functions, for single objective evolutionary algorithm, obj=1
 
-mutp= mutation probability (not used)
 
 fitness_idxs= score positions for dG_separated, dSASA_int, dG_separated/dSASAx100, hbonds_int
 

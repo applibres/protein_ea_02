@@ -147,13 +147,13 @@ def read_scfiles(path, output):
     df.to_csv(output, index=False)
 
 
-def save_evolutions_statistics(logbook, file, nobj):
+def save_evolutions_statistics(logbook, file, n_obj):
     """Save per-generation stats from a plain list-of-dicts logbook."""
     with open(file, "w") as stat_file:
         header = ["gen"] + [
             f"{stat}_obj{i}"
             for stat in ["avg", "min", "max", "std"]
-            for i in range(nobj)
+            for i in range(n_obj)
         ]
         stat_file.write(",".join(header) + "\n")
 

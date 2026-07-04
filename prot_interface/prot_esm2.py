@@ -73,3 +73,51 @@ class ESM2ProbMatrix:
             probs_temp = probs_temp / probs_temp.sum()
         idx = torch.multinomial(probs_temp, num_samples=1).item()
         return self.AMINO_ACIDS[idx], probs_temp[idx].item()
+
+    def top_k_replacements(
+        self,
+        seq: str,
+        position: int,
+        generation: int,
+        ngen: int,
+        k: int = 8,
+        exclude_wt: bool = True,
+    ):
+        """Top-k amino acid replacements at a position using temperature-scaled ESM2 probabilities."""
+        temperature = 3.0 * (1 - ((generation + 1) / ngen))
+        temperature = max(temperature, 0.1)
+
+        data, _ = self._forward(seq)
+        probs = data["prob_matrix"][position].clone()
+
+        if exclude_wt:
+            wt_aa = seq[position]
+            wt_idx = self.AMINO_ACIDS.index(wt_aa)
+            probs[wt_idx] = 0.0
+
+        probs = torch.clamp(probs, min=1e-8)
+        logits = torch.log(probs) / temperature
+        probs_temp = F.softmax(logits, dim=0)
+        probs_temp = torch.nan_to_num(probs_temp, nan=0.0, posinf=0.0, neginf=0.0)
+
+        if probs_temp.sum() <= 0:
+            probs_temp = torch.ones_like(probs_temp) / len(probs_temp)
+            if exclude_wt:
+                wt_aa = seq[position]
+                wt_idx = self.AMINO_ACIDS.index(wt_aa)
+                probs_temp[wt_idx] = 0.0
+                denom = probs_temp.sum()
+                if denom > 0:
+                    probs_temp = probs_temp / denom
+
+        k = max(1, min(int(k), len(self.AMINO_ACIDS)))
+        values, indices = torch.topk(probs_temp, k=k)
+
+        results = []
+        for prob, idx in zip(values.tolist(), indices.tolist()):
+            aa = self.AMINO_ACIDS[idx]
+            if exclude_wt and aa == seq[position]:
+                continue
+            results.append((aa, float(prob)))
+
+        return results

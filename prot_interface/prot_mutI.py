@@ -52,7 +52,9 @@ class prot_mut:
         self.matrix_file_name = sets.MSA_MATRIX
         self.rosetta_bin = sets.ROSETTA_BIN
 
-        self.esm2_prob_matrix = ESM2ProbMatrix()
+        # Lazy initialization to avoid pickling heavy torch storages when
+        # multiprocessing serializes bound methods.
+        self.esm2_prob_matrix = None
         self.positions = self.getPositions()
 
         """
@@ -81,6 +83,11 @@ class prot_mut:
         positions = list(map(lambda x: re.findall(r'\d+', x), faceE_data.split(" _")))
         positions = [int(num) for sublist in positions for num in sublist]
         return positions
+
+    def _get_esm2_prob_matrix(self):
+        if self.esm2_prob_matrix is None:
+            self.esm2_prob_matrix = ESM2ProbMatrix()
+        return self.esm2_prob_matrix
 
     def get_probabilities(self, amino_acid, threshold=0.0):
         """
@@ -161,65 +168,19 @@ class prot_mut:
         except subprocess.CalledProcessError as e:
             print(f'Error: {e}')
 
-    def plan_mutation(self, scenario, ligand_chain, pdb_file, output_file, mut_rate,
-                      sequence, generation, ngen, original_sequence, parent_id=None):
-        """Plan mutation steps without touching PDB files."""
-        list_aa = prot_aa.prot_aa_extract(scenario, ligand_chain)
-        aans, aas = list_aa.aa_stab_nstab_list(pdb_file)
-        logging.debug(f"AANS aminoacids: {aans}")
-        logging.debug(f"AAS aminoacids: {aas}")
+    def _interface_from_complete(self, complete_sequence: str) -> str:
+        # faceB residue numbers are 1-based for the ligand chain.
+        # Keep ascending residue order to match create_individual0/get_individual_seq.
+        interface = []
+        for residue_number in sorted(self.positions):
+            idx = int(residue_number) - 1
+            if 0 <= idx < len(complete_sequence):
+                interface.append(complete_sequence[idx])
+        return "".join(interface)
 
-        mutations = []
-
-        if len(aans) > 0 or len(aas) > 0:
-            aminoacids = aans + aas
-            energies = np.array([energ[1] for energ in aminoacids])
-            max_e = np.max(energies)
-
-            weights_aas = np.exp(energies - max_e) / np.sum(np.exp(energies - max_e))
-
-            logging.debug(f"Sequence for ESM2: {sequence}")
-
-            max_mut = len(aminoacids) * mut_rate
-            logging.debug(f"Max mut: {max_mut}")
-
-            if int(max_mut) <= 1:
-                num_of_mut = 1
-            else:
-                num_of_mut = np.random.randint(1, int(max_mut))
-
-            logging.info("Number of Mutations =%s", num_of_mut)
-
-            for _ in range(num_of_mut):
-                aa2mut = random.choices(aminoacids, weights=weights_aas, k=1)[0]
-
-                logging.info("AA to Mutate: %s", aa2mut)
-
-                aa = aa2mut[0][0:3]
-                logging.info("Amino to replace: %s %s %s", aa, "-", self.wildtype(aa))
-
-                aa_pos = re.findall(r'\d+', aa2mut[0])
-                logging.info("In Position: %s", aa_pos[1])
-
-                position_in_seq = self.positions.index(int(aa_pos[0]))
-                posi = int(aa_pos[1])
-
-                aa_mut = self.esm2_prob_matrix.most_probable_replacement(
-                    sequence, position_in_seq, generation, ngen
-                )
-                logging.info("Decision: %s %s %s", aa2mut, " --> ", aa_mut[0])
-                res = self.aatype(aa_mut[0])
-
-                mutations.append((posi, res, int(aa_pos[0])))
-
-        mut_sequence = list(sequence[:])
-        for _, res, posi in mutations:
-            mut_sequence[posi] = self.wildtype(res)
-
-        interface_sequence = [mut_sequence[a] for a in self.positions]
-        mutated_interface_sequence = "".join(interface_sequence)
-        logging.info(f"Sequence mutated: {mut_sequence}")
-
+    def _empty_plan(self, scenario, ligand_chain, pdb_file, output_file,
+                    generation, ngen, parent_id=None, sequence=""):
+        interface_sequence = self._interface_from_complete(sequence)
         return {
             "parent_id": parent_id,
             "scenario": scenario,
@@ -228,10 +189,124 @@ class prot_mut:
             "pdb_out": output_file,
             "generation": generation,
             "ngen": ngen,
-            "mut_rate": mut_rate,
-            "mutations": mutations,
-            "mutated_interface_sequence": mutated_interface_sequence,
+            "mutations": [],
+            "mutated_interface_sequence": interface_sequence,
+            "mutated_complete_sequence": sequence,
+            "position_rank": -1,
+            "aa_rank": -1,
+            "candidate_score": 0.0,
         }
+
+    def plan_mutation_candidates(self, scenario, ligand_chain, pdb_file, output_file,
+                                 sequence, generation, ngen, original_sequence, parent_id=None,
+                                 top_positions: int = 8, top_aa: int = 8):
+        """Build deterministic 8x8 single-point mutation candidates for one parent slot."""
+        list_aa = prot_aa.prot_aa_extract(scenario, ligand_chain)
+        aans, aas = list_aa.aa_stab_nstab_list(pdb_file)
+        aminoacids = aans + aas
+
+        logging.debug(f"AANS aminoacids: {aans}")
+        logging.debug(f"AAS aminoacids: {aas}")
+        logging.debug(f"Sequence for ESM2: {sequence}")
+
+        if not aminoacids:
+            return [
+                self._empty_plan(
+                    scenario, ligand_chain, pdb_file, output_file,
+                    generation, ngen, parent_id, sequence=sequence
+                )
+            ]
+
+        top_positions = max(1, int(top_positions))
+        top_aa = max(1, int(top_aa))
+
+        # Higher interaction-energy entries have higher priority in ranking.
+        ranked_positions = sorted(aminoacids, key=lambda row: float(row[1]), reverse=True)[:top_positions]
+        candidates = []
+
+        for pos_rank, aa2mut in enumerate(ranked_positions):
+            aa_pos = re.findall(r'\d+', aa2mut[0])
+            if len(aa_pos) < 2:
+                continue
+
+            residue_number = int(aa_pos[0])
+            rosetta_position = int(aa_pos[1])
+            sequence_index = residue_number - 1
+
+            if sequence_index < 0 or sequence_index >= len(sequence):
+                continue
+
+            aa_options = self._get_esm2_prob_matrix().top_k_replacements(
+                seq=sequence,
+                position=sequence_index,
+                generation=generation,
+                ngen=ngen,
+                k=top_aa,
+                exclude_wt=True,
+            )
+
+            for aa_rank, (aa_mut, _) in enumerate(aa_options):
+                res = self.aatype(aa_mut)
+                if res is None:
+                    continue
+
+                mutations = [(rosetta_position, res, residue_number)]
+
+                mut_complete_sequence = list(sequence)
+                mut_complete_sequence[sequence_index] = aa_mut
+                mut_complete_sequence = "".join(mut_complete_sequence)
+                mutated_interface_sequence = self._interface_from_complete(mut_complete_sequence)
+
+                candidates.append(
+                    {
+                        "parent_id": parent_id,
+                        "scenario": scenario,
+                        "ligand_chain": ligand_chain,
+                        "pdb_in": pdb_file,
+                        "pdb_out": output_file,
+                        "generation": generation,
+                        "ngen": ngen,
+                        "mutations": mutations,
+                        "mutated_interface_sequence": mutated_interface_sequence,
+                        "mutated_complete_sequence": mut_complete_sequence,
+                        "position_rank": int(pos_rank),
+                        "aa_rank": int(aa_rank),
+                        "candidate_score": float(-(pos_rank + aa_rank)),
+                    }
+                )
+
+        if not candidates:
+            return [
+                self._empty_plan(
+                    scenario, ligand_chain, pdb_file, output_file,
+                    generation, ngen, parent_id, sequence=sequence
+                )
+            ]
+
+        return candidates
+
+    def plan_mutation(self, scenario, ligand_chain, pdb_file, output_file,
+                      sequence, generation, ngen, original_sequence, parent_id=None):
+        """
+        Backwards-compatible wrapper: returns one candidate sampled from the
+        deterministic candidate list.
+        """
+        candidates = self.plan_mutation_candidates(
+            scenario=scenario,
+            ligand_chain=ligand_chain,
+            pdb_file=pdb_file,
+            output_file=output_file,
+            sequence=sequence,
+            generation=generation,
+            ngen=ngen,
+            original_sequence=original_sequence,
+            parent_id=parent_id,
+        )
+        if not candidates:
+            return self._empty_plan(
+                scenario, ligand_chain, pdb_file, output_file, generation, ngen, parent_id, sequence=sequence
+            )
+        return random.choice(candidates)
 
     def apply_mutation_plan(self, plan):
         """Apply a precomputed mutation plan by executing mutate_local_relax."""

@@ -22,6 +22,7 @@ import os
 import re
 import shutil
 import random
+import numpy as np
 import pyrosetta
 from multiprocessing import Pool
 import multiprocessing as mp
@@ -163,7 +164,11 @@ class prot_problem:
         logging.info("energy_file = %s", energy_filepath)
 
         #2 Map Positions
-        aa_pos_dict=self.extract_mappings(energy_filepath)
+        try:
+            aa_pos_dict=self.extract_mappings(energy_filepath)
+        finally:
+            if os.path.isfile(energy_filepath):
+                os.remove(energy_filepath)
         logging.debug(aa_pos_dict)
 
         # Extract absolute position values as a list
@@ -257,7 +262,7 @@ class prot_problem:
         ----------
         args: list of tuples
             Each tuple contains
-            (parent_id, pdb_file, output_file, mut_rate, generation, ngen, original_sequence)
+            (parent_id, pdb_file, output_file, generation, ngen, original_sequence)
         
         Returns
         -------
@@ -267,44 +272,87 @@ class prot_problem:
         """
         plans = self.plan_mutation_population(args, bo_context=bo_context)
         selected_plans = self.select_mutation_plans(plans, bo_context=bo_context)
-        unique_plans, index_map = self.deduplicate_mutation_plans(selected_plans)
-        unique_results = self.apply_mutation_population(unique_plans)
+        sequence_pdb_cache = {}
+        if bo_context is not None:
+            sequence_pdb_cache = bo_context.get("sequence_pdb_cache", {}) or {}
 
-        population = []
-        for original_idx, unique_idx in enumerate(index_map):
-            plan = selected_plans[original_idx]
-            canonical = unique_results[unique_idx]
+        resolved_results = [None] * len(selected_plans)
+        unresolved_plans = []
+        unresolved_indices = []
 
-            source_pdb = canonical["pdb"]
+        # Global reuse: if this complete sequence was already relaxed before, just copy its PDB.
+        for idx, plan in enumerate(selected_plans):
+            key = plan.get("mutated_complete_sequence", plan["mutated_interface_sequence"])
+            cached_pdb = sequence_pdb_cache.get(key)
             target_pdb = plan["pdb_out"]
 
-            if os.path.abspath(source_pdb) != os.path.abspath(target_pdb):
-                shutil.copy2(source_pdb, target_pdb)
+            if cached_pdb and os.path.isfile(cached_pdb):
+                if os.path.abspath(cached_pdb) != os.path.abspath(target_pdb):
+                    shutil.copy2(cached_pdb, target_pdb)
+                sequence_pdb_cache[key] = target_pdb
+                resolved_results[idx] = {
+                    "sequence": self.get_individual_seq(target_pdb),
+                    "pdb": target_pdb,
+                    "parent_id": plan["parent_id"],
+                }
+            else:
+                unresolved_indices.append(idx)
+                unresolved_plans.append(plan)
 
-            population.append(
-                {
+        if unresolved_plans:
+            unique_plans, index_map = self.deduplicate_mutation_plans(unresolved_plans)
+            unique_results = self.apply_mutation_population(unique_plans)
+
+            for local_idx, unique_idx in enumerate(index_map):
+                global_idx = unresolved_indices[local_idx]
+                plan = unresolved_plans[local_idx]
+                canonical = unique_results[unique_idx]
+
+                source_pdb = canonical["pdb"]
+                target_pdb = plan["pdb_out"]
+
+                if os.path.abspath(source_pdb) != os.path.abspath(target_pdb):
+                    shutil.copy2(source_pdb, target_pdb)
+
+                key = plan.get("mutated_complete_sequence", plan["mutated_interface_sequence"])
+                sequence_pdb_cache[key] = target_pdb
+                resolved_results[global_idx] = {
                     "sequence": canonical["sequence"],
                     "pdb": target_pdb,
                     "parent_id": plan["parent_id"],
                 }
-            )
 
-        return population
+        return resolved_results
 
     def plan_mutation_population(self, args, bo_context=None):
-        """Plan mutation jobs in parallel."""
-        n_candidates = 1
-        if bo_context is not None and bo_context.get("enabled", False):
-            n_candidates = max(1, int(bo_context.get("candidates_per_parent", 1)))
-
+        """Plan mutation jobs in parallel using deterministic top-position/top-aa candidates."""
+        top_positions = 8 if bo_context is None else int(bo_context.get("top_positions", 8))
+        top_aa = 8 if bo_context is None else int(bo_context.get("top_aa", 8))
         expanded_args = []
         for parent_slot, arg in enumerate(args):
-            for _ in range(n_candidates):
-                expanded_args.append((parent_slot, *arg))
+            expanded_args.append((parent_slot, *arg, top_positions, top_aa))
 
         with mp.Pool(processes=mp.cpu_count(), initializer=_init_pyrosetta_worker) as pool:
-            plans = pool.starmap(self._plan_mutation_worker_with_slot, expanded_args)
+            plans_per_slot = pool.starmap(self._plan_mutation_worker_with_slot, expanded_args)
+
+        plans = []
+        for slot_plans in plans_per_slot:
+            plans.extend(slot_plans)
         return plans
+
+    @staticmethod
+    def _softmax_sample(candidates):
+        logits = np.array([float(c.get("candidate_score", 0.0)) for c in candidates], dtype=np.float64)
+        logits = np.nan_to_num(logits, nan=0.0, posinf=0.0, neginf=0.0)
+        logits = logits - np.max(logits)
+        probs = np.exp(logits)
+        probs_sum = probs.sum()
+        if probs_sum <= 0:
+            probs = np.ones(len(candidates), dtype=np.float64) / len(candidates)
+        else:
+            probs = probs / probs_sum
+        idx = np.random.choice(len(candidates), p=probs)
+        return candidates[int(idx)]
 
     def select_mutation_plans(self, plans, bo_context=None):
         """Select exactly one candidate plan per parent slot."""
@@ -322,28 +370,40 @@ class prot_problem:
         beta = 1.0 if bo_context is None else float(bo_context.get("beta", 1.0))
         min_train = 24 if bo_context is None else int(bo_context.get("min_train", 24))
         bo_ready = bo_enabled and surrogate is not None and surrogate.is_ready(min_train)
+        used_sequences = set()
 
         for slot in sorted(grouped.keys()):
             candidates = grouped[slot]
+            available_candidates = [
+                c for c in candidates
+                if c.get("mutated_complete_sequence", c.get("mutated_interface_sequence")) not in used_sequences
+            ]
+            pool = available_candidates if available_candidates else candidates
 
             if bo_ready:
-                sequences = [plan["mutated_interface_sequence"] for plan in candidates]
+                sequences = [
+                    plan.get("mutated_complete_sequence", plan["mutated_interface_sequence"])
+                    for plan in pool
+                ]
                 acquisition = surrogate.acquisition(sequences, beta=beta)
-                best_idx = min(range(len(candidates)), key=lambda i: float(acquisition[i]))
-                selected_plans.append(candidates[best_idx])
+                best_idx = min(range(len(pool)), key=lambda i: float(acquisition[i]))
+                selected = pool[best_idx]
             else:
-                selected_plans.append(random.choice(candidates))
+                selected = self._softmax_sample(pool)
+
+            selected_plans.append(selected)
+            used_sequences.add(selected.get("mutated_complete_sequence", selected.get("mutated_interface_sequence", "")))
 
         return selected_plans
 
     def deduplicate_mutation_plans(self, plans):
-        """Deduplicate plans globally by mutated interface sequence."""
+        """Deduplicate plans globally by mutated complete sequence."""
         unique_plans = []
         index_map = []
         key_to_unique_idx = {}
 
         for plan in plans:
-            key = plan["mutated_interface_sequence"]
+            key = plan.get("mutated_complete_sequence", plan["mutated_interface_sequence"])
             if key in key_to_unique_idx:
                 idx = key_to_unique_idx[key]
             else:
@@ -360,27 +420,31 @@ class prot_problem:
             results = pool.map(self._apply_mutation_plan_worker, unique_plans)
         return results
 
-    def _plan_mutation_worker(self, parent_id, pdb_file, output_file, mut_rate, generation, ngen, original_sequence):
+    def _plan_mutation_worker(self, parent_id, pdb_file, output_file, generation, ngen, original_sequence,
+                              top_positions, top_aa):
         sequence = "".join(self.get_complete_interest_sequence(pdb_file, self.ligand_chain))
-        return self.mut.plan_mutation(
+        return self.mut.plan_mutation_candidates(
             scenario=self.scenario,
             ligand_chain=self.ligand_chain,
             pdb_file=pdb_file,
             output_file=output_file,
-            mut_rate=mut_rate,
             sequence=sequence,
             generation=generation,
             ngen=ngen,
             original_sequence=original_sequence,
             parent_id=parent_id,
+            top_positions=top_positions,
+            top_aa=top_aa,
         )
 
-    def _plan_mutation_worker_with_slot(self, parent_slot, parent_id, pdb_file, output_file, mut_rate, generation, ngen, original_sequence):
-        plan = self._plan_mutation_worker(
-            parent_id, pdb_file, output_file, mut_rate, generation, ngen, original_sequence
+    def _plan_mutation_worker_with_slot(self, parent_slot, parent_id, pdb_file, output_file, generation, ngen,
+                                        original_sequence, top_positions, top_aa):
+        plans = self._plan_mutation_worker(
+            parent_id, pdb_file, output_file, generation, ngen, original_sequence, top_positions, top_aa
         )
-        plan["parent_slot"] = parent_slot
-        return plan
+        for plan in plans:
+            plan["parent_slot"] = parent_slot
+        return plans
 
     def _apply_mutation_plan_worker(self, plan):
         result = self.mut.apply_mutation_plan(plan)

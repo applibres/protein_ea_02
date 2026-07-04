@@ -8,7 +8,9 @@ Yachay Tech University
 Phage Therapy Group
 """
 
+import os
 import subprocess
+import uuid
 import prot_interface.prot_settingsI as sets
 from prot_interface.logging_config import setup_logging
 import logging
@@ -114,7 +116,10 @@ class prot_aa_extract:
 	def energy_interact_file(self, pdb_file_name):
 		##Execute the command and reeturn the file name
 		# #Build the command
-		output_file_name = pdb_file_name + ".txt"
+		pdb_dir = os.path.dirname(os.path.abspath(pdb_file_name))
+		pdb_base = os.path.basename(pdb_file_name)
+		unique_tag = f"{os.getpid()}_{uuid.uuid4().hex}"
+		output_file_name = os.path.join(pdb_dir, f".{pdb_base}.{unique_tag}.txt")
 		command = self.rosetta_bin + self.interf_en + \
           " " + pdb_file_name + \
           " " + "-face1 " + self.config_path + self.scenario + "/" + self.face1_file_name + \
@@ -142,9 +147,12 @@ class prot_aa_extract:
 		# #Build the command
 		
 		output_file_name = self.energy_interact_file(pdb_file_name)
-		extracted_text = self.extract_text(output_file_name)
-
-		sum_positive, sum_negative, ligand_interactions = self.extract_interactions(extracted_text, self.ligand_chain)
+		try:
+			extracted_text = self.extract_text(output_file_name)
+			sum_positive, sum_negative, ligand_interactions = self.extract_interactions(extracted_text, self.ligand_chain)
+		finally:
+			if os.path.isfile(output_file_name):
+				os.remove(output_file_name)
 
 
 		list_of_aa_s = []

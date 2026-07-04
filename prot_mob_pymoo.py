@@ -66,21 +66,41 @@ class pymoo_sga_protein:
 
         self.popsize      = self.algoritm_params['popsize']
         self.ngenerations = self.algoritm_params['gen']
-        self.nobj         = len(self.fitness_idxs) + 1
-        self.mutprob      = self.algoritm_params['mutp']
+        self.nr           = int(self.algoritm_params.get("nr", 2))
+        self.n_neighbors  = int(self.algoritm_params.get("n_neighbors", 5))
+        self.n_partitions = int(self.algoritm_params.get("n_partitions", 6))
         self.bo_enabled = bool(self.algoritm_params.get("bo_enabled", False))
         self.bo_candidates_per_parent = int(self.algoritm_params.get("bo_candidates_per_parent", 8))
         self.bo_beta = float(self.algoritm_params.get("bo_beta", 1.0))
         self.bo_min_train = int(self.algoritm_params.get("bo_min_train", 24))
+        self.top_positions = 8
+        self.top_aa = 8
         self.bo_score_idx = 7  # dG_separated/dSASAx100
 
         self.n_obj = len(self.fitness_idxs) + 2
+        if self.popsize < 1:
+            raise ValueError("popsize must be >= 1")
+        if self.n_neighbors < 1:
+            raise ValueError("n_neighbors must be >= 1")
+        if self.n_partitions < 1:
+            raise ValueError("n_partitions must be >= 1")
+        self.sequence_pdb_cache = {}
 
         # ── MOEA/D operators ─────────────────────────────────────────────────
-        moead = SelectionOperatorMOEAD(self.n_obj, n_neighbors=5, n_partitions=6)
+        moead = SelectionOperatorMOEAD(
+            self.n_obj,
+            n_neighbors=self.n_neighbors,
+            n_partitions=self.n_partitions,
+            nr=self.nr,
+            n_subproblems=self.popsize
+        )
         self.moead          = moead                    # full object kept for crossover
         self.selection      = moead.selection          # survival update
         self.parent_select  = moead.parent_selection   # neighbourhood parent picker
+        logging.info(
+            "MOEA/D params -> n_obj=%s n_subproblems=%s n_neighbors=%s n_partitions=%s nr=%s",
+            self.n_obj, self.moead.n_subproblems, self.moead.neighbors.shape[1], self.n_partitions, self.nr
+        )
         # ─────────────────────────────────────────────────────────────────────
 
         weights      = [sets.SCORE_OBJECTIVE[fidx] for fidx in self.fitness_idxs]
@@ -95,7 +115,7 @@ class pymoo_sga_protein:
         logging.info("ESM2 model initialized successfully")
 
         if self.bo_enabled:
-            self.bo_surrogate = BOSurrogateGP()
+            self.bo_surrogate = BOSurrogateGP(esm2_model=self.esm2, pca_components=64)
             logging.info(
                 "BO surrogate enabled (candidates_per_parent=%s, beta=%.3f, min_train=%s)",
                 self.bo_candidates_per_parent, self.bo_beta, self.bo_min_train
@@ -107,6 +127,11 @@ class pymoo_sga_protein:
         self.aa0_complete = self.my_protein_problem.get_complete_interest_sequence(
             sets.CONFIG_PATH + self.scenario + "/" + self.pdbfile, self.ligand_chain
         )
+        self.interface_residue_numbers = sorted(
+            int(x) for x in self.my_protein_problem.mut.positions
+        )
+        if len(self.interface_residue_numbers) != len(self.aa0):
+            self.interface_residue_numbers = None
         self.ll_father, _ = self.esm2.get_esm_ll(self.aa0_complete)
 
     # ------------------------------------------------------------------ #
@@ -133,6 +158,16 @@ class pymoo_sga_protein:
     def count_mutations_from_original(self, sequence) -> int:
         return len(self.mutation_labels_from_original(sequence))
 
+    def _refresh_sequence_pdb_cache_from_population(self, population: List[Individual]):
+        for ind in population:
+            if ind is None or ind.pdb is None:
+                continue
+            if os.path.isfile(ind.pdb):
+                complete_seq = self.my_protein_problem.get_complete_interest_sequence(
+                    ind.pdb, self.ligand_chain
+                )
+                self.sequence_pdb_cache[complete_seq] = ind.pdb
+
     # ------------------------------------------------------------------ #
     #  Core GA operations                                                  #
     # ------------------------------------------------------------------ #
@@ -151,9 +186,11 @@ class pymoo_sga_protein:
         if not os.path.isfile(dst):
             exit(1)
 
-        fitness_indv0  = self.my_protein_problem.fitness(dst)
-        fitness_values = [*fitness_indv0, 0]
-        ind.F = np.array([f * w for f, w in zip(fitness_values, self.weights)])
+        fitness_indv0 = self.my_protein_problem.fitness(dst)
+        fitness_individual = [fitness_indv0[fitness_idx] for fitness_idx in self.fitness_idxs]
+        fit = [*fitness_individual, 0.0, ind.nmut]
+        ind.fitness = fit
+        ind.F = np.array([f * (-1 * w) for f, w in zip(fit, self.weights)])
 
         return ind
 
@@ -180,7 +217,7 @@ class pymoo_sga_protein:
 
             if self.bo_enabled and self.bo_surrogate is not None:
                 self.bo_surrogate.add_observation(
-                    ind.sequence(), float(fitness[i][self.bo_score_idx])
+                    ind_complete_sequence, float(fitness[i][self.bo_score_idx])
                 )
 
             logging.info(f"Individual fitness -> {ind.F}")
@@ -209,7 +246,6 @@ class pymoo_sga_protein:
                     mutant.id,
                     mutant.pdb,
                     output_file_path,
-                    self.mutprob,
                     generation,
                     self.ngenerations,
                     self.aa0_complete,
@@ -262,7 +298,9 @@ class pymoo_sga_protein:
         aa_pos_list = self.my_protein_problem.aa_pos_list  # absolute Rosetta positions
 
         crossover_args: List[tuple] = []   # args for prot_problem.crossover_population
-        meta: List[dict] = []              # lineage info per child
+        pending_idxs: List[int] = []       # children that still need Rosetta crossover
+        child_sequences: List[List[str]] = [None] * len(population)
+        output_files: List[str] = [None] * len(population)
 
         for i in range(len(population)):
             parent_a, parent_b = self.parent_select(population, i)[0]
@@ -287,13 +325,35 @@ class pymoo_sga_protein:
             
             # Build the actual output path
             output_file = self.path_temp_file(generation, i + mut_start_offset + len(population))
+            output_files[i] = output_file
 
             # Map sequence-level (0-based) indices → absolute Rosetta positions
             rosetta_positions = [aa_pos_list[idx] for idx in seq_indices]
 
-            crossover_args.append((pdb_base, output_file, rosetta_positions, child_aas))
+            seq_child = list(parent_a.sequence())
+            for idx_seq, aa in zip(seq_indices, child_aas):
+                seq_child[idx_seq] = aa
+            seq_child_str = "".join(seq_child)
+            child_sequences[i] = seq_child
 
-            meta.append({"output_file": output_file})
+            cached_pdb = None
+            if self.interface_residue_numbers is not None:
+                parent_a_complete = list(
+                    self.my_protein_problem.get_complete_interest_sequence(pdb_base, self.ligand_chain)
+                )
+                for idx_seq, aa in zip(seq_indices, child_aas):
+                    if 0 <= idx_seq < len(self.interface_residue_numbers):
+                        complete_idx = self.interface_residue_numbers[idx_seq] - 1
+                        if 0 <= complete_idx < len(parent_a_complete):
+                            parent_a_complete[complete_idx] = aa
+                seq_child_complete_str = "".join(parent_a_complete)
+                cached_pdb = self.sequence_pdb_cache.get(seq_child_complete_str)
+
+            if cached_pdb and os.path.isfile(cached_pdb):
+                shutil.copy2(cached_pdb, output_file)
+            else:
+                pending_idxs.append(i)
+                crossover_args.append((pdb_base, output_file, rosetta_positions, child_aas))
 
             logging.info(
                 f"[Crossover] sub-problem {i}: "
@@ -301,14 +361,17 @@ class pymoo_sga_protein:
                 f"positions_changed={len(seq_indices)}"
             )
 
-        # Apply structural crossovers in parallel (Rosetta)
-        new_seqs = self.my_protein_problem.crossover_population(crossover_args)
+        # Apply structural crossovers in parallel (Rosetta) only for cache misses
+        if crossover_args:
+            new_seqs = self.my_protein_problem.crossover_population(crossover_args)
+            for idx_child, aa in zip(pending_idxs, new_seqs):
+                child_sequences[idx_child] = aa
 
         # Assemble Individual objects
         children: List[Individual] = []
-        for m, aa in zip(meta, new_seqs):
+        for i, aa in enumerate(child_sequences):
             child        = Individual(aa)
-            child.pdb    = m["output_file"]
+            child.pdb    = output_files[i]
             self.register_mutations_from_original(child)
             children.append(child)
 
@@ -395,6 +458,7 @@ class pymoo_sga_protein:
                 ngen_start   = cp['generation'] + 1
                 logbook      = cp['logbook']
                 random.setstate(cp['rndstate'])
+                self._refresh_sequence_pdb_cache_from_population(population)
                 logging.info(f"Resumed from generation {cp['generation']}")
             except (FileNotFoundError, EOFError) as e:
                 logging.critical(f"Checkpoint error: {e}")
@@ -409,11 +473,16 @@ class pymoo_sga_protein:
 
             ind0 = self.create_initial_individual()
             population: List[Individual] = [ind0]
+            self._refresh_sequence_pdb_cache_from_population(population)
 
-            population += self.mutation(population * self.popsize, 0)
+            # Keep generation-0 population exactly at popsize:
+            # 1 original + (popsize - 1) mutants.
+            if self.popsize > 1:
+                population += self.mutation(population * (self.popsize - 1), 0)
 
             self.evaluate(population)
             self.move_population(population, 0)
+            self._refresh_sequence_pdb_cache_from_population(population)
 
             pareto_front: List[Individual] = self.update_pareto_front([], population)
 
@@ -450,6 +519,7 @@ class pymoo_sga_protein:
 
             # Step 5: Move PDB files to permanent generation directory
             self.move_population(population, generation)
+            self._refresh_sequence_pdb_cache_from_population(population)
 
             pareto_front = self.update_pareto_front(pareto_front, population)
 
@@ -497,7 +567,7 @@ class pymoo_sga_protein:
         read_scfiles(self.output, SCFILE_CSV)
 
         logging.info("-- Saving Evolution Statistics --")
-        save_evolutions_statistics(logbook, SAVE_STATISTICS_CSV, self.nobj)
+        save_evolutions_statistics(logbook, SAVE_STATISTICS_CSV, self.n_obj)
 
     # ------------------------------------------------------------------ #
     #  Private helpers                                                     #
@@ -521,7 +591,6 @@ class pymoo_sga_protein:
                     child.id,
                     child.pdb,
                     output_file_path,
-                    self.mutprob,
                     generation,
                     self.ngenerations,
                     self.aa0_complete,
@@ -543,13 +612,13 @@ class pymoo_sga_protein:
         return individuals
 
     def _build_bo_context(self):
-        if not self.bo_enabled or self.bo_surrogate is None:
-            return None
-
         return {
-            "enabled": True,
+            "enabled": self.bo_enabled and self.bo_surrogate is not None,
             "candidates_per_parent": self.bo_candidates_per_parent,
             "beta": self.bo_beta,
             "min_train": self.bo_min_train,
             "surrogate": self.bo_surrogate,
+            "top_positions": self.top_positions,
+            "top_aa": self.top_aa,
+            "sequence_pdb_cache": self.sequence_pdb_cache,
         }

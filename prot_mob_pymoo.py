@@ -69,6 +69,8 @@ class pymoo_sga_protein:
         self.nr           = int(self.algoritm_params.get("nr", 2))
         self.n_neighbors  = int(self.algoritm_params.get("n_neighbors", 5))
         self.n_partitions = int(self.algoritm_params.get("n_partitions", 6))
+        self.random_mutation = int(self.algoritm_params.get("random_mutation", 0))
+        self.llm_crossover = int(self.algoritm_params.get("llm_crossover", 0))
         self.bo_enabled = bool(self.algoritm_params.get("bo_enabled", False))
         self.bo_candidates_per_parent = int(self.algoritm_params.get("bo_candidates_per_parent", 8))
         self.bo_beta = float(self.algoritm_params.get("bo_beta", 1.0))
@@ -84,6 +86,10 @@ class pymoo_sga_protein:
             raise ValueError("n_neighbors must be >= 1")
         if self.n_partitions < 1:
             raise ValueError("n_partitions must be >= 1")
+        if self.random_mutation not in (0, 1):
+            raise ValueError("random_mutation must be 0 or 1")
+        if self.llm_crossover not in (0, 1):
+            raise ValueError("llm_crossover must be 0 or 1")
         self.sequence_pdb_cache = {}
 
         # ── MOEA/D operators ─────────────────────────────────────────────────
@@ -98,8 +104,9 @@ class pymoo_sga_protein:
         self.selection      = moead.selection          # survival update
         self.parent_select  = moead.parent_selection   # neighbourhood parent picker
         logging.info(
-            "MOEA/D params -> n_obj=%s n_subproblems=%s n_neighbors=%s n_partitions=%s nr=%s",
-            self.n_obj, self.moead.n_subproblems, self.moead.neighbors.shape[1], self.n_partitions, self.nr
+            "MOEA/D params -> n_obj=%s n_subproblems=%s n_neighbors=%s n_partitions=%s nr=%s random_mutation=%s llm_crossover=%s",
+            self.n_obj, self.moead.n_subproblems, self.moead.neighbors.shape[1],
+            self.n_partitions, self.nr, self.random_mutation, self.llm_crossover
         )
         # ─────────────────────────────────────────────────────────────────────
 
@@ -307,20 +314,22 @@ class pymoo_sga_protein:
 
             # Sequence-level indices + alleles for the child
             pdb_base = parent_a.pdb
-            #try:
-            #    seq_indices, child_aas = llm_crossover(
-            #        parent_a=parent_a,
-            #        parent_b=parent_b,
-            #        population=population,
-            #        sequence_initial="".join(self.aa0),
-            #    )
-            #except Exception as exc:
-            #    logging.warning(
-            #        "[Crossover] LLM crossover failed for sub-problem %s; ",
-            #        "falling back to uniform crossover: %s",
-            #        i, exc,
-            #    )
-            seq_indices, child_aas = uniform_crossover(parent_a, parent_b)
+            if self.llm_crossover:
+                try:
+                    seq_indices, child_aas = llm_crossover(
+                        parent_a=parent_a,
+                        parent_b=parent_b,
+                        population=population,
+                        sequence_initial="".join(self.aa0),
+                    )
+                except Exception as exc:
+                    logging.warning(
+                        "[Crossover] LLM crossover failed for sub-problem %s; falling back to uniform crossover: %s",
+                        i, exc,
+                    )
+                    seq_indices, child_aas = uniform_crossover(parent_a, parent_b)
+            else:
+                seq_indices, child_aas = uniform_crossover(parent_a, parent_b)
 
             
             # Build the actual output path
@@ -621,4 +630,5 @@ class pymoo_sga_protein:
             "top_positions": self.top_positions,
             "top_aa": self.top_aa,
             "sequence_pdb_cache": self.sequence_pdb_cache,
+            "random_mutation": self.random_mutation,
         }

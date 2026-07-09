@@ -325,12 +325,13 @@ class prot_problem:
         return resolved_results
 
     def plan_mutation_population(self, args, bo_context=None):
-        """Plan mutation jobs in parallel using deterministic top-position/top-aa candidates."""
+        """Plan mutation jobs in parallel (deterministic or random candidate mode)."""
         top_positions = 8 if bo_context is None else int(bo_context.get("top_positions", 8))
         top_aa = 8 if bo_context is None else int(bo_context.get("top_aa", 8))
+        random_mutation = 0 if bo_context is None else int(bo_context.get("random_mutation", 0))
         expanded_args = []
         for parent_slot, arg in enumerate(args):
-            expanded_args.append((parent_slot, *arg, top_positions, top_aa))
+            expanded_args.append((parent_slot, *arg, top_positions, top_aa, random_mutation))
 
         with mp.Pool(processes=mp.cpu_count(), initializer=_init_pyrosetta_worker) as pool:
             plans_per_slot = pool.starmap(self._plan_mutation_worker_with_slot, expanded_args)
@@ -421,7 +422,7 @@ class prot_problem:
         return results
 
     def _plan_mutation_worker(self, parent_id, pdb_file, output_file, generation, ngen, original_sequence,
-                              top_positions, top_aa):
+                              top_positions, top_aa, random_mutation):
         sequence = "".join(self.get_complete_interest_sequence(pdb_file, self.ligand_chain))
         return self.mut.plan_mutation_candidates(
             scenario=self.scenario,
@@ -435,12 +436,14 @@ class prot_problem:
             parent_id=parent_id,
             top_positions=top_positions,
             top_aa=top_aa,
+            random_mutation=random_mutation,
         )
 
     def _plan_mutation_worker_with_slot(self, parent_slot, parent_id, pdb_file, output_file, generation, ngen,
-                                        original_sequence, top_positions, top_aa):
+                                        original_sequence, top_positions, top_aa, random_mutation):
         plans = self._plan_mutation_worker(
-            parent_id, pdb_file, output_file, generation, ngen, original_sequence, top_positions, top_aa
+            parent_id, pdb_file, output_file, generation, ngen, original_sequence,
+            top_positions, top_aa, random_mutation
         )
         for plan in plans:
             plan["parent_slot"] = parent_slot

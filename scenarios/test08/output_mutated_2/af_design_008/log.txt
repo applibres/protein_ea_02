@@ -1,0 +1,23 @@
+2026-08-06 16:49:27,019 Running colabfold 1.6.1
+2026-08-06 16:49:29,080 Running on GPU
+2026-08-06 16:49:29,117 Using initial guess: /home/ariel/Desktop/protea02/test/experiments_nsgaiii/replicates4/run4/g19/g19_26.pdb
+2026-08-06 16:49:29,118 Found 5 citations for tools or databases
+2026-08-06 16:49:29,118 Query 1/1: design_008 (length 232)
+2026-08-06 16:49:29,705 Sleeping for 6s. Reason: PENDING
+2026-08-06 16:49:36,256 Sleeping for 8s. Reason: RUNNING
+2026-08-06 16:49:53,659 Timeout while fetching status from MSA server. Retrying...
+2026-08-06 16:50:02,997 Timeout while fetching status from MSA server. Retrying...
+2026-08-06 16:50:09,029 Timeout while fetching status from MSA server. Retrying...
+2026-08-06 16:50:20,997 Timeout while fetching result from MSA server. Retrying...
+2026-08-06 16:50:27,029 Timeout while fetching result from MSA server. Retrying...
+2026-08-06 16:50:31,550 Sleeping for 6s. Reason: PENDING
+2026-08-06 16:50:38,126 Sleeping for 7s. Reason: RUNNING
+2026-08-06 16:50:45,698 Sleeping for 10s. Reason: RUNNING
+2026-08-06 16:50:57,280 Setting max_seq=407, max_extra_seq=1
+2026-08-06 16:51:24,048 alphafold2_multimer_v3_model_1_seed_000 recycle=0 pLDDT=89.2 pTM=0.811 ipTM=0.623
+2026-08-06 16:51:38,586 alphafold2_multimer_v3_model_1_seed_000 recycle=1 pLDDT=95.1 pTM=0.899 ipTM=0.867 tol=0.747
+2026-08-06 16:51:40,086 alphafold2_multimer_v3_model_1_seed_000 recycle=2 pLDDT=94.8 pTM=0.896 ipTM=0.867 tol=0.206
+2026-08-06 16:51:40,086 alphafold2_multimer_v3_model_1_seed_000 took 37.7s (2 recycles)
+2026-08-06 16:51:40,125 reranking models by 'multimer' metric
+2026-08-06 16:51:40,125 rank_001_alphafold2_multimer_v3_model_1_seed_000 pLDDT=94.8 pTM=0.896 ipTM=0.867
+2026-08-06 16:51:40,289 Done

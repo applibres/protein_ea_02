@@ -114,7 +114,7 @@ def get_sequence(generation, indiv, src_path):
         lines = f.readlines()
 
     line     = lines[indiv].strip()
-    sequence = re.findall(r"[A-Za-z]", line.split(']')[0])
+    sequence = re.findall(r"[A-Za-z]", line.split()[0])
     return sequence
 
 

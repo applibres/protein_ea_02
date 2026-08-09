@@ -4,7 +4,7 @@ from transformers import AutoTokenizer, EsmForMaskedLM
 
 class ESM2ProbMatrix:
     
-    def __init__(self, model_name: str = "facebook/esm2_t6_8M_UR50D"):
+    def __init__(self, model_name: str = "facebook/esm2_t30_150M_UR50D"):
         self.device = torch.device(
             "cuda" if torch.cuda.is_available()
             else ("mps" if torch.backends.mps.is_available() else "cpu")

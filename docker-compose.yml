@@ -1,0 +1,48 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    restart: unless-stopped
+    environment:
+      - OLLAMA_HOST=0.0.0.0:11434
+    volumes:
+      - ollama:/root/.ollama
+    networks:
+      - protea-net
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  protein-rosetta:
+    build: .
+    image: protein-rosetta_image
+    container_name: protein-rosetta
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    working_dir: /app
+    volumes:
+      - .:/app
+    networks:
+      - protea-net
+    depends_on:
+      - ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+volumes:
+  ollama:
+    external: true
+
+networks:
+  protea-net:
+    driver: bridge

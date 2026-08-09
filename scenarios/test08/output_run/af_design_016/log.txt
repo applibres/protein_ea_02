@@ -1,0 +1,80 @@
+2026-08-06 15:18:37,505 Running colabfold 1.6.1
+2026-08-06 15:18:38,983 Running on GPU
+2026-08-06 15:18:39,019 Using initial guess: /home/ariel/Desktop/protea02/scenarios/test08/1EMV_nowaters.pdb
+2026-08-06 15:18:39,020 Found 5 citations for tools or databases
+2026-08-06 15:18:39,020 Query 1/1: design_016 (length 214)
+2026-08-06 15:18:39,583 Sleeping for 9s. Reason: PENDING
+2026-08-06 15:18:49,176 Sleeping for 8s. Reason: RUNNING
+2026-08-06 15:18:57,743 Sleeping for 8s. Reason: RUNNING
+2026-08-06 15:19:06,329 Sleeping for 6s. Reason: RUNNING
+2026-08-06 15:19:12,905 Sleeping for 8s. Reason: RUNNING
+2026-08-06 15:19:23,291 Sleeping for 7s. Reason: PENDING
+2026-08-06 15:19:30,866 Sleeping for 6s. Reason: PENDING
+2026-08-06 15:19:37,440 Sleeping for 9s. Reason: PENDING
+2026-08-06 15:19:47,033 Sleeping for 10s. Reason: PENDING
+2026-08-06 15:19:57,631 Sleeping for 7s. Reason: PENDING
+2026-08-06 15:20:05,208 Sleeping for 8s. Reason: PENDING
+2026-08-06 15:20:13,785 Sleeping for 5s. Reason: PENDING
+2026-08-06 15:20:19,358 Sleeping for 7s. Reason: PENDING
+2026-08-06 15:20:26,955 Sleeping for 10s. Reason: PENDING
+2026-08-06 15:20:37,543 Sleeping for 5s. Reason: PENDING
+2026-08-06 15:20:43,125 Sleeping for 8s. Reason: PENDING
+2026-08-06 15:20:51,689 Sleeping for 8s. Reason: PENDING
+2026-08-06 15:21:00,300 Sleeping for 6s. Reason: PENDING
+2026-08-06 15:21:06,848 Sleeping for 7s. Reason: PENDING
+2026-08-06 15:21:14,413 Sleeping for 10s. Reason: PENDING
+2026-08-06 15:21:24,976 Sleeping for 10s. Reason: PENDING
+2026-08-06 15:21:35,532 Sleeping for 10s. Reason: PENDING
+2026-08-06 15:21:46,102 Sleeping for 8s. Reason: PENDING
+2026-08-06 15:21:54,670 Sleeping for 6s. Reason: PENDING
+2026-08-06 15:22:01,233 Sleeping for 5s. Reason: PENDING
+2026-08-06 15:22:06,780 Sleeping for 7s. Reason: PENDING
+2026-08-06 15:22:14,339 Sleeping for 5s. Reason: PENDING
+2026-08-06 15:22:19,900 Sleeping for 7s. Reason: PENDING
+2026-08-06 15:22:27,462 Sleeping for 7s. Reason: PENDING
+2026-08-06 15:22:35,026 Sleeping for 7s. Reason: PENDING
+2026-08-06 15:22:42,592 Sleeping for 6s. Reason: PENDING
+2026-08-06 15:22:49,144 Sleeping for 10s. Reason: PENDING
+2026-08-06 15:22:59,706 Sleeping for 8s. Reason: PENDING
+2026-08-06 15:23:08,290 Sleeping for 6s. Reason: PENDING
+2026-08-06 15:23:14,850 Sleeping for 5s. Reason: PENDING
+2026-08-06 15:23:20,410 Sleeping for 7s. Reason: PENDING
+2026-08-06 15:23:27,962 Sleeping for 8s. Reason: PENDING
+2026-08-06 15:23:36,515 Sleeping for 9s. Reason: PENDING
+2026-08-06 15:23:46,082 Sleeping for 5s. Reason: PENDING
+2026-08-06 15:23:51,643 Sleeping for 8s. Reason: PENDING
+2026-08-06 15:24:00,224 Sleeping for 10s. Reason: PENDING
+2026-08-06 15:24:10,818 Sleeping for 5s. Reason: PENDING
+2026-08-06 15:24:16,386 Sleeping for 7s. Reason: PENDING
+2026-08-06 15:24:24,325 Sleeping for 5s. Reason: PENDING
+2026-08-06 15:24:29,895 Sleeping for 6s. Reason: PENDING
+2026-08-06 15:24:36,472 Sleeping for 10s. Reason: PENDING
+2026-08-06 15:24:47,056 Sleeping for 7s. Reason: PENDING
+2026-08-06 15:24:54,626 Sleeping for 5s. Reason: PENDING
+2026-08-06 15:25:00,195 Sleeping for 6s. Reason: PENDING
+2026-08-06 15:25:06,763 Sleeping for 10s. Reason: PENDING
+2026-08-06 15:25:17,343 Sleeping for 8s. Reason: PENDING
+2026-08-06 15:25:25,931 Sleeping for 7s. Reason: PENDING
+2026-08-06 15:25:33,512 Sleeping for 10s. Reason: PENDING
+2026-08-06 15:25:44,093 Sleeping for 6s. Reason: PENDING
+2026-08-06 15:25:50,667 Sleeping for 8s. Reason: PENDING
+2026-08-06 15:25:59,239 Sleeping for 10s. Reason: PENDING
+2026-08-06 15:26:09,814 Sleeping for 7s. Reason: PENDING
+2026-08-06 15:26:17,403 Sleeping for 9s. Reason: PENDING
+2026-08-06 15:26:26,985 Sleeping for 6s. Reason: PENDING
+2026-08-06 15:26:33,559 Sleeping for 9s. Reason: PENDING
+2026-08-06 15:26:43,117 Sleeping for 9s. Reason: PENDING
+2026-08-06 15:26:52,804 Sleeping for 5s. Reason: PENDING
+2026-08-06 15:26:58,386 Sleeping for 7s. Reason: PENDING
+2026-08-06 15:27:05,962 Sleeping for 8s. Reason: PENDING
+2026-08-06 15:27:14,529 Sleeping for 8s. Reason: PENDING
+2026-08-06 15:27:23,104 Sleeping for 7s. Reason: RUNNING
+2026-08-06 15:27:31,019 Sleeping for 8s. Reason: RUNNING
+2026-08-06 15:27:39,580 Sleeping for 10s. Reason: RUNNING
+2026-08-06 15:27:51,629 Setting max_seq=508, max_extra_seq=2048
+2026-08-06 15:28:26,003 alphafold2_multimer_v3_model_1_seed_000 recycle=0 pLDDT=96.8 pTM=0.917 ipTM=0.912
+2026-08-06 15:28:46,839 alphafold2_multimer_v3_model_1_seed_000 recycle=1 pLDDT=97.2 pTM=0.921 ipTM=0.917 tol=0.206
+2026-08-06 15:28:46,840 alphafold2_multimer_v3_model_1_seed_000 took 50.5s (1 recycles)
+2026-08-06 15:28:46,878 reranking models by 'multimer' metric
+2026-08-06 15:28:46,878 rank_001_alphafold2_multimer_v3_model_1_seed_000 pLDDT=97.2 pTM=0.921 ipTM=0.917
+2026-08-06 15:28:47,068 Done

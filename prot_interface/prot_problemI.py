@@ -71,7 +71,7 @@ class prot_problem:
         self.scenario = scenario #scenario name
 
         #Instantiate Protein Energy Class
-        self.protEn = prot_en_intf.prot_energyInterf(scenario)
+        self.protEn = prot_en_intf.prot_energyInterf(scenario, partners)
 
         #Instantiate Mutation Operator Class
         self.mut = p_mut.prot_mut(scenario)

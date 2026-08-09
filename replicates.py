@@ -38,7 +38,7 @@ def build_parser():
     parser.add_argument("--init", type=int, required=True, help="Initial random seed (inclusive).")
     parser.add_argument("--end", type=int, required=True, help="Final random seed (inclusive).")
     parser.add_argument("--scenario", required=True, help="Scenario name.")
-    parser.add_argument("--algo", required=True, help="Algorithm name: sea/moea.")
+    parser.add_argument("--algo", required=True, help="Algorithm name: sea/moea/nsga3.")
     parser.add_argument("--sim-params", required=True, help="Simulation params string.")
     parser.add_argument("--algo-params", required=True, help="Algorithm params string.")
     parser.add_argument("--fitness-idxs", required=True, help="Fitness list string, e.g. fitness_idxs=0,2,7.")
@@ -125,9 +125,9 @@ if __name__ == "__main__":
 '''
 python replicates.py \
   --init 1 --end 4 \
-  --scenario test06 \
+  --scenario test08 \
   --algo moea \
-  --sim-params "pdbfile=9Q1V_prepared_clean_relaxed.pdb,partners=A_B,ligand_chain=B" \
+  --sim-params "pdbfile=1EMV_nowaters_relaxed.pdb,partners=A_B,ligand_chain=B" \
   --algo-params "gen=20,popsize=28,n_neighbors=5,n_partitions=6,random_mutation=1,llm_crossover=0,bo_enabled=1,bo_candidates_per_parent=8,bo_beta=1.0,bo_min_train=100" \
   --fitness-idxs "fitness_idxs=7" \
   --checkpoint false \

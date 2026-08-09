@@ -90,7 +90,19 @@ def run_eaprot(
     logger.info("FITNESS_IDXS: %s", fitness_idxs)
 
     if mobj:
-        import prot_mob_pymoo as sga_mob
+        algo_name_normalized = str(algo_name).strip().lower()
+
+        if algo_name_normalized in {"moea", "moead"}:
+            import prot_mob_pymoo as sga_mob
+            logger.info("Multiobjective backend selected: MOEA/D (prot_mob_pymoo)")
+        elif algo_name_normalized in {"nsga3", "nsgaiii"}:
+            import prot_mob_nsga3_pymoo as sga_mob
+            logger.info("Multiobjective backend selected: NSGA-III (prot_mob_nsga3_pymoo)")
+        else:
+            raise ValueError(
+                f"Unsupported multiobjective algorithm '{algo_name}'. "
+                "Valid options are: moea, moead, nsga3, nsgaiii."
+            )
 
         sga_mob.pymoo_sga_protein(
             scenario, algo_params, sim_params, fitness_idxs, output_dir, randomseed
@@ -107,7 +119,7 @@ def main():
     if len(sys.argv) != 10:
         print(len(sys.argv))
         logging.critical(
-            "usage: %s <scenario> <sea/moea> <sim params> <algo params> "
+            "usage: %s <scenario> <sea/moea/nsga3> <sim params> <algo params> "
             "<fitness_idxs> <checkpoint> <freq> <multiobj> <RANDOMSEED>",
             sys.argv[0],
         )

@@ -8,6 +8,17 @@ from genetic_operators.individual import Individual
 
 IndividualRecord = Dict[str, object]
 
+_ollama_client = None
+_ollama_client_host = None
+
+
+def _get_ollama_client(host: str) -> ollama.Client:
+    global _ollama_client, _ollama_client_host
+    if _ollama_client is None or _ollama_client_host != host:
+        _ollama_client = ollama.Client(host=host)
+        _ollama_client_host = host
+    return _ollama_client
+
 
 def _normalize_sequence_value(sequence_value: object, label: str) -> str:
     if isinstance(sequence_value, str):
@@ -66,9 +77,9 @@ def llm(
     individuals: List[IndividualRecord],
     objective_description: str,
     sequence_initial: Optional[str] = None,
-    model_name: str = "llama3.1:8b",
+    model_name: str = "gemma4:e4b",
     temperature: float = 0.3,
-    ollama_host: str = "http://ollama:11434",
+    ollama_host: str = "http://localhost:11435",
 ) -> str:
     parent1_seq = _get_sequence(parent1, "parent1")
     parent2_seq = _get_sequence(parent2, "parent2")
@@ -92,7 +103,7 @@ def llm(
             )
         normalized_individuals.append({**individual, "sequence": sequence})
 
-    client = ollama.Client(host=ollama_host)
+    client = _get_ollama_client(ollama_host)
 
     reference_sequence = (
         _normalize_sequence_value(sequence_initial, "sequence_initial")
@@ -110,13 +121,11 @@ def llm(
         if reference_sequence
         else ""
     )
-    population_context = _format_population_context(normalized_individuals)
-
     system_prompt = (
-        "You are an expert protein engineer working on protein-protein interface "
+        "You are an expert protein engineer specializing in protein-protein interface "
         "optimization. Your task is to perform a biologically informed crossover "
-        "between two parent protein sequences to improve the interaction between "
-        "the two proteins."
+        "between two parent protein sequences to produce a child with improved "
+        "binding affinity."
     )
 
     user_prompt = (
@@ -129,9 +138,8 @@ def llm(
         f"Fitness: ({_format_primary_fitness(parent1_fitness)})\n\n"
         f"Parent 2 interface sequence:\n{parent2_seq}\n"
         f"Fitness: ({_format_primary_fitness(parent2_fitness)})\n\n"
-        f"Past/current population context, interface sequence plus first fitness only:\n{population_context}\n\n"
-        f"Choose the most convenient crossover for improving the interface, using the "
-        f"previous mutations, their fitness values, and your protein knowledge. Prefer "
+        f"Using your expertise in protein-protein interface optimization, choose the best "
+        f"crossover between the two parents. Prefer "
         f"recombining residues from the parents at interface positions, but you may choose "
         f"a different standard amino acid at an interface position if it is strongly "
         f"biochemically justified.\n"
@@ -182,7 +190,7 @@ def _primary_fitness(ind: Individual) -> float:
 
 
 def llm_crossover(
-    parent_a: Individual, parent_b: Individual, population: List[Individual], sequence_initial: Optional[str] = None, model_name: str = "llama3.1:8b", temperature: float = 0.3,
+    parent_a: Individual, parent_b: Individual, population: List[Individual], sequence_initial: Optional[str] = None, model_name: str = "gemma4:e4b", temperature: float = 0.3,
     ollama_host: str = "http://ollama:11434"
 ) -> Tuple[List[int], List[str]]:
     

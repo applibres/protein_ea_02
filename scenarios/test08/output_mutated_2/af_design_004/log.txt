@@ -1,0 +1,21 @@
+2026-08-06 16:41:15,689 Running colabfold 1.6.1
+2026-08-06 16:41:16,983 Running on GPU
+2026-08-06 16:41:17,015 Using initial guess: /home/ariel/Desktop/protea02/test/experiments_nsgaiii/replicates4/run4/g19/g19_26.pdb
+2026-08-06 16:41:17,016 Found 5 citations for tools or databases
+2026-08-06 16:41:17,016 Query 1/1: design_004 (length 232)
+2026-08-06 16:41:17,642 Sleeping for 8s. Reason: PENDING
+2026-08-06 16:41:27,627 Sleeping for 10s. Reason: RUNNING
+2026-08-06 16:41:38,222 Sleeping for 7s. Reason: RUNNING
+2026-08-06 16:41:45,803 Sleeping for 6s. Reason: RUNNING
+2026-08-06 16:41:53,813 Sleeping for 10s. Reason: PENDING
+2026-08-06 16:42:04,408 Sleeping for 10s. Reason: RUNNING
+2026-08-06 16:42:14,993 Sleeping for 7s. Reason: RUNNING
+2026-08-06 16:42:22,555 Sleeping for 7s. Reason: RUNNING
+2026-08-06 16:42:31,089 Setting max_seq=369, max_extra_seq=1
+2026-08-06 16:43:03,094 alphafold2_multimer_v3_model_1_seed_000 recycle=0 pLDDT=84 pTM=0.77 ipTM=0.606
+2026-08-06 16:43:21,967 alphafold2_multimer_v3_model_1_seed_000 recycle=1 pLDDT=94.5 pTM=0.892 ipTM=0.854 tol=0.774
+2026-08-06 16:43:23,440 alphafold2_multimer_v3_model_1_seed_000 recycle=2 pLDDT=95.1 pTM=0.899 ipTM=0.871 tol=0.171
+2026-08-06 16:43:23,441 alphafold2_multimer_v3_model_1_seed_000 took 47.5s (2 recycles)
+2026-08-06 16:43:23,481 reranking models by 'multimer' metric
+2026-08-06 16:43:23,481 rank_001_alphafold2_multimer_v3_model_1_seed_000 pLDDT=95.1 pTM=0.899 ipTM=0.871
+2026-08-06 16:43:23,674 Done

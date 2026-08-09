@@ -122,7 +122,7 @@ class pymoo_sga_protein:
         logging.info("ESM2 model initialized successfully")
 
         if self.bo_enabled:
-            self.bo_surrogate = BOSurrogateGP(esm2_model=self.esm2, pca_components=64)
+            self.bo_surrogate = BOSurrogateGP(esm2_model=self.esm2, pca_components=32)
             logging.info(
                 "BO surrogate enabled (candidates_per_parent=%s, beta=%.3f, min_train=%s)",
                 self.bo_candidates_per_parent, self.bo_beta, self.bo_min_train

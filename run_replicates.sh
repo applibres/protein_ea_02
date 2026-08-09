@@ -9,10 +9,19 @@ set -euo pipefail
 #
 # Outputs are isolated by replicates-id:
 #   exp1..exp8 -> replicates3..replicates10
+#
+# Usage:
+#   ./run_replicates.sh [moead|moea|nsgaiii|nsga3]
 
-SCENARIO="test06"
-ALGO="moea"
-SIM_PARAMS="pdbfile=9Q1V_prepared_clean_relaxed.pdb,partners=A_B,ligand_chain=B"
+SCENARIO="test04"
+# Choose the multi-objective backend for all experiments in this batch.
+# Argument default: moead
+if [[ $# -gt 1 ]]; then
+  echo "Usage: $0 [moead|moea|nsgaiii|nsga3]"
+  exit 1
+fi
+ALGORITHM_BACKEND_INPUT="${1:-moead}"
+SIM_PARAMS="pdbfile=protein01.pdb,partners=A_C,ligand_chain=C"
 FITNESS_IDXS="fitness_idxs=7"
 INIT_SEED=1
 END_SEED=4
@@ -25,6 +34,20 @@ BO_BETA=1.0
 BO_MIN_TRAIN=100
 REPLICATES_ID_START=1
 
+ALGORITHM_BACKEND="$(echo "${ALGORITHM_BACKEND_INPUT}" | tr '[:upper:]' '[:lower:]')"
+case "${ALGORITHM_BACKEND}" in
+  moea|moead)
+    ALGO="moea"
+    ;;
+  nsga3|nsgaiii)
+    ALGO="nsga3"
+    ;;
+  *)
+    echo "Invalid algorithm argument '${ALGORITHM_BACKEND_INPUT}'. Use: moead/moea or nsgaiii/nsga3."
+    exit 1
+    ;;
+esac
+
 run_experiment() {
   local random_mutation="$1"
   local bo_enabled="$2"
@@ -35,7 +58,7 @@ run_experiment() {
   algo_params="gen=${GEN},popsize=${POPSIZE},n_neighbors=${N_NEIGHBORS},n_partitions=${N_PARTITIONS},random_mutation=${random_mutation},llm_crossover=${llm_crossover},bo_enabled=${bo_enabled},bo_candidates_per_parent=${BO_CANDIDATES},bo_beta=${BO_BETA},bo_min_train=${BO_MIN_TRAIN}"
 
   echo "============================================================"
-  echo "Running experiment: random_mutation=${random_mutation}, bo_enabled=${bo_enabled}, llm_crossover=${llm_crossover}, replicates-id=${replicates_id}"
+  echo "Running experiment: algo=${ALGO} random_mutation=${random_mutation}, bo_enabled=${bo_enabled}, llm_crossover=${llm_crossover}, replicates-id=${replicates_id}"
   echo "============================================================"
 
   python replicates.py \
@@ -52,6 +75,7 @@ run_experiment() {
 }
 
 replicates_id="${REPLICATES_ID_START}"
+echo "Selected backend: ALGORITHM_BACKEND=${ALGORITHM_BACKEND} -> --algo ${ALGO}"
 
 for llm_crossover in 0 1; do
   for random_mutation in 0 1; do

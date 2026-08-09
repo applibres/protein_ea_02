@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 class prot_energyInterf:
 
-	def __init__(self, scenario):
+	def __init__(self, scenario, partners=None):
 
 		self.rosetta_bin = sets.ROSETTA_BIN
 		self.config_path = sets.CONFIG_PATH
@@ -31,6 +31,7 @@ class prot_energyInterf:
 		self.score_indexes = sets.SCORE_INDEXES
 		self.flags = sets.FLAGS
 		self.scenario = scenario
+		self.partners = partners
 
 	def getEnergyInterf(self, pdb_file_name):
 
@@ -41,6 +42,7 @@ class prot_energyInterf:
 		
 		command = self.rosetta_bin + self.interf_an + \
 			" " + pdb_file_name + \
+			(" -interface " + self.partners if self.partners else "") + \
 			" " + self.flags + \
 			" " + output_file_name
 

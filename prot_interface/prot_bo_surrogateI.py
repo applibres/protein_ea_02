@@ -25,7 +25,7 @@ from prot_interface.prot_esm2 import ESM2ProbMatrix
 class BOSurrogateGP:
     """Simple GP surrogate with ESM2 embeddings + PCA."""
 
-    def __init__(self, esm2_model: ESM2ProbMatrix = None, pca_components: int = 64):
+    def __init__(self, esm2_model: ESM2ProbMatrix = None, pca_components: int = 32):
         if GaussianProcessRegressor is None or PCA is None:
             raise ImportError(
                 "scikit-learn is required for BO surrogate. "
